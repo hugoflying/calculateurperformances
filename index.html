@@ -1199,6 +1199,15 @@
     var ac=$('#aircraftSel').value; $('#propeller').value=propByAircraft[ac]||'';
     updateWindDisplay('dep'); updateWindDisplay('arr'); updateResLabels();
   })();
+
+  // === Liaisons des boutons de calcul ===
+document.getElementById('btnCalcDep').addEventListener('click', function(){
+  computeDepPerf();
+});
+
+document.getElementById('btnCalcArr').addEventListener('click', function(){
+  computeArrPerf();
+});
 </script>
 </body>
 </html>
