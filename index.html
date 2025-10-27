@@ -878,6 +878,7 @@
     var val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
     return val*TO_DR300.massScale(massKg);
   }
+  
   function icingRisk(temp, dew){
   const diff = temp - dew;
   const rh = 100 * Math.exp((17.625*dew)/(243.04+dew)) / Math.exp((17.625*temp)/(243.04+temp)); // humidité relative approchée
@@ -888,6 +889,7 @@
   if (temp > -10 && temp < +15 && rh >= 90 && diff <= 2) return 'Givrage sévère';
   return 'Risque faible';
 }
+  
   function computeDepPerf(){
     if(!ensureValidBeforeCompute('dep')) return;
 
