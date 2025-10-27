@@ -489,62 +489,70 @@
   }
 
   function applyMetar(side, data){
-    var dirRepr = (data && data.wind_direction && data.wind_direction.repr ? String(data.wind_direction.repr) : '').toUpperCase();
-    var dirVal  = data && data.wind_direction && typeof data.wind_direction.value==='number' ? data.wind_direction.value : null;
-    var spdVal  = Math.max(0, Math.round(data && data.wind_speed && typeof data.wind_speed.value==='number' ? data.wind_speed.value : 0));
-    var gustVal = Math.max(0, Math.round(data && data.wind_gust && typeof data.wind_gust.value==='number' ? data.wind_gust.value : 0));
-    var oatVal  = Math.round(data && data.temperature && typeof data.temperature.value==='number' ? data.temperature.value : 15);
-    var sector  = parseVarSector(data);
+  var dirRepr = (data && data.wind_direction && data.wind_direction.repr ? String(data.wind_direction.repr) : '').toUpperCase();
+  var dirVal  = data && data.wind_direction && typeof data.wind_direction.value==='number' ? data.wind_direction.value : null;
+  var spdVal  = Math.max(0, Math.round(data && data.wind_speed && typeof data.wind_speed.value==='number' ? data.wind_speed.value : 0));
+  var gustVal = Math.max(0, Math.round(data && data.wind_gust && typeof data.wind_gust.value==='number' ? data.wind_gust.value : 0));
+  var oatVal  = Math.round(data && data.temperature && typeof data.temperature.value==='number' ? data.temperature.value : 15);
+  var dewVal  = Math.round(data && data.dewpoint && typeof data.dewpoint.value==='number' ? data.dewpoint.value : oatVal);
+  var sector  = parseVarSector(data);
 
-    var dirEl=document.getElementById(side+'WindDir');
-    if(dirRepr==='VRB'){dirEl.value='VRB';}
-    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
+  // Direction du vent
+  var dirEl = document.getElementById(side+'WindDir');
+  if (dirRepr === 'VRB'){ dirEl.value = 'VRB'; }
+  else if (dirVal !== null){ dirEl.value = pad3(dirVal); }
 
-    document.getElementById(side+'WindKt').value=String(spdVal);
-    document.getElementById(side+'WindGust').value=String(gustVal||0);
-    document.getElementById(side+'Oat').value=String(oatVal);
+  document.getElementById(side+'WindKt').value = String(spdVal);
+  document.getElementById(side+'WindGust').value = String(gustVal || 0);
+  document.getElementById(side+'Oat').value = String(oatVal);
 
-    if(sector){
-      document.getElementById(side+'VrbFrom').value=pad3(sector.from);
-      document.getElementById(side+'VrbTo').value=pad3(sector.to);
-    } else {
-      document.getElementById(side+'VrbFrom').value='';
-      document.getElementById(side+'VrbTo').value='';
-    }
+  if (sector){
+    document.getElementById(side+'VrbFrom').value = pad3(sector.from);
+    document.getElementById(side+'VrbTo').value   = pad3(sector.to);
+  } else {
+    document.getElementById(side+'VrbFrom').value = '';
+    document.getElementById(side+'VrbTo').value   = '';
+  }
 
-    if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
-    else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
+  // --- Prise en compte du TEMPO ---
+  if (data && data.remarks && typeof data.remarks === "string") {
+    const tempoMatch = data.remarks.match(/TEMPO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
+    if (tempoMatch) {
+      const tempoDir = tempoMatch[1].toUpperCase();
+      const tempoSpd = parseInt(tempoMatch[2] || "0", 10);
+      const tempoGst = parseInt(tempoMatch[3] || tempoMatch[2] || "0", 10);
 
-    // --- Ajout : prise en compte du TEMPO ---
-if (data && data.remarks && typeof data.remarks === "string") {
-  const tempoMatch = data.remarks.match(/TEMPO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
-  if (tempoMatch) {
-    const tempoDir = tempoMatch[1].toUpperCase();
-    const tempoSpd = parseInt(tempoMatch[2] || "0", 10);
-    const tempoGst = parseInt(tempoMatch[3] || tempoMatch[2] || "0", 10);
+      const curSpd = parseInt(document.getElementById(side+'WindKt').value||'0',10);
+      const curGst = parseInt(document.getElementById(side+'WindGust').value||'0',10);
+      const tempoMax = Math.max(tempoSpd, tempoGst);
+      const obsMax = Math.max(curSpd, curGst);
 
-    // On compare avec le vent moyen observé
-    const curSpd = parseInt(document.getElementById(side+'WindKt').value||'0',10);
-    const curGst = parseInt(document.getElementById(side+'WindGust').value||'0',10);
-    const tempoMax = Math.max(tempoSpd, tempoGst);
-    const obsMax = Math.max(curSpd, curGst);
+      // Si le TEMPO est plus contraignant → on le prend
+      if (tempoMax > obsMax) {
+        document.getElementById(side+'WindDir').value = tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir,10));
+        document.getElementById(side+'WindKt').value = String(tempoSpd);
+        document.getElementById(side+'WindGust').value = String(tempoGst || 0);
 
-    // Si le TEMPO est plus contraignant (rafales plus fortes ou direction défavorable)
-    if (tempoMax > obsMax) {
-      document.getElementById(side+'WindDir').value = tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir,10));
-      document.getElementById(side+'WindKt').value = String(tempoSpd);
-      document.getElementById(side+'WindGust').value = String(tempoGst || 0);
-
-      // 👇 Correction : on efface le secteur variable du vent moyen
-      document.getElementById(side+'VrbFrom').value = '';
-      document.getElementById(side+'VrbTo').value = '';
+        // ⚠️ On efface le secteur variable : il ne s’applique pas au TEMPO
+        document.getElementById(side+'VrbFrom').value = '';
+        document.getElementById(side+'VrbTo').value = '';
+      }
     }
   }
+
+  // --- Givrage carburateur ---
+  var risk = icingRisk(oatVal, dewVal);
+  var msg = 'Risque de givrage : ' + risk;
+
+  // --- Enregistre le METAR brut et message ---
+  if (side === 'dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
+  else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
+
+  var msgEl = document.getElementById(side+'MetarMsg');
+  msgEl.textContent = (data && data.raw ? 'METAR chargé : ' + data.raw : '—') + ' — ' + msg;
+
+  updateWindDisplay(side);
 }
-// --- fin ajout TEMPO ---
-
-    updateWindDisplay(side);
-  }
 
   async function loadMetarFor(side){
     var icao = (document.getElementById(side+'Icao').value||'').toUpperCase();
@@ -870,7 +878,16 @@ if (data && data.remarks && typeof data.remarks === "string") {
     var val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
     return val*TO_DR300.massScale(massKg);
   }
+  function icingRisk(temp, dew){
+  const diff = temp - dew;
+  const rh = 100 * Math.exp((17.625*dew)/(243.04+dew)) / Math.exp((17.625*temp)/(243.04+temp)); // humidité relative approchée
 
+  if (temp > 30 || dew > 25 || rh < 40) return 'Aucun risque';
+  if (temp >= 0 && temp <= 30 && rh >= 80 && diff <= 5) return 'Givrage léger';
+  if (temp > -5 && temp < +20 && rh >= 80 && diff <= 3) return 'Givrage modéré';
+  if (temp > -10 && temp < +15 && rh >= 90 && diff <= 2) return 'Givrage sévère';
+  return 'Risque faible';
+}
   function computeDepPerf(){
     if(!ensureValidBeforeCompute('dep')) return;
 
