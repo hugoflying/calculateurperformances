@@ -515,6 +515,30 @@
     if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
     else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
 
+    // --- Ajout : prise en compte du TEMPO ---
+if (data && data.remarks && typeof data.remarks === "string") {
+  const tempoMatch = data.remarks.match(/TEMPO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
+  if (tempoMatch) {
+    const tempoDir = tempoMatch[1].toUpperCase();
+    const tempoSpd = parseInt(tempoMatch[2] || "0", 10);
+    const tempoGst = parseInt(tempoMatch[3] || tempoMatch[2] || "0", 10);
+
+    // On compare avec le vent moyen observé
+    const curSpd = parseInt(document.getElementById(side+'WindKt').value||'0',10);
+    const curGst = parseInt(document.getElementById(side+'WindGust').value||'0',10);
+    const tempoMax = Math.max(tempoSpd, tempoGst);
+    const obsMax = Math.max(curSpd, curGst);
+
+    // Si le TEMPO est plus contraignant (rafales plus fortes ou direction défavorable)
+    if (tempoMax > obsMax) {
+      document.getElementById(side+'WindDir').value = tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir,10));
+      document.getElementById(side+'WindKt').value = String(tempoSpd);
+      document.getElementById(side+'WindGust').value = String(tempoGst || 0);
+    }
+  }
+}
+// --- fin ajout TEMPO ---
+
     updateWindDisplay(side);
   }
 
@@ -735,7 +759,7 @@
       var n=parseInt(t.replace(/\D/g,''),10);
       if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
         var ang=Math.abs(((n-q+540)%360)-180);
-        var sp = (ang>90)? G : V;
+        var sp = (ang>90)? G : Math.max(V, G);
         candidates.push({src:'moyen', val:comps(n,sp)});
       }
     }
