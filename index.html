@@ -534,6 +534,10 @@ if (data && data.remarks && typeof data.remarks === "string") {
       document.getElementById(side+'WindDir').value = tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir,10));
       document.getElementById(side+'WindKt').value = String(tempoSpd);
       document.getElementById(side+'WindGust').value = String(tempoGst || 0);
+
+      // 👇 Correction : on efface le secteur variable du vent moyen
+      document.getElementById(side+'VrbFrom').value = '';
+      document.getElementById(side+'VrbTo').value = '';
     }
   }
 }
