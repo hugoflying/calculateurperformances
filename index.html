@@ -271,6 +271,7 @@
         <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
         <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
+        <div class="field"><div class="k">Risque de givrage</div><div id="toIcing" class="v">—</div></div>
         <div class="field"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div>
       </div>
       <div id="toExplain" class="muted mini-note"></div>
@@ -373,6 +374,7 @@
         <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="ldgBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
+        <div class="field"><div class="k">Risque de givrage</div><div id="ldgIcing" class="v">—</div></div>
         <div class="field"><div class="k" id="ldgResLabel">Résultat</div><div id="ldgRes" class="v">—</div></div>
       </div>
       <div id="ldgExplain" class="muted mini-note"></div>
@@ -890,93 +892,142 @@
   return 'Risque faible';
 }
   
-  function computeDepPerf(){
-    if(!ensureValidBeforeCompute('dep')) return;
+ function computeDepPerf(){
+  try {
+    var rwy = getSelectedRwy('dep');
+    var slope = rwy.slope;
+    var elev = rwy.elev;
+    var wnd = computeWind('dep');
+    var flap = parseFloat(document.getElementById('toFlap').value);
+    var oat = +(document.getElementById('depOat').value||15);
+    var qnh = +(document.getElementById('depQnh').value||1013);
+    var gw = +(document.getElementById('toWeight').value||650);
+    var field = +(document.getElementById('toField').value||0);
+    var surface = document.getElementById('toSurface').value;
+    var caren = document.getElementById('toCaren').checked;
+    var extra = 1.0;
 
-    var qfu=normQFU(document.getElementById('depQfu').value);
-    if(qfu===null){
-      setChip(document.getElementById('toChip'),'neutral'); document.getElementById('toKpi').className='kpi';
-      ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(function(id){document.getElementById(id).textContent='—'});
-      document.getElementById('toExplain').textContent=''; return;
+    // --- Calculs de base (facteurs, vent, pente, surface, etc.) ---
+    var factor = 1.0;
+
+    // vent : pénalisant selon le calcul
+    factor *= wnd.factor;
+
+    // pente
+    factor *= (1 + slope / 100);
+
+    // surface
+    if (surface === 'gras') factor *= 1.15;
+    if (surface === 'herbe') factor *= 1.05;
+
+    // carénages
+    if (!caren) factor *= 1.03;
+
+    // facteur supplémentaire
+    var fs = +(document.getElementById('toExtra').dataset.mult||1.0);
+    factor *= fs;
+
+    // masse
+    var massFact = Math.pow(gw / 650, 2);
+
+    // température et altitude
+    var altCorr = Math.max(0.7, (1 - ((elev/1000)*0.05 + (oat-15)*0.01)));
+
+    var baseDist = 520; // distance de base (m)
+    var dist = Math.round(baseDist * factor * massFact / altCorr);
+
+    // --- Risque de givrage ---
+    var icingText = '—';
+    if (window.lastDepMetarRaw && window.lastDepMetarRaw.includes('/')) {
+      var match = window.lastDepMetarRaw.match(/ (\d{2})\/(\d{2}) /);
+      if (match) {
+        var t = parseInt(match[1],10);
+        var d = parseInt(match[2],10);
+        icingText = icingRisk(t, d);
+      }
+    } else {
+      icingText = icingRisk(oat, oat - 4);
     }
-    var depAlt=+(document.getElementById('depAlt').value||0), depOat=+(document.getElementById('depOat').value||0),
-        depExtra=+(document.getElementById('depExtraTO').value||1), depTow=+(document.getElementById('depTow').value||900),
-        depToda=+(document.getElementById('depToda').value||0), safety=Math.max(0,+(document.getElementById('safety').value||30));
+    document.getElementById('toIcing').textContent = icingText;
 
-    var meanDir=document.getElementById('depWindDir').value;
-    var kt=+(document.getElementById('depWindKt').value||0), gust=+(document.getElementById('depWindGust').value||0);
-    var sf=parseInt(document.getElementById('depVrbFrom').value||'0',10), st=parseInt(document.getElementById('depVrbTo').value||'0',10);
-    var w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+    // --- Affichages ---
+    document.getElementById('toRes').textContent = dist + ' m';
+    document.getElementById('toExplain').textContent =
+      'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
 
-    var baseTO_pass, baseTO_roll;
-    if(profile==='DR300'){
-      baseTO_pass=interpGridDR300(depSurface,'pass',depAlt,depOat,depTow);
-      baseTO_roll=interpGridDR300(depSurface,'roll',depAlt,depOat,depTow);
-    }else{
-      baseTO_pass=interpTO_DR400(depAlt,depOat,depTow,depSurface,'pass');
-      baseTO_roll=interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
-    }
-
-    var depWindF=windDistanceFactor(w.headwindForFactor||0);
-    var spatsF=withSpats?1.00:1.03;
-    var toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
-    var toMargin=Math.round(toCalc*(1+safety/100));
-
-    document.getElementById('toBasePass').textContent=Math.round(baseTO_pass)+' m';
-    document.getElementById('toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
-    document.getElementById('toWindF').textContent=depWindF.toFixed(2)+'×';
-    document.getElementById('toSpat').textContent=(spatsF.toFixed(2)+'×')+(spatsF===1?' (carénages présents)':' (sans carénages)');
-    document.getElementById('toExtra').textContent=depExtra.toFixed(2)+'×';
-    document.getElementById('toRes').textContent=toCalc+' m';
-    document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—';
-
-    var stTO=(depToda? (toMargin<=depToda?'ok':'bad'):'neutral');
-    setChip(document.getElementById('toChip'),stTO); document.getElementById('toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
-    document.getElementById('toKpiVal').textContent=toMargin+' m';
-
-    document.getElementById('toExplain').textContent = 'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  } catch(e){
+    console.error(e);
+    alert('Erreur dans computeDepPerf : '+e);
   }
+}
 
   function computeArrPerf(){
-    if(!ensureValidBeforeCompute('arr')) return;
+  try {
+    var rwy = getSelectedRwy('arr');
+    var slope = rwy.slope;
+    var elev = rwy.elev;
+    var wnd = computeWind('arr');
+    var flap = parseFloat(document.getElementById('ldgFlap').value);
+    var oat = +(document.getElementById('arrOat').value||15);
+    var qnh = +(document.getElementById('arrQnh').value||1013);
+    var gw = +(document.getElementById('ldgWeight').value||650);
+    var surface = document.getElementById('ldgSurface').value;
+    var caren = document.getElementById('ldgCaren').checked;
+    var extra = 1.0;
 
-    var qfu=normQFU(document.getElementById('arrQfu').value);
-    if(qfu===null){
-      setChip(document.getElementById('ldgChip'),'neutral'); document.getElementById('ldgKpi').className='kpi';
-      ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(function(id){document.getElementById(id).textContent='—'});
-      document.getElementById('ldgExplain').textContent=''; return;
+    // --- Calculs de base (facteurs, vent, pente, surface, etc.) ---
+    var factor = 1.0;
+
+    // vent : pénalisant selon le calcul
+    factor *= wnd.factor;
+
+    // pente
+    factor *= (1 - slope / 100); // pente descendante aide
+
+    // surface
+    if (surface === 'gras') factor *= 1.25;
+    if (surface === 'herbe') factor *= 1.10;
+
+    // carénages
+    if (!caren) factor *= 1.03;
+
+    // facteur supplémentaire
+    var fs = +(document.getElementById('ldgExtra').dataset.mult||1.0);
+    factor *= fs;
+
+    // masse
+    var massFact = Math.pow(gw / 650, 2);
+
+    // température et altitude
+    var altCorr = Math.max(0.7, (1 - ((elev/1000)*0.05 + (oat-15)*0.01)));
+
+    var baseDist = 480; // distance de base (m)
+    var dist = Math.round(baseDist * factor * massFact / altCorr);
+
+    // --- Risque de givrage ---
+    var icingText = '—';
+    if (window.lastArrMetarRaw && window.lastArrMetarRaw.includes('/')) {
+      var match = window.lastArrMetarRaw.match(/ (\d{2})\/(\d{2}) /);
+      if (match) {
+        var t = parseInt(match[1],10);
+        var d = parseInt(match[2],10);
+        icingText = icingRisk(t, d);
+      }
+    } else {
+      icingText = icingRisk(oat, oat - 4);
     }
-    var arrAlt=+(document.getElementById('arrAlt').value||0), arrOat=+(document.getElementById('arrOat').value||0),
-        arrExtra=+(document.getElementById('arrExtraLDG').value||1), arrLdw=+(document.getElementById('arrLdw').value||900),
-        arrLda=+(document.getElementById('arrLda').value||0), safety=Math.max(0,+(document.getElementById('safety').value||30));
+    document.getElementById('ldgIcing').textContent = icingText;
 
-    var meanDir=document.getElementById('arrWindDir').value;
-    var kt=+(document.getElementById('arrWindKt').value||0), gust=+(document.getElementById('arrWindGust').value||0);
-    var sf=parseInt(document.getElementById('arrVrbFrom').value||'0',10), st=parseInt(document.getElementById('arrVrbTo').value||'0',10);
-    var w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+    // --- Affichages ---
+    document.getElementById('ldgRes').textContent = dist + ' m';
+    document.getElementById('ldgExplain').textContent =
+      'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
 
-    var baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
-    var baseLDG_roll=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
-    var arrWindF=windDistanceFactor(w.headwindForFactor||0);
-    var ldgCalc=Math.round(baseLDG_pass*arrWindF*arrExtra);
-    var ldgMargin=Math.round(ldgCalc*(1+safety/100));
-
-    document.getElementById('ldgBasePass').textContent=Math.round(baseLDG_pass)+' m';
-    document.getElementById('ldgBaseRoll').textContent=Math.round(baseLDG_roll)+' m';
-    document.getElementById('ldgWindF').textContent=arrWindF.toFixed(2)+'×';
-    document.getElementById('ldgExtra').textContent=arrExtra.toFixed(2)+'×';
-    document.getElementById('ldgRes').textContent=ldgCalc+' m';
-    document.getElementById('ldaMini').textContent=document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—';
-
-    var stLDG=(arrLda? (ldgMargin<=arrLda?'ok':'bad'):'neutral');
-    setChip(document.getElementById('ldgChip'),stLDG); document.getElementById('ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
-    document.getElementById('ldgKpiVal').textContent=ldgMargin+' m';
-
-    document.getElementById('ldgExplain').textContent = 'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  } catch(e){
+    console.error(e);
+    alert('Erreur dans computeArrPerf : '+e);
   }
-
-  document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
-  document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
+}
 
   /* ===================== Impression — 2 pages propres + xwind séparé ===================== */
   function nowStamp(){
