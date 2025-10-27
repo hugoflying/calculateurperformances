@@ -181,8 +181,8 @@
       <div id="depMetarMsg" class="muted note"></div>
 
       <div class="grid2" style="margin-top:10px">
-        <label>Piste départ
-          <select id="depRunwaySel"></select>
+        <label>QFU départ (°)
+          <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
         </label>
         <label>TODA (m)
           <input id="depToda" type="text" inputmode="numeric" pattern="[0-9]*" />
@@ -250,9 +250,6 @@
       </div>
 
       <button id="btnCalcDep" class="btn primary block" style="margin-top:14px">Calculer les performances décollage</button>
-
-      <!-- Champ QFU d'origine conservé, mais caché pour compat -->
-      <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" style="display:none"/>
     </section>
 
     <!-- Décollage : performances -->
@@ -294,8 +291,8 @@
       <div id="arrMetarMsg" class="muted note"></div>
 
       <div class="grid2" style="margin-top:10px">
-        <label>Piste arrivée
-          <select id="arrRunwaySel"></select>
+        <label>QFU arrivée (°)
+          <input id="arrQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
         </label>
         <label>LDA (m)
           <input id="arrLda" type="text" inputmode="numeric" pattern="[0-9]*" />
@@ -356,9 +353,6 @@
       </div>
 
       <button id="btnCalcArr" class="btn primary block" style="margin-top:14px">Calculer les performances atterrissage</button>
-
-      <!-- Champ QFU d'origine conservé, mais caché pour compat -->
-      <input id="arrQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" style="display:none"/>
     </section>
 
     <!-- Atterrissage : performances -->
@@ -457,7 +451,7 @@
     el.addEventListener('blur',function(){sanitizeIcao(el)});
   });
 
-  // QFU legacy (inputs cachés conservés)
+  // QFU
   function normQFU(val){ var n=parseInt(String(val).replace(/\D/g,''),10); if(isNaN(n)) return null; n=Math.max(1,Math.min(360,n)); return n; }
   function display3(n){ return n===null?'':pad3(n); }
   ;['depQfu','arrQfu'].forEach(function(id){
@@ -471,7 +465,7 @@
   $('#arrLda').addEventListener('input',function(){ var s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
   /* ===================== METAR (AVWX) ===================== */
-  var AVWX_TOKEN='GJ6qEqUaMvA3LtaeCjdhgYJTTT4TuvUXxv_I8WF0340';
+  var AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
   function fetchJson(url){
     return fetch(url, { headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' } })
       .then(function(resp){ if(!resp.ok) throw new Error('HTTP '+resp.status); return resp.json(); });
@@ -524,71 +518,6 @@
     updateWindDisplay(side);
   }
 
-  /* ===================== AVIÓWIKI (elevation + runways) ===================== */
-  const AVIOWIKI_TOKEN = '2cd98f86-a119-455b-acd6-478c686b45d4'; // Bearer
-
-  function fetchJsonAW(path){
-    return fetch('https://api.aviowiki.com'+path, {
-      headers: { Authorization:'Bearer '+AVIOWIKI_TOKEN, Accept:'application/json' }
-    }).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
-  }
-
-  async function awFindAirportByIcao(icao){
-    const data = await fetchJsonAW('/airports/search?query='+encodeURIComponent(icao));
-    const list = (data && (data.content || data)) || [];
-    let a = list.find(x => (x.icao||'').toUpperCase()===icao.toUpperCase()) || list[0];
-    return a || null;
-  }
-
-  async function awGetRunways(aid){
-    if(!aid) return [];
-    const list = await fetchJsonAW('/airports/'+encodeURIComponent(aid)+'/runways/all');
-    return Array.isArray(list) ? list.filter(r => !r.helipad) : [];
-  }
-
-  const runwayCache = { dep:{aid:null,list:[],byId:{}}, arr:{aid:null,list:[],byId:{} } };
-  function metersToFeet(m){ return Math.round((Number(m)||0)*3.28084); }
-
-  function populateRunwaySelect(side, runways){
-    const sel = document.getElementById(side+'RunwaySel');
-    if(!sel) return;
-    sel.innerHTML = '';
-    runwayCache[side].list = runways.slice().sort((a,b)=>String(a.identifier).localeCompare(String(b.identifier)));
-    runwayCache[side].byId = {};
-    runwayCache[side].list.forEach(r=>{
-      runwayCache[side].byId[r.identifier]=r;
-      const opt=document.createElement('option');
-      opt.value=r.identifier; opt.textContent=r.identifier;
-      sel.appendChild(opt);
-    });
-    // défaut: plus grande TODA si dispo, sinon 1ère
-    let def = runwayCache[side].list.slice().sort((a,b)=>(+b.toda||0)-(+a.toda||0))[0] || runwayCache[side].list[0];
-    if(def){ sel.value=def.identifier; applyRunwaySelection(side); }
-  }
-
-  function applyRunwaySelection(side){
-    const sel = document.getElementById(side+'RunwaySel');
-    const rwy = sel && runwayCache[side].byId[sel.value];
-    if(!rwy) return;
-    sel.dataset.trueBearing = (typeof rwy.trueBearing==='number') ? String(Math.round(rwy.trueBearing)||'') : '';
-    if(side==='dep'){
-      if(typeof rwy.toda==='number' && rwy.toda>0) document.getElementById('depToda').value=String(Math.round(rwy.toda));
-    }else{
-      if(typeof rwy.lda==='number' && rwy.lda>0) document.getElementById('arrLda').value=String(Math.round(rwy.lda));
-    }
-    updateWindDisplay(side);
-  }
-
-  function getBearingFor(side){
-    const sel = document.getElementById(side+'RunwaySel');
-    if(sel && sel.dataset.trueBearing){
-      const n=parseInt(sel.dataset.trueBearing,10);
-      if(Number.isFinite(n)&&n>=1&&n<=360) return n;
-    }
-    const legacy=document.getElementById(side+'Qfu');
-    return legacy ? normQFU(legacy.value) : null;
-  }
-
   async function loadMetarFor(side){
     var icao = (document.getElementById(side+'Icao').value||'').toUpperCase();
     var msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
@@ -599,32 +528,6 @@
       var elevFt = station && typeof station.elevation_ft==='number' ? station.elevation_ft : null;
       var altInput = document.getElementById(side+'Alt');
       if (typeof elevFt === 'number' && elevFt > 0 && altInput) { altInput.value = String(Math.round(elevFt)); }
-
-      // === AVIÓWIKI: élévation + pistes (trueBearing, TODA/LDA) ===
-      try{
-        const ap = await awFindAirportByIcao(icao);
-        if(ap && ap.aid){
-          runwayCache[side].aid = ap.aid;
-
-          // Élévation (m -> ft) si rien posé par AVWX
-          const elevFtAW = (typeof ap.elevation==='number') ? metersToFeet(ap.elevation) : null;
-          if(altInput){
-            const cur = parseInt(altInput.value||'0',10)||0;
-            if((!cur || cur<=0) && elevFtAW){ altInput.value = String(elevFtAW); }
-          }
-
-          // Pistes
-          const runways = await awGetRunways(ap.aid);
-          if(Array.isArray(runways) && runways.length){
-            populateRunwaySelect(side, runways);
-          }else{
-            const sel = document.getElementById(side+'RunwaySel');
-            if(sel){ sel.innerHTML=''; sel.dataset.trueBearing=''; }
-          }
-        }
-      }catch(e){
-        /* silencieux */
-      }
 
       var metar, usedIcao = icao, isNearest = false, distTxt = '';
       try{ metar = await fetchMetar(icao); }
@@ -767,7 +670,7 @@
   }
 
   function updateWindDisplay(side){
-    var qfu = getBearingFor(side);
+    var qfu = normQFU(document.getElementById(side+'Qfu').value);
     var dirStr=(document.getElementById(side+'WindDir').value||'');
     var kt=parseInt(document.getElementById(side+'WindKt').value||'0',10)||0;
     var dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
@@ -943,7 +846,7 @@
   function computeDepPerf(){
     if(!ensureValidBeforeCompute('dep')) return;
 
-    var qfu=getBearingFor('dep');
+    var qfu=normQFU(document.getElementById('depQfu').value);
     if(qfu===null){
       setChip(document.getElementById('toChip'),'neutral'); document.getElementById('toKpi').className='kpi';
       ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(function(id){document.getElementById(id).textContent='—'});
@@ -990,7 +893,7 @@
   function computeArrPerf(){
     if(!ensureValidBeforeCompute('arr')) return;
 
-    var qfu=getBearingFor('arr');
+    var qfu=normQFU(document.getElementById('arrQfu').value);
     if(qfu===null){
       setChip(document.getElementById('ldgChip'),'neutral'); document.getElementById('ldgKpi').className='kpi';
       ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(function(id){document.getElementById(id).textContent='—'});
@@ -1040,7 +943,7 @@
   }
 
   function buildCompsFor(side){
-    var qfu = getBearingFor(side);
+    var qfu = normQFU(document.getElementById(side+'Qfu').value);
     var dirStr=(document.getElementById(side+'WindDir').value||'');
     var kt=parseInt(document.getElementById(side+'WindKt').value||'0',10)||0;
     var gust=parseInt(document.getElementById(side+'WindGust').value||'0',10)||0;
@@ -1069,10 +972,7 @@
 
   function sectionTerrainHTML(title, side, comps){
     var icao=(document.getElementById(side+'Icao').value||'').toUpperCase();
-    var sel = document.getElementById(side+'RunwaySel');
-    var rwyId = sel && sel.value ? sel.value : '—';
-    var bearing = getBearingFor(side);
-    var qfu = bearing ? String(bearing).padStart(3,'0') : '—';
+    var qfu=(document.getElementById(side+'Qfu').value||'').padStart(3,'0');
     var alt=document.getElementById(side+'Alt').value||'—';
     var oat=document.getElementById(side+'Oat').value||'—';
     var lenLabel = side==='dep' ? 'TODA' : 'LDA';
@@ -1082,6 +982,7 @@
     var gst=document.getElementById(side+'WindGust').value||'0';
     var metar = side==='dep' ? (window.lastDepMetarRaw||'—') : (window.lastArrMetarRaw||'—');
 
+    // Composantes lisibles (séparées)
     var xwindBlock = `Travers moyen : ${comps.meanX} kt`;
     if(comps.worstX!==null){
       xwindBlock += `\nTravers max secteur ${comps.worstLabel} : ${comps.worstX} kt`;
@@ -1092,8 +993,7 @@
         <span class="ptitle">${title}</span>
         <div class="kv" style="margin-top:6px">
           <div class="k">ICAO</div><div class="v">${icao}</div>
-          <div class="k">Piste</div><div class="v">${rwyId}</div>
-          <div class="k">QFU (vrai)</div><div class="v">${qfu}°</div>
+          <div class="k">QFU</div><div class="v">${qfu}°</div>
           <div class="k">Élévation</div><div class="v">${alt} ft</div>
           <div class="k">OAT</div><div class="v">${oat} °C</div>
           <div class="k">${lenLabel}</div><div class="v">${lenVal} m</div>
@@ -1194,12 +1094,6 @@
   document.getElementById('btnPrint').addEventListener('click',function(){
     document.getElementById('rawPre').innerHTML = buildPrintHTML();
     window.print();
-  });
-
-  // Sélection piste -> appliquer (bearing + TODA/LDA)
-  ['depRunwaySel','arrRunwaySel'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el) el.addEventListener('change', ()=> applyRunwaySelection(id.indexOf('dep')===0?'dep':'arr'));
   });
 
   // init
