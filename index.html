@@ -911,7 +911,7 @@ if (data && data.remarks && typeof data.remarks === "string") {
     setChip(document.getElementById('toChip'),stTO); document.getElementById('toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     document.getElementById('toKpiVal').textContent=toMargin+' m';
 
-    document.getElementById('toExplain').textContent = '';
+    document.getElementById('toExplain').textContent = 'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   }
 
   function computeArrPerf(){
@@ -949,7 +949,7 @@ if (data && data.remarks && typeof data.remarks === "string") {
     setChip(document.getElementById('ldgChip'),stLDG); document.getElementById('ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     document.getElementById('ldgKpiVal').textContent=ldgMargin+' m';
 
-    document.getElementById('ldgExplain').textContent = '';
+    document.getElementById('ldgExplain').textContent = 'Vent utilisé pour les calculs : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
