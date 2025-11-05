@@ -776,15 +776,16 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     }
     return false;
   }
- function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo) {
+function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo) {
   const V = Math.max(0, kt | 0);
   const G = Math.max(V, gust | 0);
   if (qfu === null) return { headwindForFactor: 0, explain: 'QFU manquant' };
   const q = qfu % 360;
 
+  // calcule les composantes face / travers / arrière
   function comps(dir, speed) {
     const d = Math.abs(((dir - q + 540) % 360) - 180);
-    const hwSigned = speed * Math.cos(toRad(d));
+    const hwSigned = speed * Math.cos(toRad(d)); // positif face, négatif arrière
     const xw = Math.abs(speed * Math.sin(toRad(d)));
     return { d, hwSigned, xw, dir, speed };
   }
@@ -792,7 +793,7 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
   const candidates = [];
   const t = (meanDirOrVRB || '').trim().toUpperCase();
 
-  // Cas vent moyen
+  // ===== Cas vent moyen =====
   if (t && t !== 'VRB') {
     const n = parseInt(t.replace(/\D/g, ''), 10);
     if (!isNaN(n)) {
@@ -800,30 +801,52 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
       const cMean = comps(dir, V);
       const cGust = comps(dir, G);
 
-      // Si rafale aggrave (vent arrière ou travers) → prendre la rafale
-      const val = (cGust.hwSigned < cMean.hwSigned || cGust.xw > cMean.xw) ? cGust : cMean;
-      candidates.push({ src: 'moyen', val });
+      // Analyse détaillée de la rafale : on garde la composante la plus pénalisante
+      const worstHeadwind = Math.min(cMean.hwSigned, cGust.hwSigned);
+      const worstCrosswind = Math.max(cMean.xw, cGust.xw);
+      const final = {
+        hwSigned: worstHeadwind,
+        xw: worstCrosswind,
+        dir,
+        d: cMean.d
+      };
+      candidates.push(final);
     }
   }
 
-  // Cas secteur variable
+  // ===== Cas secteur variable =====
   if (sectorFrom && sectorTo) {
     const from = sectorFrom % 360, to = sectorTo % 360;
+    // on prend des directions représentatives du secteur
     const dirs = [from, to, (from + (((to - from + 360) % 360) / 2)) % 360];
     for (const d of dirs) {
-      const cVrb = comps(d, G);
-      candidates.push({ src: 'secteur', val: cVrb });
+      const cVrbMean = comps(d, V);
+      const cVrbGust = comps(d, G);
+      const worstHeadwind = Math.min(cVrbMean.hwSigned, cVrbGust.hwSigned);
+      const worstCrosswind = Math.max(cVrbMean.xw, cVrbGust.xw);
+      const final = {
+        hwSigned: worstHeadwind,
+        xw: worstCrosswind,
+        dir: d,
+        d: cVrbMean.d
+      };
+      candidates.push(final);
     }
   }
 
-  // Choix du plus contraignant
-  let worst = candidates[0] ? candidates[0].val : comps((q + 180) % 360, G);
+  // ===== Sélection du plus contraignant =====
+  let worst = candidates[0] || comps((q + 180) % 360, G);
   for (let i = 1; i < candidates.length; i++) {
-    const c = candidates[i].val;
+    const c = candidates[i];
+    // priorité : le plus de vent arrière, sinon le plus de travers
     if (c.hwSigned < worst.hwSigned || c.xw > worst.xw) worst = c;
   }
 
-  return { headwindForFactor: worst.hwSigned, explain: 'Vent le plus contraignant retenu.' };
+  return {
+    headwindForFactor: worst.hwSigned,
+    crosswindForColor: worst.xw,
+    explain: 'Vent le plus contraignant retenu (rafale partielle incluse si défavorable).'
+  };
 }
 
 
