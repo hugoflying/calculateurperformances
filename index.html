@@ -515,32 +515,39 @@
     if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
     else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
 
-    // --- Ajout : prise en compte du TEMPO ---
-if (data && data.remarks && typeof data.remarks === "string") {
+  // --- Ajout : prise en compte du TEMPO ---
+// On récupère la direction du QFU si dispo
+const qfu = normQFU(document.getElementById(side + 'Qfu').value);
+if (data && data.remarks && typeof data.remarks === "string" && qfu) {
   const tempoMatch = data.remarks.match(/TEMPO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
   if (tempoMatch) {
     const tempoDir = tempoMatch[1].toUpperCase();
     const tempoSpd = parseInt(tempoMatch[2] || "0", 10);
     const tempoGst = parseInt(tempoMatch[3] || tempoMatch[2] || "0", 10);
 
-    // On compare avec le vent moyen observé
-    const curSpd = parseInt(document.getElementById(side+'WindKt').value||'0',10);
-    const curGst = parseInt(document.getElementById(side+'WindGust').value||'0',10);
-    const tempoMax = Math.max(tempoSpd, tempoGst);
-    const obsMax = Math.max(curSpd, curGst);
+    const curDir = document.getElementById(side + 'WindDir').value;
+    const curSpd = parseInt(document.getElementById(side + 'WindKt').value || '0', 10);
+    const curGst = parseInt(document.getElementById(side + 'WindGust').value || '0', 10);
 
-    // Si le TEMPO est plus contraignant (rafales plus fortes ou direction défavorable)
-    if (tempoMax > obsMax) {
-      document.getElementById(side+'WindDir').value = tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir,10));
-      document.getElementById(side+'WindKt').value = String(tempoSpd);
-      document.getElementById(side+'WindGust').value = String(tempoGst || 0);
+    const curComp = compsFrom(qfu, parseInt(curDir), Math.max(curSpd, curGst));
+    const tempoComp = compsFrom(qfu, parseInt(tempoDir), Math.max(tempoSpd, tempoGst));
 
-      // 👇 Correction : on efface le secteur variable du vent moyen
-      document.getElementById(side+'VrbFrom').value = '';
-      document.getElementById(side+'VrbTo').value = '';
+    // Si le tempo a plus de vent arrière ou travers que le vent moyen → on remplace
+    const tempoIsWorse =
+      tempoComp.tail > curComp.tail ||
+      tempoComp.xw > curComp.xw;
+
+    if (tempoIsWorse) {
+      document.getElementById(side + 'WindDir').value =
+        tempoDir === 'VRB' ? 'VRB' : pad3(parseInt(tempoDir, 10));
+      document.getElementById(side + 'WindKt').value = String(tempoSpd);
+      document.getElementById(side + 'WindGust').value = String(tempoGst || 0);
+      document.getElementById(side + 'VrbFrom').value = '';
+      document.getElementById(side + 'VrbTo').value = '';
     }
   }
 }
+
 // --- fin ajout TEMPO ---
 
     updateWindDisplay(side);
@@ -697,45 +704,67 @@ if (data && data.remarks && typeof data.remarks === "string") {
     }
   }
 
-  function updateWindDisplay(side){
-    var qfu = normQFU(document.getElementById(side+'Qfu').value);
-    var dirStr=(document.getElementById(side+'WindDir').value||'');
-    var kt=parseInt(document.getElementById(side+'WindKt').value||'0',10)||0;
-    var dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+ function updateWindDisplay(side) {
+  var qfu = normQFU(document.getElementById(side + 'Qfu').value);
+  var dirStr = (document.getElementById(side + 'WindDir').value || '');
+  var kt = parseInt(document.getElementById(side + 'WindKt').value || '0', 10) || 0;
+  var gust = parseInt(document.getElementById(side + 'WindGust').value || '0', 10) || 0;
+  var dirDisp = dirForDisplay(dirStr, { fromId: side + 'VrbFrom', toId: side + 'VrbTo' });
 
-    if(qfu===null || dirDisp===null || !kt){
-      document.getElementById(side+'HwFace').textContent='—';
-      document.getElementById(side+'Xw').textContent='—';
-      document.getElementById(side+'Tw').textContent='—';
-      crosswindLimitColor(side,null);
-      if(side==='dep'){ document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—'; }
-      else{ document.getElementById('ldaMini').textContent=(document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—'); }
-      return;
+  if (qfu === null || (!dirDisp && dirStr.trim().toUpperCase() !== 'VRB') || !kt) {
+    document.getElementById(side + 'HwFace').textContent = '—';
+    document.getElementById(side + 'Xw').textContent = '—';
+    document.getElementById(side + 'Tw').textContent = '—';
+    crosswindLimitColor(side, null);
+    if (side === 'dep') {
+      document.getElementById('todaMini').textContent = document.getElementById('depToda').value
+        ? document.getElementById('depToda').value + ' m' : '—';
+    } else {
+      document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
+        ? document.getElementById('arrLda').value + ' m' : '—';
     }
-
-    var c = compsFrom(qfu, dirDisp, kt);
-    document.getElementById(side+'HwFace').textContent = Math.round(c.face);
-    document.getElementById(side+'Tw').textContent     = Math.round(c.tail);
-
-    updateCrosswindCell(side, qfu, dirDisp, kt);
-
-    if(side==='dep'){ document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—'; }
-    else{ document.getElementById('ldaMini').textContent=(document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—'); }
+    return;
   }
 
-  ;['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu','depAlt','arrAlt','depTow','arrLdw','depExtraTO','arrExtraLDG']
-    .forEach(function(id){
-      document.getElementById(id).addEventListener('input',function(){updateWindDisplay(id.indexOf('dep')===0?'dep':'arr')});
-      document.getElementById(id).addEventListener('blur',function(){
-        if(id.indexOf('Vrb')>-1){ validateVrb(id.indexOf('dep')===0?'dep':'arr'); }
-        if(id.slice(-7)==='WindDir'){
-          var el=document.getElementById(id);
-          var t=el.value.trim().toUpperCase();
-          if(t && t!=='VRB'){ var n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
-        }
-        updateWindDisplay(id.indexOf('dep')===0?'dep':'arr');
-      });
-    });
+  // ==== Calcul du vent le plus contraignant ====
+  var sf = parseInt(document.getElementById(side + 'VrbFrom').value || '0', 10);
+  var st = parseInt(document.getElementById(side + 'VrbTo').value || '0', 10);
+  var w = worstBetweenMeanAndSector(qfu, dirStr, kt, gust, sf, st);
+
+  // === Composantes ===
+  var comp = compsFrom(qfu, dirDisp, kt);
+  document.getElementById(side + 'HwFace').textContent = Math.round(Math.max(0, w.headwindForFactor));
+  document.getElementById(side + 'Tw').textContent = Math.round(Math.max(0, -w.headwindForFactor));
+
+  // === Vent de travers ===
+  var xwElem = document.getElementById(side + 'Xw');
+  var fEl = document.getElementById(side + 'VrbFrom');
+  var tEl = document.getElementById(side + 'VrbTo');
+  var hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
+
+  if (hasSector) {
+    var f = parseInt(fEl.value, 10), t = parseInt(tEl.value, 10);
+    var worstX = Math.round(worstXwindInSector(qfu, f, t, Math.max(kt, gust)));
+    xwElem.innerHTML = Math.round(comp.xw) + ' kt\n' + worstX + ' kt sur ' + pad3(f) + 'V' + pad3(t);
+    crosswindLimitColor(side, worstX);
+  } else {
+    var G = Math.max(kt, gust);
+    var cMean = compsFrom(qfu, dirDisp, kt);
+    var cGust = compsFrom(qfu, dirDisp, G);
+    var worstX = (cGust.xw > cMean.xw) ? Math.round(cGust.xw) : Math.round(cMean.xw);
+    xwElem.textContent = worstX + ' kt';
+    crosswindLimitColor(side, worstX);
+  }
+
+  // === Mise à jour TODA/LDA ===
+  if (side === 'dep') {
+    document.getElementById('todaMini').textContent = document.getElementById('depToda').value
+      ? document.getElementById('depToda').value + ' m' : '—';
+  } else {
+    document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
+      ? document.getElementById('arrLda').value + ' m' : '—';
+  }
+}
 
   /* ===================== Vent contraignant perfs ===================== */
   function sectorHasAngle(from,to,pred){
@@ -747,49 +776,56 @@ if (data && data.remarks && typeof data.remarks === "string") {
     }
     return false;
   }
-  function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo){
-    var V=Math.max(0,kt|0), G=Math.max(V,gust|0);
-    if(qfu===null) return {headwindForFactor:0, explain:'QFU manquant'};
-    var q=(qfu%360);
-    function comps(dir, speed){
-      var d = Math.abs(((dir-q+540)%360)-180);
-      var hwSigned = speed * Math.cos(toRad(d));
-      var xw = Math.abs(speed * Math.sin(toRad(d)));
-      return {d:d, hwSigned:hwSigned, xw:xw, dir:dir, speed:speed};
-    }
-    var candidates=[];
-    var t=(meanDirOrVRB||'').trim().toUpperCase();
-    if(t && t!=='VRB'){
-      var n=parseInt(t.replace(/\D/g,''),10);
-      if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
-        var ang=Math.abs(((n-q+540)%360)-180);
-        var sp = (ang>90)? G : Math.max(V, G);
-        candidates.push({src:'moyen', val:comps(n,sp)});
-      }
-    }
-    if(sectorFrom && sectorTo){
-      var from=sectorFrom%360, to=sectorTo%360;
-      var dirs=[from,to,(from+(((to-from+360)%360)/2))%360,(q+180)%360,(q+90)%360,(q+270)%360];
-      var seen={}, uniq=[], i;
-      for(i=0;i<dirs.length;i++){ if(!seen[dirs[i]]){seen[dirs[i]]=1; uniq.push(dirs[i]);} }
-      var hasTail = sectorHasAngle(from,to, function(a){ return Math.abs(((a-q+540)%360)-180) > 90; });
-      for(i=0;i<uniq.length;i++){
-        var d=uniq[i];
-        var ang=Math.abs(((d-q+540)%360)-180);
-        var sp = hasTail ? G : V;
-        candidates.push({src:'secteur', val:comps(d,sp)});
-      }
-    }
-    if(candidates.length===0){
-      var c=comps((q+180)%360, G);
-      return {headwindForFactor:c.hwSigned, explain:'VRB sans secteur : cas arrière à 180°'};
-    }
-    var worst=candidates[0].val;
-    for(var j=1;j<candidates.length;j++){
-      if(candidates[j].val.hwSigned < worst.hwSigned) worst=candidates[j].val;
-    }
-    return {headwindForFactor:worst.hwSigned, explain:'Règle vent appliquée (plus contraignant).'};
+ function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo) {
+  const V = Math.max(0, kt | 0);
+  const G = Math.max(V, gust | 0);
+  if (qfu === null) return { headwindForFactor: 0, explain: 'QFU manquant' };
+  const q = qfu % 360;
+
+  function comps(dir, speed) {
+    const d = Math.abs(((dir - q + 540) % 360) - 180);
+    const hwSigned = speed * Math.cos(toRad(d));
+    const xw = Math.abs(speed * Math.sin(toRad(d)));
+    return { d, hwSigned, xw, dir, speed };
   }
+
+  const candidates = [];
+  const t = (meanDirOrVRB || '').trim().toUpperCase();
+
+  // Cas vent moyen
+  if (t && t !== 'VRB') {
+    const n = parseInt(t.replace(/\D/g, ''), 10);
+    if (!isNaN(n)) {
+      const dir = Math.max(1, Math.min(360, n));
+      const cMean = comps(dir, V);
+      const cGust = comps(dir, G);
+
+      // Si rafale aggrave (vent arrière ou travers) → prendre la rafale
+      const val = (cGust.hwSigned < cMean.hwSigned || cGust.xw > cMean.xw) ? cGust : cMean;
+      candidates.push({ src: 'moyen', val });
+    }
+  }
+
+  // Cas secteur variable
+  if (sectorFrom && sectorTo) {
+    const from = sectorFrom % 360, to = sectorTo % 360;
+    const dirs = [from, to, (from + (((to - from + 360) % 360) / 2)) % 360];
+    for (const d of dirs) {
+      const cVrb = comps(d, G);
+      candidates.push({ src: 'secteur', val: cVrb });
+    }
+  }
+
+  // Choix du plus contraignant
+  let worst = candidates[0] ? candidates[0].val : comps((q + 180) % 360, G);
+  for (let i = 1; i < candidates.length; i++) {
+    const c = candidates[i].val;
+    if (c.hwSigned < worst.hwSigned || c.xw > worst.xw) worst = c;
+  }
+
+  return { headwindForFactor: worst.hwSigned, explain: 'Vent le plus contraignant retenu.' };
+}
+
 
   /* ===================== Facteurs perfs ===================== */
   function windDistanceFactor(head){
