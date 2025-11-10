@@ -101,31 +101,6 @@
       }
     }
 
-   /* === Centrage ajusté des valeurs dans les cases de vent === */
-    #depXwCard .v,
-    #arrXwCard .v,
-    #depHwFace,
-    #arrHwFace,
-    #depTw,
-    #arrTw {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      line-height: 1.2;
-      min-height: 40px; 
-      white-space: pre-line;
-    }
-
-    /* Harmonisation des couleurs d’avertissement sur ces blocs */
-    #depXwCard.warn-yellow,
-    #arrXwCard.warn-yellow,
-    #depXwCard.warn-red,
-    #arrXwCard.warn-red {
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-
     /* Impression */
     #printRaw{display:none}
     .printWrap{
@@ -404,8 +379,6 @@
     </section>
   </div>
 
-  
-
   <!-- Crédits (web seulement) -->
   <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
     <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
@@ -419,30 +392,7 @@
 <section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
 
 <script>
- entById(side+'WindDir');
-    if(dirRepr==='VRB'){dirEl.value='VRB';}
-    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
-
-    document.getElementById(side+'WindKt').value=String(spdVal);
-    document.getElementById(side+'WindGust').value=String(gustVal||0);
-    document.getElementById(side+'Oat').value=String(oatVal);
-
-    if(sector){
-      document.getElementById(side+'VrbFrom').value=pad3(sector.from);
-      document.getElementById(side+'VrbTo').value=pad3(sector.to);
-    } else {
-      document.getElementById(side+'VrbFrom').value='';
-      document.getElementById(side+'VrbTo').value='';
-    }
-
-    if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
-    else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
-
-  // --- Ajout : prise en compte du TEMPO ---
-// On récupère la direction du QFU si dispo
-const qfu = normQFU(document.getElementById(side + 'Qfu').value);
-if (data && data.remarks && typeof data.remarks === "string" && qfu) {
-  const tempoMatch = data.remarks.match(/TEMP /* ===================== DONNÉES ===================== */
+  /* ===================== DONNÉES ===================== */
   const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
   const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
   const DR300_TEMPS=[0,15,30,45];
@@ -546,7 +496,30 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     var oatVal  = Math.round(data && data.temperature && typeof data.temperature.value==='number' ? data.temperature.value : 15);
     var sector  = parseVarSector(data);
 
-    var dirEl=document.getElemO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
+    var dirEl=document.getElementById(side+'WindDir');
+    if(dirRepr==='VRB'){dirEl.value='VRB';}
+    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
+
+    document.getElementById(side+'WindKt').value=String(spdVal);
+    document.getElementById(side+'WindGust').value=String(gustVal||0);
+    document.getElementById(side+'Oat').value=String(oatVal);
+
+    if(sector){
+      document.getElementById(side+'VrbFrom').value=pad3(sector.from);
+      document.getElementById(side+'VrbTo').value=pad3(sector.to);
+    } else {
+      document.getElementById(side+'VrbFrom').value='';
+      document.getElementById(side+'VrbTo').value='';
+    }
+
+    if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
+    else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
+
+  // --- Ajout : prise en compte du TEMPO ---
+// On récupère la direction du QFU si dispo
+const qfu = normQFU(document.getElementById(side + 'Qfu').value);
+if (data && data.remarks && typeof data.remarks === "string" && qfu) {
+  const tempoMatch = data.remarks.match(/TEMPO\s+(\d{3}|VRB)(\d{2,3})G?(\d{2,3})?/);
   if (tempoMatch) {
     const tempoDir = tempoMatch[1].toUpperCase();
     const tempoSpd = parseInt(tempoMatch[2] || "0", 10);
@@ -756,24 +729,12 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     document.getElementById(side + 'Tw').textContent = '—';
     crosswindLimitColor(side, null);
     if (side === 'dep') {
-      document.getElementById('todaMini').textContent =
-        document.getElementById('depToda').value
-          ? document.getElementById('depToda').value + ' m'
-          : '—';
+      document.getElementById('todaMini').textContent = document.getElementById('depToda').value
+        ? document.getElementById('depToda').value + ' m' : '—';
     } else {
-      document.getElementById('ldaMini').textContent =
-        document.getElementById('arrLda').value
-          ? document.getElementById('arrLda').value + ' m'
-          : '—';
+      document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
+        ? document.getElementById('arrLda').value + ' m' : '—';
     }
-    // Supprime les "kt" quand pas de vent
-    ["depHwFace","depTw","arrHwFace","arrTw"].forEach(id => {
-      const span = document.getElementById(id);
-      if (span) {
-        const parent = span.closest(".v");
-        parent.innerHTML = `<span id="${id}">—</span>`;
-      }
-    });
     return;
   }
 
@@ -821,6 +782,7 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
 
     xwElem.innerHTML =
       baseText + '\n' +
+      `+${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
       `${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
 
     crosswindLimitColor(side, worst.val);
@@ -837,7 +799,6 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
       ? document.getElementById('arrLda').value + ' m' : '—';
   }
-   
 }
 
   /* ===================== Vent contraignant perfs ===================== */
