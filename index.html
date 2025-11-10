@@ -797,15 +797,19 @@ function updateWindDisplay(side) {
   }
 
   // === Afficher "— kt" uniquement si la case est vide
-  ["HwFace", "Tw", "Xw"].forEach(suffix => {
-    const el = document.getElementById(side + suffix);
-    if (!el) return;
-    const parent = el.closest(".v");
-    const val = el.textContent.replace(/\s+/g, '').trim();
-    if (val === "" || val === "—") {
-      parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
-    }
-  });
+["HwFace", "Tw", "Xw"].forEach(suffix => {
+  const el = document.getElementById(side + suffix);
+  if (!el) return;
+  const parent = el.closest(".v");
+  // Nettoyage complet des espaces, retours à la ligne et tirets parasites
+  const val = el.textContent.replace(/[\s\n\r]+/g, '').trim();
+
+  // Si vide ou tiret, on force l'affichage du tiret + unité
+  if (val === "" || val === "—") {
+    parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
+  }
+});
+
 }
 
   /* ===================== Vent contraignant perfs ===================== */
