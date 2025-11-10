@@ -782,7 +782,7 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
 
     xwElem.innerHTML =
       baseText + '\n' +
-      `+${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
+      `${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
 
     crosswindLimitColor(side, worst.val);
   } else {
