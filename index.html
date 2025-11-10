@@ -801,7 +801,7 @@ function updateWindDisplay(side) {
     const el = document.getElementById(side + suffix);
     if (!el) return;
     const parent = el.closest(".v");
-    const val = el.textContent.trim();
+    const val = el.textContent.replace(/\s+/g, '').trim();
     if (val === "" || val === "—") {
       parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
     }
