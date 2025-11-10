@@ -723,11 +723,13 @@ function updateWindDisplay(side) {
   var gust = parseInt(document.getElementById(side + 'WindGust').value || '0', 10) || 0;
   var dirDisp = dirForDisplay(dirStr, { fromId: side + 'VrbFrom', toId: side + 'VrbTo' });
 
+  // === Si données manquantes ===
   if (qfu === null || (!dirDisp && dirStr.trim().toUpperCase() !== 'VRB') || !kt) {
     document.getElementById(side + 'HwFace').textContent = '—';
     document.getElementById(side + 'Xw').textContent = '—';
     document.getElementById(side + 'Tw').textContent = '—';
     crosswindLimitColor(side, null);
+
     if (side === 'dep') {
       document.getElementById('todaMini').textContent = document.getElementById('depToda').value
         ? document.getElementById('depToda').value + ' m' : '—';
@@ -735,6 +737,18 @@ function updateWindDisplay(side) {
       document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
         ? document.getElementById('arrLda').value + ' m' : '—';
     }
+
+    // 🟢 Forcer affichage du “— kt” quand aucune donnée
+    ["HwFace", "Tw", "Xw"].forEach(suffix => {
+      const el = document.getElementById(side + suffix);
+      if (!el) return;
+      const parent = el.closest(".v");
+      const val = el.textContent.replace(/[\s\n\r]+/g, '').trim();
+      if (val === "" || val === "—") {
+        parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
+      }
+    });
+
     return;
   }
 
@@ -744,7 +758,6 @@ function updateWindDisplay(side) {
   var w = worstBetweenMeanAndSector(qfu, dirStr, kt, gust, sf, st);
 
   // === Composantes ===
-  var comp = compsFrom(qfu, dirDisp, kt);
   document.getElementById(side + 'HwFace').textContent = Math.round(Math.max(0, w.headwindForFactor));
   document.getElementById(side + 'Tw').textContent = Math.round(Math.max(0, -w.headwindForFactor));
 
@@ -752,7 +765,6 @@ function updateWindDisplay(side) {
   var xwElem = document.getElementById(side + 'Xw');
   var fEl = document.getElementById(side + 'VrbFrom');
   var tEl = document.getElementById(side + 'VrbTo');
-
   var G = Math.max(kt, gust);
   var cMean = compsFrom(qfu, dirDisp, kt);
   var cGust = compsFrom(qfu, dirDisp, G);
@@ -788,6 +800,7 @@ function updateWindDisplay(side) {
     crosswindLimitColor(side, worstX);
   }
 
+  // === Mise à jour TODA/LDA ===
   if (side === 'dep') {
     document.getElementById('todaMini').textContent = document.getElementById('depToda').value
       ? document.getElementById('depToda').value + ' m' : '—';
@@ -796,20 +809,16 @@ function updateWindDisplay(side) {
       ? document.getElementById('arrLda').value + ' m' : '—';
   }
 
-  // === Afficher "— kt" uniquement si la case est vide
-["HwFace", "Tw", "Xw"].forEach(suffix => {
-  const el = document.getElementById(side + suffix);
-  if (!el) return;
-  const parent = el.closest(".v");
-  // Nettoyage complet des espaces, retours à la ligne et tirets parasites
-  const val = el.textContent.replace(/[\s\n\r]+/g, '').trim();
-
-  // Si vide ou tiret, on force l'affichage du tiret + unité
-  if (val === "" || val === "—") {
-    parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
-  }
-});
-
+  // === Afficher “— kt” si vide après calcul
+  ["HwFace", "Tw", "Xw"].forEach(suffix => {
+    const el = document.getElementById(side + suffix);
+    if (!el) return;
+    const parent = el.closest(".v");
+    const val = el.textContent.replace(/[\s\n\r]+/g, '').trim();
+    if (val === "" || val === "—") {
+      parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
+    }
+  });
 }
 
   /* ===================== Vent contraignant perfs ===================== */
