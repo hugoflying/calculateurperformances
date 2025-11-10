@@ -716,7 +716,7 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     }
   }
 
- function updateWindDisplay(side) {
+function updateWindDisplay(side) {
   var qfu = normQFU(document.getElementById(side + 'Qfu').value);
   var dirStr = (document.getElementById(side + 'WindDir').value || '');
   var kt = parseInt(document.getElementById(side + 'WindKt').value || '0', 10) || 0;
@@ -749,18 +749,16 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
   document.getElementById(side + 'Tw').textContent = Math.round(Math.max(0, -w.headwindForFactor));
 
   // === Vent de travers ===
-   var xwElem = document.getElementById(side + 'Xw');
+  var xwElem = document.getElementById(side + 'Xw');
   var fEl = document.getElementById(side + 'VrbFrom');
   var tEl = document.getElementById(side + 'VrbTo');
 
-  // === Calcul du vent moyen / rafale (base fixe) ===
   var G = Math.max(kt, gust);
   var cMean = compsFrom(qfu, dirDisp, kt);
   var cGust = compsFrom(qfu, dirDisp, G);
   var worstX = Math.round(Math.max(cMean.xw, cGust.xw));
   var baseText = `${worstX} kt`;
 
-  // === Si vent variable, on calcule le plus contraignant en plus ===
   var hasSector = false, f = null, t = null;
   if (fEl.value.trim() && tEl.value.trim() && validateVrb(side)) {
     f = parseInt(fEl.value, 10);
@@ -781,17 +779,15 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     }
 
     xwElem.innerHTML =
-      baseText + 'kt\n' +
+      baseText + '\n' +
       `+${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
-      `${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
 
     crosswindLimitColor(side, worst.val);
   } else {
-    xwElem.textContent = baseText + ' kt';
+    xwElem.textContent = baseText;
     crosswindLimitColor(side, worstX);
   }
 
-  // === Mise à jour TODA/LDA ===
   if (side === 'dep') {
     document.getElementById('todaMini').textContent = document.getElementById('depToda').value
       ? document.getElementById('depToda').value + ' m' : '—';
@@ -799,6 +795,17 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     document.getElementById('ldaMini').textContent = document.getElementById('arrLda').value
       ? document.getElementById('arrLda').value + ' m' : '—';
   }
+
+  // === Afficher "— kt" uniquement si la case est vide
+  ["HwFace", "Tw", "Xw"].forEach(suffix => {
+    const el = document.getElementById(side + suffix);
+    if (!el) return;
+    const parent = el.closest(".v");
+    const val = el.textContent.trim();
+    if (val === "" || val === "—") {
+      parent.innerHTML = `<span id="${side + suffix}">—</span> kt`;
+    }
+  });
 }
 
   /* ===================== Vent contraignant perfs ===================== */
@@ -1192,7 +1199,7 @@ function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sect
           <div class="kv" style="margin-top:6px">
             <div class="k">Avion</div><div class="v">${aircraft}</div>
             <div class="k">Hélice</div><div class="v">${prop}</div>
-            <div class="k">Profil</div><div class="v">${profileTxt}</div>
+            <div class="k">Profil</div><div class="v">${profileTxtupdateWindDisplay(side)}</div>
             <div class="k">Marge sécurité</div><div class="v">${safety} %</div>
             <div class="k">Carénages</div><div class="v">${spats}</div>
           </div>
