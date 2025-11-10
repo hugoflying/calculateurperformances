@@ -180,18 +180,17 @@
       </div>
       <div id="depMetarMsg" class="muted note"></div>
 
-      <div class="grid2" style="margin-top:10px">
-        <label>QFU départ (°)
-          <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
-        </label>
-        <label>TODA (m)
-          <input id="depToda" type="text" inputmode="numeric" pattern="[0-9]*" />
-        </label>
-        <label>ASDA (m)
-           <input id="depAsda" type="text" inputmode="numeric" pattern="[0-9]*" />
-          </label>
-      </div>
-
+      <div class="grid3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top:10px">
+  <label>QFU départ (°)
+    <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
+  </label>
+  <label>TODA (m)
+    <input id="depToda" type="text" inputmode="numeric" pattern="[0-9]*" />
+  </label>
+  <label>ASDA (m)
+    <input id="depAsda" type="text" inputmode="numeric" pattern="[0-9]*" />
+  </label>
+</div>
       <div class="grid3" style="margin-top:10px">
         <label>Vent — Direction (° ou "VRB")
           <input id="depWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
