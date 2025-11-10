@@ -755,18 +755,28 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
   var hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
 
   if (hasSector) {
-    var f = parseInt(fEl.value, 10), t = parseInt(tEl.value, 10);
-    var worstX = Math.round(worstXwindInSector(qfu, f, t, Math.max(kt, gust)));
-    xwElem.innerHTML = Math.round(comp.xw) + ' kt\n' + worstX + ' kt sur ' + pad3(f) + 'V' + pad3(t);
-    crosswindLimitColor(side, worstX);
-  } else {
-    var G = Math.max(kt, gust);
-    var cMean = compsFrom(qfu, dirDisp, kt);
-    var cGust = compsFrom(qfu, dirDisp, G);
-    var worstX = (cGust.xw > cMean.xw) ? Math.round(cGust.xw) : Math.round(cMean.xw);
-    xwElem.textContent = worstX + ' kt';
-    crosswindLimitColor(side, worstX);
+  var f = parseInt(fEl.value, 10), t = parseInt(tEl.value, 10);
+  var G = Math.max(kt, gust);
+  var step = 5; // résolution 5°
+  var worst = { type: '', val: 0, dir: f };
+
+  for (var d = f; (d - t + 360) % 360 >= 0 ? d <= t : (d + 360) % 360 <= (t + 360) % 360; d = (d + step) % 360) {
+    var c = compsFrom(qfu, d, G);
+    var absTail = Math.max(c.tail, 0);
+    var absFace = Math.max(c.face, 0);
+    var absX = c.xw;
+
+    // on cherche le cas le plus contraignant : priorité vent arrière, puis travers
+    if (absTail > worst.val) worst = { type: 'arrière', val: absTail, dir: d };
+    else if (absTail === 0 && absX > worst.val) worst = { type: 'travers', val: absX, dir: d };
   }
+
+  xwElem.innerHTML =
+    Math.round(comp.xw) + ' kt\n' +
+    Math.round(worst.val) + ' kt ' + worst.type + ' (' + pad3(worst.dir) + '°) sur ' + pad3(f) + 'V' + pad3(t);
+
+  crosswindLimitColor(side, worst.val);
+}
 
   // === Mise à jour TODA/LDA ===
   if (side === 'dep') {
