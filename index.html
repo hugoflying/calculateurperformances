@@ -749,10 +749,49 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
   document.getElementById(side + 'Tw').textContent = Math.round(Math.max(0, -w.headwindForFactor));
 
   // === Vent de travers ===
-  var xwElem = document.getElementById(side + 'Xw');
+    var xwElem = document.getElementById(side + 'Xw');
   var fEl = document.getElementById(side + 'VrbFrom');
   var tEl = document.getElementById(side + 'VrbTo');
-  var hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
+
+  // Si les champs sont vides, on les considère comme inexistants
+  var hasSector = false;
+  var f = null, t = null;
+  if (fEl.value.trim() && tEl.value.trim() && validateVrb(side)) {
+    f = parseInt(fEl.value, 10);
+    t = parseInt(tEl.value, 10);
+    hasSector = true;
+  }
+
+  if (hasSector) {
+    var G = Math.max(kt, gust);
+    var step = 5;
+    var worst = { type: '', val: 0, dir: f };
+
+    for (var d = f; (d - t + 360) % 360 >= 0 ? d <= t : (d + 360) % 360 <= (t + 360) % 360; d = (d + step) % 360) {
+      var c = compsFrom(qfu, d, G);
+      var absTail = Math.max(c.tail, 0);
+      var absFace = Math.max(c.face, 0);
+      var absX = c.xw;
+
+      // on cherche le cas le plus contraignant : priorité vent arrière, puis travers
+      if (absTail > worst.val) worst = { type: 'arrière', val: absTail, dir: d };
+      else if (absTail === 0 && absX > worst.val) worst = { type: 'travers', val: absX, dir: d };
+    }
+
+    xwElem.innerHTML =
+      Math.round(comp.xw) + ' kt\n' +
+      Math.round(worst.val) + ' kt ' + worst.type + ' (' + pad3(worst.dir) + '°) sur ' + pad3(f) + 'V' + pad3(t);
+
+    crosswindLimitColor(side, worst.val);
+  } else {
+    // si pas de secteur → recalcul normal sur vent principal
+    var G = Math.max(kt, gust);
+    var cMean = compsFrom(qfu, dirDisp, kt);
+    var cGust = compsFrom(qfu, dirDisp, G);
+    var worstX = Math.round(Math.max(cMean.xw, cGust.xw));
+    xwElem.textContent = worstX + ' kt';
+    crosswindLimitColor(side, worstX);
+  }
 
   if (hasSector) {
   var f = parseInt(fEl.value, 10), t = parseInt(tEl.value, 10);
