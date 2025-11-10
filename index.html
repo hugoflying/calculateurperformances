@@ -617,6 +617,18 @@ if (data && data.remarks && typeof data.remarks === "string" && qfu) {
     return ok;
   }
 
+  // === Déclenche recalcul du vent quand on modifie manuellement les champs ===
+['dep', 'arr'].forEach(side => {
+  ['WindDir', 'WindKt', 'WindGust', 'VrbFrom', 'VrbTo'].forEach(suffix => {
+    const el = document.getElementById(side + suffix);
+    if (el) {
+      el.addEventListener('input', () => updateWindDisplay(side));
+      el.addEventListener('blur', () => updateWindDisplay(side));
+    }
+  });
+});
+
+
   /* ===================== COMPOSANTES & affichage ===================== */
   function dirForDisplay(dirField, sector){
     var t=(dirField||'').trim().toUpperCase();
