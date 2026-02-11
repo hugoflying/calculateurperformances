@@ -3,103 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CALCULCATEUR DE PERFORMANCES</title>
+  <title>CALCULATEUR DE PERFORMANCES</title>
+
+  <!-- BULMA -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
+  <!-- Overrides / styles spécifiques (KPI + impression + 2-3 ajustements) -->
   <style>
     :root{
-      --bg:#e9ecf3; --card:#fff; --ink:#0f172a; --muted:#6b7280;
-      --ok:#16a34a; --bad:#dc2626;
-      --line:#d1d5db; --primary:#0b3b86; --primaryText:#ffffff; --green:#16a34a;
+      --ok:#16a34a;
+      --bad:#dc2626;
       --warn-yellow-bg:#fff7ed; --warn-yellow-border:#fbbf24;
       --warn-red-bg:#fef2f2; --warn-red-border:#ef4444;
-      --banner:#081a4f; --btnGrey:#f3f4f6;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
 
-    .banner{
-      background:var(--primary);color:var(--primaryText);
-      padding:14px 16px;margin:0 0 12px 0;border-radius:16px;
-    }
-    .banner h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
+    /* Espacements un peu plus "aérés" */
+    .section { padding-top: 1.25rem; padding-bottom: 1.25rem; }
 
-    h2{font-size:18px;margin:0 0 .6rem 0}
-    .container{max-width:1200px;margin:0 auto;padding:16px}
-
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .card>h2{ text-align:center } /* titres centrés */
-
-    input, select, button.btn{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
-      padding:10px 12px;
-      min-height:44px;
-      line-height:1.2;
-      -webkit-appearance:none; appearance:none;
-      font:inherit;
-    }
-    select{background-image:none}
-    .btn{cursor:pointer}
-    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-    .btn.grey{background:var(--btnGrey);border-color:var(--line);color:var(--ink); font-weight:700;} /* imprimer en gras */
-    .btn.metar{font-weight:700; font-size:.9em;} /* gras + légèrement plus petit */
-    .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-    .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
-    .btn.block{display:block;width:100%;text-align:center}
-
-    label{display:block;font-size:12px;color:var(--muted)}
-    .inline{display:flex;gap:8px;align-items:flex-end}
-    .inline > label{flex:1}
-
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-
-    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-top:10px}
-    .rowline .group{display:flex;flex-direction:column;gap:8px;flex-basis:48%;align-items:center}
-    .group .buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-    .group.centered>label{text-align:center}
-
-    .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
-    .muted{color:var(--muted)}
-    .note{font-size:12px;margin-top:6px}
+    /* Petits textes */
+    .note{font-size:12px}
     .mini-note{font-size:11px}
 
-    .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
+    /* KPI */
+    .kpi{
+      display:flex;align-items:center;justify-content:space-between;
+      border:1px solid #dbdbdb;border-radius:16px;padding:14px 16px;margin:8px 0;
+      background:#fff;
+    }
     .kpi .left{display:flex;flex-direction:column}
-    .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
+    .kpi .title{font-size:12px;color:#6b7280;letter-spacing:.02em}
     .kpi .value{font-size:26px;font-weight:800;line-height:1.1}
-    .kpi .sub{font-size:12px;color:var(--muted)}
+    .kpi .sub{font-size:12px;color:#6b7280}
     .kpi.ok{background:#ecfdf5;border-color:#86efac}
     .kpi.bad{background:#fef2f2;border-color:#fecaca}
-    .chip{padding:6px 10px;border-radius:999px;border:1px solid;font-weight:800}
+
+    /* Chips (statuts) */
+    .chip{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:6px 10px;border-radius:999px;border:1px solid #dbdbdb;font-weight:800;
+      background:#f5f5f5; color:#363636;
+      white-space:nowrap;
+    }
     .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
-    .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+    .chip.neutral{background:#f5f5f5;color:#363636;border-color:#dbdbdb}
 
-    .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
-    .field .k{font-size:12px;color:var(--muted)}
-    .field .v{margin-top:4px;font-weight:600;white-space:pre-line}
+    /* Petites "cases" de résultat (vent face/travers/arrière + détails) */
+    .fieldbox{
+      border:1px solid #dbdbdb;border-radius:12px;background:#fafafa;padding:10px;
+    }
+    .fieldbox .k{font-size:12px;color:#6b7280}
+    .fieldbox .v{margin-top:4px;font-weight:600;white-space:pre-line}
 
+    /* Avertissements / invalid */
     .warn-yellow{background:var(--warn-yellow-bg)!important;border-color:var(--warn-yellow-border)!important}
     .warn-red{background:var(--warn-red-bg)!important;border-color:var(--warn-red-border)!important}
     .invalid{border-color:var(--bad)!important}
-
-    /* Grille principale */
-    .gridAll{
-      display:grid; gap:16px; grid-template-columns:1fr;
-      grid-template-areas:"dep" "depperf" "arr" "arrperf";
-    }
-    #cardDep{grid-area:dep}
-    #cardDepPerf{grid-area:depperf}
-    #cardArr{grid-area:arr}
-    #cardArrPerf{grid-area:arrperf}
-    @media(min-width:768px){
-      .gridAll{
-        grid-template-columns:1fr 1fr;
-        grid-template-areas:"dep arr" "depperf arrperf";
-      }
-    }
 
     /* Impression */
     #printRaw{display:none}
@@ -111,7 +70,7 @@
       background:#000; color:#fff; padding:8px 12px; border-radius:12px;
       display:inline-block; font-weight:700; margin:2mm 0 4mm 0;
     }
-    .section{margin:4mm 0}
+    .sectionPrint{margin:4mm 0}
     .kv{display:grid;grid-template-columns:42% 58%;gap:4px 8px;align-items:baseline}
     .kv .k{color:#374151}
     .kv .v{font-weight:600}
@@ -120,7 +79,6 @@
       background:#f7f7f7;border:1px solid #ddd;border-radius:8px;padding:8px;white-space:pre-wrap;word-break:break-word;font-size:10pt;
     }
     .b{font-weight:700}
-
     .page{page-break-after:always}
     .page:last-child{page-break-after:auto}
 
@@ -132,268 +90,502 @@
     }
   </style>
 </head>
+
 <body>
-<div class="container" id="appRoot">
-  <div class="banner">
-    <h1>CALCULCATEUR DE PERFORMANCES</h1>
+  <div id="appRoot">
+    <!-- Bandeau -->
+    <section class="hero is-link">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title has-text-centered">CALCULATEUR DE PERFORMANCES</h1>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+
+        <!-- Paramètres généraux -->
+        <div class="box">
+          <h2 class="title is-5 has-text-centered">Paramètres généraux</h2>
+
+          <div class="columns is-multiline">
+            <div class="column is-6">
+              <div class="field">
+                <label class="label">Avion</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="aircraftSel">
+                      <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
+                      <option value="F-BXEK (120cv)">F-BXEK (120cv)</option>
+                      <option value="F-BTKG (120cv)">F-BTKG (120cv)</option>
+                      <option value="F-BTXS (120cv)">F-BTXS (120cv)</option>
+                      <option value="F-BTBS (120cv)">F-BTBS (120cv)</option>
+                      <option value="F-BTBJ (108cv)">F-BTBJ (108cv)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-6">
+              <div class="field">
+                <label class="label">Hélice</label>
+                <div class="control">
+                  <input id="propeller" class="input" value="Sensenich" readonly />
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-6">
+              <div class="field">
+                <label class="label">Marge sécurité (%)</label>
+                <div class="control">
+                  <input id="safety" class="input" type="number" inputmode="numeric" value="30" min="0"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-6">
+              <div class="field">
+                <label class="label">&nbsp;</label>
+                <div class="control">
+                  <button id="btnPrint" class="button is-light is-fullwidth has-text-weight-bold">Imprimer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 colonnes (dep/arr) -->
+        <div class="columns is-variable is-4 is-multiline">
+
+          <!-- Départ -->
+          <div class="column is-12-tablet is-6-desktop">
+            <div class="box" id="cardDep">
+              <h2 class="title is-5 has-text-centered">Terrain de départ</h2>
+
+              <div class="columns is-mobile is-variable is-2">
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">ICAO départ</label>
+                    <div class="control">
+                      <input id="depIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Élévation (ft)</label>
+                    <div class="control">
+                      <input id="depAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4 is-flex is-align-items-flex-end">
+                  <button id="btnDepMetar" class="button is-info is-fullwidth has-text-weight-bold is-small">Charger METAR</button>
+                </div>
+              </div>
+
+              <div id="depMetarMsg" class="has-text-grey note"></div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">QFU départ (°)</label>
+                    <div class="control">
+                      <input id="depQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">TODA (m)</label>
+                    <div class="control">
+                      <input id="depToda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">ASDA (m)</label>
+                    <div class="control">
+                      <input id="depAsda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Vent — Direction (° ou "VRB")</label>
+                    <div class="control">
+                      <input id="depWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Vent — Vitesse (kt)</label>
+                    <div class="control">
+                      <input id="depWindKt" class="input" type="number" inputmode="numeric" min="0" step="1" value="0"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Rafales (kt)</label>
+                    <div class="control">
+                      <input id="depWindGust" class="input" type="number" inputmode="numeric" min="0" step="1" value="0"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-8">
+                  <div class="field">
+                    <label class="label">Secteur VRB (optionnel)</label>
+                    <div class="control">
+                      <div class="columns is-mobile is-variable is-1">
+                        <div class="column">
+                          <input id="depVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+                        </div>
+                        <div class="column is-narrow is-flex is-align-items-center has-text-weight-bold has-text-grey">
+                          V
+                        </div>
+                        <div class="column">
+                          <input id="depVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">OAT (°C)</label>
+                    <div class="control">
+                      <input id="depOat" class="input" type="number" inputmode="numeric" value="15"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-4">
+                  <div class="fieldbox">
+                    <div class="k">Vent de face</div>
+                    <div class="v"><span id="depHwFace">—</span> kt</div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div id="depXwCard" class="fieldbox">
+                    <div class="k">Vent de travers</div>
+                    <div class="v" id="depXw">—</div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="fieldbox">
+                    <div class="k">Vent arrière</div>
+                    <div class="v"><span id="depTw">—</span> kt</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-6">
+                  <div class="field has-text-centered">
+                    <label class="label">Carénages de roues</label>
+                    <div class="buttons is-centered">
+                      <button id="spatsWith" class="button is-link is-light">Avec</button>
+                      <button id="spatsWithout" class="button is-light">Sans</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-6">
+                  <div class="field has-text-centered">
+                    <label class="label">Surface piste</label>
+                    <div class="buttons is-centered">
+                      <button id="depSurfHard" class="button is-link is-light">Dur</button>
+                      <button id="depSurfGrass" class="button is-success is-light">Herbe</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">Masse au décollage (kg)</label>
+                    <div class="control">
+                      <input id="depTow" class="input" type="number" inputmode="numeric" value="900"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">Facteur suppl. décollage</label>
+                    <div class="control">
+                      <input id="depExtraTO" class="input" type="number" inputmode="numeric" step="0.01" value="1.00"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button id="btnCalcDep" class="button is-link is-fullwidth mt-3">Calculer les performances décollage</button>
+            </div>
+          </div>
+
+          <!-- Décollage perf -->
+          <div class="column is-12-tablet is-6-desktop">
+            <div class="box" id="cardDepPerf">
+              <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <h2 class="title is-5 has-text-centered" style="flex:1">Décollage : performances calculées</h2>
+                <span id="toChip" class="chip neutral">—</span>
+              </div>
+
+              <div id="toKpi" class="kpi">
+                <div class="left">
+                  <span class="title">Requis (marge incluse)</span>
+                  <span class="value" id="toKpiVal">— m</span>
+                  <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
+                </div>
+              </div>
+
+              <div class="columns is-multiline is-variable is-2">
+                <div class="column is-6"><div class="fieldbox"><div class="k">Roulement (sans marge)</div><div id="toBaseRoll" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Passage des 15m (sans marge)</div><div id="toBasePass" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div></div>
+              </div>
+
+              <div id="toExplain" class="has-text-grey mini-note"></div>
+            </div>
+          </div>
+
+          <!-- Arrivée -->
+          <div class="column is-12-tablet is-6-desktop">
+            <div class="box" id="cardArr">
+              <h2 class="title is-5 has-text-centered">Terrain d'arrivée</h2>
+
+              <div class="columns is-mobile is-variable is-2">
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">ICAO arrivée</label>
+                    <div class="control">
+                      <input id="arrIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Élévation (ft)</label>
+                    <div class="control">
+                      <input id="arrAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4 is-flex is-align-items-flex-end">
+                  <button id="btnArrMetar" class="button is-info is-fullwidth has-text-weight-bold is-small">Charger METAR</button>
+                </div>
+              </div>
+
+              <div id="arrMetarMsg" class="has-text-grey note"></div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">QFU arrivée (°)</label>
+                    <div class="control">
+                      <input id="arrQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">LDA (m)</label>
+                    <div class="control">
+                      <input id="arrLda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Vent — Direction (° ou "VRB")</label>
+                    <div class="control">
+                      <input id="arrWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Vent — Vitesse (kt)</label>
+                    <div class="control">
+                      <input id="arrWindKt" class="input" type="number" inputmode="numeric" min="0" step="1" value="0"/>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">Rafales (kt)</label>
+                    <div class="control">
+                      <input id="arrWindGust" class="input" type="number" inputmode="numeric" min="0" step="1" value="0"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-8">
+                  <div class="field">
+                    <label class="label">Secteur VRB (optionnel)</label>
+                    <div class="control">
+                      <div class="columns is-mobile is-variable is-1">
+                        <div class="column">
+                          <input id="arrVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+                        </div>
+                        <div class="column is-narrow is-flex is-align-items-center has-text-weight-bold has-text-grey">
+                          V
+                        </div>
+                        <div class="column">
+                          <input id="arrVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="field">
+                    <label class="label">OAT (°C)</label>
+                    <div class="control">
+                      <input id="arrOat" class="input" type="number" inputmode="numeric" value="15"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-4">
+                  <div class="fieldbox">
+                    <div class="k">Vent de face</div>
+                    <div class="v"><span id="arrHwFace">—</span> kt</div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div id="arrXwCard" class="fieldbox">
+                    <div class="k">Vent de travers</div>
+                    <div class="v" id="arrXw">—</div>
+                  </div>
+                </div>
+
+                <div class="column is-4">
+                  <div class="fieldbox">
+                    <div class="k">Vent arrière</div>
+                    <div class="v"><span id="arrTw">—</span> kt</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field has-text-centered">
+                <label class="label">Type de freinage</label>
+                <div class="buttons is-centered">
+                  <button id="arrModerate" class="button is-link is-light">Freinage modéré (dur/herbe)</button>
+                  <button id="arrNoBrake" class="button is-success is-light">Sans frein sur herbe</button>
+                </div>
+              </div>
+
+              <div class="columns is-variable is-2">
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">Masse à l'atterrissage (kg)</label>
+                    <div class="control">
+                      <input id="arrLdw" class="input" type="number" inputmode="numeric" value="900"/>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="column is-6">
+                  <div class="field">
+                    <label class="label">Facteur suppl. atterrissage</label>
+                    <div class="control">
+                      <input id="arrExtraLDG" class="input" type="number" inputmode="numeric" step="0.01" value="1.00"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button id="btnCalcArr" class="button is-link is-fullwidth mt-3">Calculer les performances atterrissage</button>
+            </div>
+          </div>
+
+          <!-- Atterrissage perf -->
+          <div class="column is-12-tablet is-6-desktop">
+            <div class="box" id="cardArrPerf">
+              <div class="is-flex is-justify-content-space-between is-align-items-center">
+                <h2 class="title is-5 has-text-centered" style="flex:1">Atterrissage : performances calculées</h2>
+                <span id="ldgChip" class="chip neutral">—</span>
+              </div>
+
+              <div id="ldgKpi" class="kpi">
+                <div class="left">
+                  <span class="title">Requis (marge incluse)</span>
+                  <span class="value" id="ldgKpiVal">— m</span>
+                  <span class="sub">LDA dispo : <span id="ldaMini">—</span></span>
+                </div>
+              </div>
+
+              <div class="columns is-multiline is-variable is-2">
+                <div class="column is-6"><div class="fieldbox"><div class="k">Roulement (sans marge)</div><div id="ldgBaseRoll" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Passage des 15m (sans marge)</div><div id="ldgBasePass" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div></div>
+                <div class="column is-6"><div class="fieldbox"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div></div>
+                <div class="column is-12"><div class="fieldbox"><div class="k" id="ldgResLabel">Résultat</div><div id="ldgRes" class="v">—</div></div></div>
+              </div>
+
+              <div id="ldgExplain" class="has-text-grey mini-note"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Crédits -->
+        <p class="has-text-grey has-text-centered" style="font-size:11px">
+          <span>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</span><br>
+          <span>Développé par Hugo DERUELLE avec l'aide de l'IA</span>
+        </p>
+
+      </div>
+    </section>
   </div>
 
-  <section class="card" style="margin-top:4px">
-    <h2>Paramètres généraux</h2>
-    <div class="grid2">
-      <!-- Ligne 1 -->
-      <label>Avion
-        <select id="aircraftSel">
-          <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
-          <option value="F-BXEK (120cv)">F-BXEK (120cv)</option>
-          <option value="F-BTKG (120cv)">F-BTKG (120cv)</option>
-          <option value="F-BTXS (120cv)">F-BTXS (120cv)</option>
-          <option value="F-BTBS (120cv)">F-BTBS (120cv)</option>
-          <option value="F-BTBJ (108cv)">F-BTBJ (108cv)</option>
-        </select>
-      </label>
-      <label>Hélice
-        <input id="propeller" value="Sensenich" readonly />
-      </label>
-      <!-- Ligne 2 : alignement print -->
-      <label>Marge sécurité (%)
-        <input id="safety" type="number" inputmode="numeric" value="30" min="0"/>
-      </label>
-      <label>&nbsp;
-        <button id="btnPrint" class="btn grey">Imprimer</button>
-      </label>
-    </div>
-  </section>
+  <datalist id="dirOptions"><option value="VRB"></option></datalist>
 
-  <div class="gridAll" style="margin-top:12px">
-    <!-- Départ -->
-    <section class="card" id="cardDep">
-      <h2>Terrain de départ</h2>
-      <div class="inline">
-        <label style="flex:0.6">ICAO départ
-          <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
-        </label>
-        <label style="flex:0.6">Élévation (ft)
-          <input id="depAlt" type="number" inputmode="numeric" min="0" step="10" value="0" />
-        </label>
-        <button id="btnDepMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
-      </div>
-      <div id="depMetarMsg" class="muted note"></div>
+  <!-- Impression -->
+  <section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
 
-      <div class="grid3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top:10px">
-  <label>QFU départ (°)
-    <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
-  </label>
-  <label>TODA (m)
-    <input id="depToda" type="text" inputmode="numeric" pattern="[0-9]*" />
-  </label>
-  <label>ASDA (m)
-    <input id="depAsda" type="text" inputmode="numeric" pattern="[0-9]*" />
-  </label>
-</div>
-      <div class="grid3" style="margin-top:10px">
-        <label>Vent — Direction (° ou "VRB")
-          <input id="depWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
-        </label>
-        <label>Vent — Vitesse (kt)
-          <input id="depWindKt" type="number" inputmode="numeric" min="0" step="1" value="0"/>
-        </label>
-        <label>Rafales (kt)
-          <input id="depWindGust" type="number" inputmode="numeric" min="0" step="1" value="0"/>
-        </label>
-      </div>
+  <script>
 
-      <div class="grid2" style="margin-top:10px">
-        <label>Secteur VRB (optionnel)
-          <div class="vrbFlex" style="display:flex;gap:8px;align-items:center">
-            <input id="depVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
-            <span class="vrbSep" style="font-weight:700;color:#6b7280">V</span>
-            <input id="depVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
-          </div>
-        </label>
-        <label>OAT (°C)
-          <input id="depOat" type="number" inputmode="numeric" value="15"/>
-        </label>
-      </div>
-
-      <div class="grid3" style="margin-top:10px">
-        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">—</span> kt</div></div>
-        <div id="depXwCard" class="field">
-          <div class="k">Vent de travers</div>
-          <div class="v" id="depXw">—</div>
-        </div>
-        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
-      </div>
-
-      <div class="rowline">
-        <div class="group centered">
-          <label>Carénages de roues</label>
-          <div class="buttons">
-            <button id="spatsWith" class="btn toggle on">Avec</button>
-            <button id="spatsWithout" class="btn toggle">Sans</button>
-          </div>
-        </div>
-        <div class="group centered">
-          <label>Surface piste</label>
-          <div class="buttons">
-            <button id="depSurfHard" class="btn toggle on">Dur</button>
-            <button id="depSurfGrass" class="btn toggle grass">Herbe</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid2" style="margin-top:12px">
-        <label>Masse au décollage (kg)
-          <input id="depTow" type="number" inputmode="numeric" value="900"/>
-        </label>
-        <label>Facteur suppl. décollage
-          <input id="depExtraTO" type="number" inputmode="numeric" step="0.01" value="1.00"/>
-        </label>
-      </div>
-
-      <button id="btnCalcDep" class="btn primary block" style="margin-top:14px">Calculer les performances décollage</button>
-    </section>
-
-    <!-- Décollage : performances -->
-    <section class="card" id="cardDepPerf">
-      <div class="header">
-        <h2 style="width:100%; text-align:center">Décollage : performances calculées</h2>
-        <span id="toChip" class="chip neutral">—</span>
-      </div>
-      <div id="toKpi" class="kpi">
-        <div class="left">
-          <span class="title">Requis (marge incluse)</span>
-          <span class="value" id="toKpiVal">— m</span>
-          <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
-        </div>
-      </div>
-      <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Roulement (sans marge)</div><div id="toBaseRoll" class="v">—</div></div>
-        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="toBasePass" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
-        <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
-        <div class="field"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div>
-      </div>
-      <div id="toExplain" class="muted mini-note"></div>
-    </section>
-
-    <!-- Arrivée -->
-    <section class="card" id="cardArr">
-      <h2>Terrain d'arrivée</h2>
-      <div class="inline">
-        <label style="flex:0.6">ICAO arrivée
-          <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
-        </label>
-        <label style="flex:0.6">Élévation (ft)
-          <input id="arrAlt" type="number" inputmode="numeric" min="0" step="10" value="0" />
-        </label>
-        <button id="btnArrMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
-      </div>
-      <div id="arrMetarMsg" class="muted note"></div>
-
-      <div class="grid2" style="margin-top:10px">
-        <label>QFU arrivée (°)
-          <input id="arrQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
-        </label>
-        <label>LDA (m)
-          <input id="arrLda" type="text" inputmode="numeric" pattern="[0-9]*" />
-        </label>
-      </div>
-
-      <div class="grid3" style="margin-top:10px">
-        <label>Vent — Direction (° ou "VRB")
-          <input id="arrWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
-        </label>
-        <label>Vent — Vitesse (kt)
-          <input id="arrWindKt" type="number" inputmode="numeric" min="0" step="1" value="0"/>
-        </label>
-        <label>Rafales (kt)
-          <input id="arrWindGust" type="number" inputmode="numeric" min="0" step="1" value="0"/>
-        </label>
-      </div>
-
-      <div class="grid2" style="margin-top:10px">
-        <label>Secteur VRB (optionnel)
-          <div class="vrbFlex" style="display:flex;gap:8px;align-items:center">
-            <input id="arrVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
-            <span class="vrbSep" style="font-weight:700;color:#6b7280">V</span>
-            <input id="arrVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
-          </div>
-        </label>
-        <label>OAT (°C)
-          <input id="arrOat" type="number" inputmode="numeric" value="15"/>
-        </label>
-      </div>
-
-      <div class="grid3" style="margin-top:10px">
-        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">—</span> kt</div></div>
-        <div id="arrXwCard" class="field">
-          <div class="k">Vent de travers</div>
-          <div class="v" id="arrXw">—</div>
-        </div>
-        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">—</span> kt</div></div>
-      </div>
-
-      <div class="grid1" style="margin-top:10px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-          <label>Type de freinage</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
-            <button id="arrModerate" class="btn toggle on">Freinage modéré (dur/herbe)</button>
-            <button id="arrNoBrake" class="btn toggle grass">Sans frein sur herbe</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid2" style="margin-top:12px">
-        <label>Masse à l'atterrissage (kg)
-          <input id="arrLdw" type="number" inputmode="numeric" value="900"/>
-        </label>
-        <label>Facteur suppl. atterrissage
-          <input id="arrExtraLDG" type="number" inputmode="numeric" step="0.01" value="1.00"/>
-        </label>
-      </div>
-
-      <button id="btnCalcArr" class="btn primary block" style="margin-top:14px">Calculer les performances atterrissage</button>
-    </section>
-
-    <!-- Atterrissage : performances -->
-    <section class="card" id="cardArrPerf">
-      <div class="header">
-        <h2 style="width:100%; text-align:center">Atterrissage : performances calculées</h2>
-        <span id="ldgChip" class="chip neutral">—</span>
-      </div>
-      <div id="ldgKpi" class="kpi">
-        <div class="left">
-          <span class="title">Requis (marge incluse)</span>
-          <span class="value" id="ldgKpiVal">— m</span>
-          <span class="sub">LDA dispo : <span id="ldaMini">—</span></span>
-        </div>
-      </div>
-      <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Roulement (sans marge)</div><div id="ldgBaseRoll" class="v">—</div></div>
-        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="ldgBasePass" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
-        <div class="field"><div class="k" id="ldgResLabel">Résultat</div><div id="ldgRes" class="v">—</div></div>
-      </div>
-      <div id="ldgExplain" class="muted mini-note"></div>
-    </section>
-  </div>
-
-  <!-- Crédits (web seulement) -->
-  <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
-    <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
-    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
-  </div>
-</div>
-
-<datalist id="dirOptions"><option value="VRB"></option></datalist>
-
-<!-- Impression -->
-<section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
-
-<script>
   /* ===================== DONNÉES ===================== */
   const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
   const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
