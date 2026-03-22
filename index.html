@@ -260,14 +260,6 @@
                 </div>
               </div>
             </div>
-            <div class="column">
-              <div class="field">
-                <label class="label is-small">ASDA (m)</label>
-                <div class="control">
-                  <input id="depAsda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Vent -->
@@ -799,7 +791,6 @@ function normQFU(val) {
 
 /* ===================== TODA / LDA sanitize ===================== */
 $('#depToda').addEventListener('input', () => { const s=$('#depToda').value.replace(/\D/g,''); $('#depToda').value=s; });
-$('#depAsda').addEventListener('input', () => { const s=$('#depAsda').value.replace(/\D/g,''); $('#depAsda').value=s; });
 $('#arrLda').addEventListener('input',  () => { const s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
 /* ===================== MASSE — warning hors plage ===================== */
@@ -984,12 +975,14 @@ function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sect
   }
 
   if (sectorFrom && sectorTo) {
+    // Balayage complet du secteur par pas de 1° — garantit le cas le plus contraignant
     const from = sectorFrom % 360, to = sectorTo % 360;
-    const mid  = (from + (((to - from + 360) % 360) / 2)) % 360;
-    [from, to, mid].forEach(d => {
+    const span = ((to - from + 360) % 360);
+    for (let i = 0; i <= span; i++) {
+      const d = (from + i) % 360;
       const cM = comps(d, V), cG = comps(d, G);
       candidates.push({ hwSigned: Math.min(cM.hwSigned, cG.hwSigned), xw: Math.max(cM.xw, cG.xw), dir: d });
-    });
+    }
   }
 
   let worst = candidates[0] || comps((q + 180) % 360, G);
