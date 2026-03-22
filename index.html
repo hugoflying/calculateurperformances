@@ -195,7 +195,53 @@
     @media (max-width: 1023px) {
       .column.tab-col.hidden-mobile { display: none !important; }
     }
-    .credits { text-align: center; font-size: .68rem; color: #9ca3af; margin-top: 1.25rem; padding-bottom: 2rem; }
+    .credits { text-align: center; font-size: .68rem; color: #9ca3af; margin-top: 1.25rem; padding-bottom: .75rem; }
+
+    /* ── README accordéon ── */
+    .readme-wrap { max-width: 860px; margin: 0 auto; }
+    .readme-toggle {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: .8rem 1.2rem;
+      font-size: .85rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      text-align: left;
+      letter-spacing: .03em;
+      transition: background .15s;
+    }
+    .readme-toggle:hover { background: #e2e8f0; }
+    .readme-body {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: .5rem;
+    }
+    .readme-section { margin-bottom: 1.4rem; }
+    .readme-section:last-child { margin-bottom: 0; }
+    .readme-section h3 {
+      font-size: .85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--navy);
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: .35rem;
+      margin-bottom: .6rem;
+    }
+    .readme-section p, .readme-section li {
+      font-size: .82rem;
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: .4rem;
+    }
+    .readme-section ul, .readme-section ol { padding-left: 1.2rem; margin-bottom: .4rem; }
+    .readme-section li { margin-bottom: .2rem; }
+    @media print { .readme-wrap { display: none !important; } }
 
     /* ── PRINT ── */
     #printRaw { display: none; }
@@ -763,7 +809,121 @@
     <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
   </div>
 
-</div><!-- #appRoot -->
+  <!-- README accordéon -->
+  <div class="readme-wrap mt-4 mb-5">
+    <button class="readme-toggle" onclick="toggleReadme()" id="readmeBtn">
+      <span id="readmeArrow">▸</span> Documentation — comment fonctionnent les calculs
+    </button>
+    <div id="readmeBody" class="readme-body" style="display:none">
+
+      <div class="readme-section">
+        <h3>Vue d'ensemble</h3>
+        <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes et ne sont jamais modifiées — seule l'interpolation entre les points du tableau varie selon les paramètres saisis.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Profils avion</h3>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK, F-BTBS, F-BTBJ) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
+        <p><strong>DR300</strong> (F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
+        <p>L'hélice associée à chaque avion (Sensenich ou Mac Cauley) est renseignée automatiquement à titre informatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Interpolation des performances</h3>
+        <p>Les performances sont calculées par <strong>interpolation linéaire triple</strong> : altitude-densité × température × masse.</p>
+        <ol>
+          <li><strong>Température</strong> : interpolation entre les 3 colonnes du manuel (ISA−20, ISA, ISA+20) selon l'OAT saisie.</li>
+          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes (ex. 2 000 ft → interpolation entre 0 et 4 000 ft).</li>
+          <li><strong>Masse</strong> : interpolation linéaire entre 700 kg et 900 kg. Si la masse est hors de cette plage, les valeurs limites du manuel sont utilisées (comportement conservateur). Un avertissement s'affiche dans ce cas.</li>
+        </ol>
+        <p>La distance de référence utilisée pour le calcul est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), pas le simple roulement. Le roulement est affiché à titre indicatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Composantes vent</h3>
+        <p>Pour un QFU donné et une direction de vent, les composantes sont calculées trigonométriquement :</p>
+        <ul>
+          <li><strong>Vent de face</strong> = V × cos(angle) — positif si face, négatif si arrière</li>
+          <li><strong>Vent de travers</strong> = |V × sin(angle)|</li>
+          <li><strong>Vent arrière</strong> = max(0, −vent de face)</li>
+        </ul>
+        <p>où <em>angle</em> est la différence entre la direction du vent et le cap de la piste (QFU), ramenée à [0°, 180°].</p>
+        <p>Une alerte <span style="color:#b45309;font-weight:700">orange</span> s'affiche si le vent de travers atteint 18 kt, et <span style="color:#dc2626;font-weight:700">rouge</span> à partir de 22 kt.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Vent variable (secteur VRB)</h3>
+        <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
+        <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
+        <p>L'affichage dans la cellule "Vent de travers" indique :</p>
+        <ul>
+          <li>Le travers moyen (vent moyen, direction principale)</li>
+          <li>Le travers maximal sur l'ensemble du secteur, avec la direction qui le produit</li>
+        </ul>
+      </div>
+
+      <div class="readme-section">
+        <h3>METAR automatique</h3>
+        <p>Le bouton "Charger METAR" interroge l'API <strong>AVWX</strong> (avwx.rest) avec le code ICAO saisi. Les données suivantes sont extraites et appliquées automatiquement :</p>
+        <ul>
+          <li>Direction et vitesse du vent, rafales</li>
+          <li>Secteur variable (ex. 340V040 dans le METAR brut)</li>
+          <li>Température OAT</li>
+          <li>Élévation de la station (en pieds)</li>
+        </ul>
+        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
+        <p><strong>TEMPO</strong> : si le METAR contient une évolution temporaire (groupe TEMPO) avec un vent plus défavorable que le vent moyen (plus de vent arrière ou de vent de travers), le TEMPO remplace automatiquement le vent principal pour les calculs.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur vent</h3>
+        <p>Le vent de face réduit la distance requise ; le vent arrière l'augmente. Le facteur est calculé à partir d'une table issue du manuel :</p>
+        <ul>
+          <li><strong>Vent de face</strong> : interpolation linéaire entre les points (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
+          <li><strong>Vent arrière</strong> : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
+        </ul>
+        <p>Le facteur vent est appliqué à la distance de passage des 15 m avant l'application de la marge de sécurité.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Hypothèse 5 kt arrière</h3>
+        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt (c'est-à-dire quand le vent réel est de face ou nul). Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations :</p>
+        <ul>
+          <li>Si activée, la composante utilisée pour le facteur vent est forcée à −5 kt (vent arrière).</li>
+          <li>Si le vent réel (moyen, rafale, secteur VRB ou TEMPO) est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</li>
+        </ul>
+      </div>
+
+      <div class="readme-section">
+        <h3>Carénages de roues</h3>
+        <p>Sans carénages, un coefficient de <strong>+3 %</strong> est appliqué à la distance de décollage (passage des 15 m). Ce facteur n'est appliqué qu'au décollage, pas à l'atterrissage.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Surface de piste</h3>
+        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe.</p>
+        <p>Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Marge de sécurité</h3>
+        <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
+        <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
+        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est celle à comparer avec la TODA ou LDA disponible. Le résultat "sans marge" est également affiché à titre informatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur supplémentaire</h3>
+        <p>Ce multiplicateur (1,00 par défaut) est appliqué avant la marge de sécurité. Il permet d'intégrer tout coefficient non couvert par les autres paramètres : piste contaminée, pilote en formation, procédure d'exploitation particulière, etc.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Impression</h3>
+        <p>Le bouton "Imprimer" génère une mise en page A4 optimisée (2 pages : départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et sur fond <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. La mise en page web est masquée à l'impression, seule la fiche A4 s'imprime.</p>
+      </div>
+
+    </div><!-- /readme-body -->
+  </div><!-- /readme-wrap -->
 
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
 <section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
@@ -1640,6 +1800,15 @@ document.getElementById('btnPrint').addEventListener('click', () => {
   document.getElementById('rawPre').innerHTML = buildPrintHTML();
   window.print();
 });
+
+/* ===================== README accordéon ===================== */
+function toggleReadme() {
+  const body  = document.getElementById('readmeBody');
+  const arrow = document.getElementById('readmeArrow');
+  const open  = body.style.display === 'none';
+  body.style.display  = open ? 'block' : 'none';
+  arrow.textContent   = open ? '▾' : '▸';
+}
 
 /* ===================== TOGGLE MOBILE DEP / ARR ===================== */
 function switchTab(tab) {
