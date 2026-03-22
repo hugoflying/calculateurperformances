@@ -240,6 +240,31 @@
     .tab-section { display: none; }
     .tab-section.active { display: block; }
 
+    /* ── Time-wrap (−1 / NOW / +1) ── */
+    .nl-time-wrap { position: relative; display: block; border-radius: 8px; overflow: hidden; }
+    .nl-tw-display {
+      width: 100%; text-align: center; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: .82rem; cursor: default; user-select: none;
+      border: 1.5px solid #d1d5db; border-radius: 8px; background: #f8fafc;
+      height: 36px; min-height: 36px; transition: border-color .15s, background .15s;
+    }
+    .nl-tw-display.filled { background: #ecfdf5; border-color: var(--green-border); color: var(--green-ok); }
+    .nl-tw-display.late   { background: #fef2f2; border-color: var(--red-border);   color: var(--red-bad); }
+    .nl-tw-display.early  { background: #eff6ff; border-color: #93c5fd;             color: #1d4ed8; }
+    .nl-tw-zone {
+      position: absolute; top: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .68rem; font-weight: 900; color: #6b7280;
+      opacity: .4; cursor: pointer; user-select: none; z-index: 3;
+      transition: opacity .12s, background .12s;
+    }
+    .nl-tw-zone:hover              { opacity: 1; background: rgba(0,0,0,.06); }
+    .nl-tw-zone-center:hover       { background: rgba(124,58,237,.1); color: #7c3aed; }
+    .nl-tw-zone:active             { background: rgba(0,0,0,.14); opacity: 1; }
+    .nl-tw-zone-left   { left: 0;   width: 28%; }
+    .nl-tw-zone-center { left: 28%; width: 44%; }
+    .nl-tw-zone-right  { right: 0;  width: 28%; }
+
     /* ── Nav Log ── */
     .navlog-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .navlog-table {
@@ -1193,13 +1218,15 @@
           <div class="column is-half-mobile">
             <div class="field">
               <label class="label is-small">Terrain départ (ICAO)</label>
-              <div class="control"><input id="logDepIcao" class="input" maxlength="4" placeholder="LFOB" /></div>
+              <div class="control"><input id="logDepIcao" class="input" maxlength="4" placeholder="LFOB"
+                oninput="this.value=this.value.toUpperCase(); syncIcao('dep',this.value)" /></div>
             </div>
           </div>
           <div class="column is-half-mobile">
             <div class="field">
               <label class="label is-small">Terrain arrivée (ICAO)</label>
-              <div class="control"><input id="logArrIcao" class="input" maxlength="4" placeholder="LFPG" /></div>
+              <div class="control"><input id="logArrIcao" class="input" maxlength="4" placeholder="LFPG"
+                oninput="this.value=this.value.toUpperCase(); syncIcao('arr',this.value)" /></div>
             </div>
           </div>
           <div class="column is-half-mobile">
@@ -1211,7 +1238,7 @@
           <div class="column is-half-mobile">
             <div class="field">
               <label class="label is-small">H bloc départ (UTC)</label>
-              <div class="control"><input id="logHBloc" class="input" type="time" placeholder="HH:MM" /></div>
+              <div class="control"><input id="logHBloc" class="input" type="time" /></div>
             </div>
           </div>
           <div class="column is-half-mobile">
@@ -1220,9 +1247,30 @@
               <div class="control"><input id="logEmbarque" class="input" type="number" value="100" min="0" max="100" /></div>
             </div>
           </div>
-          <div class="column is-half-mobile is-flex is-align-items-flex-end">
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">GS par défaut</label>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input id="logGsVal" class="input" type="number" value="100" min="1"
+                  style="flex:1" onchange="updateDefaultGs()" />
+                <div class="buttons has-addons mb-0">
+                  <button id="logGsKt"  class="button is-small is-primary is-selected" onclick="setGsUnit('kt')" style="font-weight:700">kt</button>
+                  <button id="logGsKmh" class="button is-small" onclick="setGsUnit('kmh')" style="font-weight:700">km/h</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Import / Export -->
+        <div class="columns is-mobile is-variable is-2 mt-1">
+          <div class="column">
             <button class="button is-fullwidth" style="background:#7c3aed;color:#fff;font-weight:700;border:none;border-radius:10px" onclick="importFromFuel()">
-              ⟵ Importer depuis Carburant
+              ← Importer depuis Carburant
+            </button>
+          </div>
+          <div class="column">
+            <button class="button is-fullwidth" style="background:#0b3b86;color:#fff;font-weight:700;border:none;border-radius:10px" onclick="exportToFuel()">
+              → Exporter vers Carburant
             </button>
           </div>
         </div>
@@ -1237,68 +1285,82 @@
           <table class="navlog-table" id="logTable">
             <thead>
               <tr>
+                <!-- Leg cols (left, staggered) -->
+                <th style="min-width:50px">z sécu<br><span style="font-weight:400;font-style:italic;font-size:.6rem">ft</span></th>
+                <th style="min-width:48px">Rm<br><span style="font-weight:400;font-style:italic;font-size:.6rem">Deg</span></th>
+                <th style="min-width:45px">Dist<br><span style="font-weight:400;font-style:italic;font-size:.6rem">NM</span></th>
+                <th style="min-width:45px">GS<br><span id="logGsUnitHead" style="font-weight:400;font-style:italic;font-size:.6rem">kt</span></th>
+                <th style="min-width:42px">Temps<br><span style="font-weight:400;font-style:italic;font-size:.6rem">min</span></th>
+                <!-- Wpt cols (right) -->
                 <th style="min-width:80px">Position</th>
-                <th style="min-width:55px">Alt sécu (ft)</th>
-                <th style="min-width:48px">Rm (°)</th>
-                <th style="min-width:48px">Dist (NM)</th>
-                <th style="min-width:48px">GS (kt)</th>
-                <th style="min-width:48px">Temps (min)</th>
-                <th style="min-width:65px">H estimée</th>
-                <th style="min-width:72px">H réelle</th>
-                <th style="min-width:65px">Radio</th>
-                <th style="min-width:65px">RadioNav</th>
+                <th style="min-width:60px">H estimée</th>
+                <th style="min-width:110px">H réelle</th>
               </tr>
             </thead>
             <tbody id="logTableBody">
               <tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:1.5rem">
-                Importer depuis l'onglet Carburant ou ajouter des branches manuellement.
+                Importer depuis Carburant ou ajouter des points manuellement.
               </td></tr>
             </tbody>
             <tfoot>
               <tr class="total-row" id="logTotalRow" style="display:none">
-                <td><strong>TOTAL</strong></td>
                 <td></td><td></td>
-                <td id="logTotalDist">—</td>
+                <td id="logTotalDist" style="font-weight:800">—</td>
                 <td></td>
-                <td id="logTotalTemps">—</td>
-                <td></td><td></td><td></td><td></td>
+                <td id="logTotalTemps" style="font-weight:800">—</td>
+                <td colspan="3"></td>
               </tr>
             </tfoot>
           </table>
         </div>
 
-        <!-- Fuel recap -->
+        <!-- Récap bas de log -->
         <div id="logFuelRecap" class="mt-3" style="display:none">
-          <div class="columns is-mobile is-variable is-2">
-            <div class="column">
+          <div class="columns is-mobile is-multiline is-variable is-2">
+            <div class="column is-half-mobile">
               <div class="perf-field">
                 <div class="pf-label">Trip fuel prévu</div>
                 <div class="pf-value" id="logTripFuel">—</div>
               </div>
             </div>
-            <div class="column">
+            <div class="column is-half-mobile">
               <div class="perf-field">
-                <div class="pf-label">RFOB à l'atterrissage (prévu)</div>
+                <div class="pf-label">RFOB atterrissage (prévu)</div>
                 <div class="pf-value" id="logRfobArr">—</div>
               </div>
             </div>
-            <div class="column">
+            <div class="column is-half-mobile">
               <div class="perf-field">
                 <div class="pf-label">Autonomie restante</div>
                 <div class="pf-value" id="logAutoRestante">—</div>
               </div>
             </div>
+            <!-- H arrêt moteur (calculé) -->
+            <div class="column is-half-mobile">
+              <div class="perf-field">
+                <div class="pf-label">H arrêt du moteur (UTC)</div>
+                <div class="pf-value" id="logHMoteur" style="font-size:1rem">—</div>
+                <div style="font-size:.65rem;color:#6b7280;margin-top:2px">= H bloc + autonomie totale (sans marge)</div>
+              </div>
+            </div>
+            <!-- H fin de vol -->
+            <div class="column is-half-mobile">
+              <div class="perf-field" style="background:#0f172a;border-color:#0f172a">
+                <div class="pf-label" style="color:#93c5fd">H FIN DE VOL</div>
+                <div class="pf-value" id="logHFinVol" style="color:#fff;font-size:1.1rem">—</div>
+                <div style="font-size:.65rem;color:#64748b;margin-top:2px">= H arrêt moteur − réserve finale</div>
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- Bouton ajouter branche manuelle -->
+    <!-- Boutons -->
     <div class="columns is-mobile is-variable is-2 mb-4">
       <div class="column">
         <button class="button is-fullwidth" style="border-radius:10px;font-weight:700;border:2px dashed #7c3aed;color:#7c3aed;background:#fdf4ff" onclick="addLogRow()">
-          + Ajouter un point manuellement
+          + Ajouter un point
         </button>
       </div>
       <div class="column is-narrow">
@@ -2582,8 +2644,10 @@ function computeFuel() {
 }
 
 /* ===================== LOG DE NAV ===================== */
-let logRows = [];       // [{name, zSecu, rm, dist, gs, tempsMin, hEst, hReelle, radio, radionav}]
-let fuelCheckContext = null; // branche en cours de validation
+let logRows = [];
+let fuelCheckContext = null;
+let logGsUnit = 'kt'; // 'kt' ou 'kmh'
+let logGsDefault = 100; // en kt toujours
 
 // --- Helpers temps ---
 function parseHHMM(str) {
@@ -2602,7 +2666,7 @@ function minutesDiff(h1str, h2str) {
   const h1 = parseHHMM(h1str), h2 = parseHHMM(h2str);
   if (h1 === null || h2 === null) return null;
   let d = h2 - h1;
-  if (d < -720) d += 1440; // passage minuit
+  if (d < -720) d += 1440;
   return d;
 }
 function windAxial(rm, wDir, wKt) {
@@ -2610,8 +2674,42 @@ function windAxial(rm, wDir, wKt) {
   const ang = ((wDir - rm + 540) % 360) - 180;
   return wKt * Math.cos(ang * Math.PI / 180);
 }
+function pad3rm(n) { return String(Math.max(1, Math.min(360, Math.round(n)))).padStart(3,'0'); }
+function gsDisplay(gsKt) {
+  if (!gsKt) return '—';
+  if (logGsUnit === 'kmh') return Math.round(gsKt * 1.852) + ' km/h';
+  return gsKt + ' kt';
+}
+function gsInputToKt(val) {
+  const n = parseFloat(val) || logGsDefault;
+  return logGsUnit === 'kmh' ? n / 1.852 : n;
+}
 
-// --- Import depuis onglet carburant ---
+// --- GS unit toggle ---
+function setGsUnit(unit) {
+  logGsUnit = unit;
+  document.getElementById('logGsKt').classList.toggle('is-selected', unit === 'kt');
+  document.getElementById('logGsKt').classList.toggle('is-primary', unit === 'kt');
+  document.getElementById('logGsKmh').classList.toggle('is-selected', unit === 'kmh');
+  document.getElementById('logGsKmh').classList.toggle('is-primary', unit === 'kmh');
+  document.getElementById('logGsUnitHead').textContent = unit === 'kmh' ? 'km/h' : 'kt';
+  // Update displayed GS default
+  const el = document.getElementById('logGsVal');
+  el.value = unit === 'kmh' ? Math.round(logGsDefault * 1.852) : logGsDefault;
+  if (logRows.length) renderLogTable();
+}
+function updateDefaultGs() {
+  logGsDefault = Math.max(1, gsInputToKt(document.getElementById('logGsVal').value));
+}
+
+// --- Sync ICAO avec onglet performances ---
+function syncIcao(side, val) {
+  const perfId = side === 'dep' ? 'depIcao' : 'arrIcao';
+  const el = document.getElementById(perfId);
+  if (el) el.value = val;
+}
+
+// --- Import depuis Carburant ---
 function importFromFuel() {
   const nb = fuelNbBranches;
   logRows = [];
@@ -2623,37 +2721,52 @@ function importFromFuel() {
     const axial = windAxial(cap, wDir, wKt);
     const gs    = Math.max(1, Math.round(FUEL_SPEED + axial));
     const tempsMin = dist > 0 ? (dist / gs * 60) : 0;
-    logRows.push({ name: `B${i}`, zSecu: '', rm: cap ? Math.round(cap) : '', dist, gs, tempsMin, hEst: null, hReelle: null, radio: '', radionav: '' });
+    logRows.push({ name: `B${i}`, zSecu: '', rm: cap ? Math.round(cap) : '', dist, gs, tempsMin, hEst: null, hReelle: null });
   }
-  // Sync embarqué
   const emb = parseFloat(document.getElementById('fuelEmbarque').value) || 100;
   document.getElementById('logEmbarque').value = emb;
-
   recalcHEstimees();
   renderLogTable();
 }
 
-// --- Ajouter ligne manuelle ---
+// --- Export vers Carburant ---
+function exportToFuel() {
+  if (logRows.length === 0) return;
+  // Ajuster le nombre de branches si nécessaire
+  while (fuelNbBranches < logRows.length) addBranch();
+  while (fuelNbBranches > logRows.length) removeBranch();
+
+  logRows.forEach((r, i) => {
+    const idx = i + 1;
+    const distEl = document.getElementById(`fuelB${idx}Dist`);
+    const capEl  = document.getElementById(`fuelB${idx}Cap`);
+    if (distEl) distEl.value = r.dist || '';
+    if (capEl)  capEl.value  = r.rm || '';
+    // Vent non dispo depuis le log → laisser tel quel
+  });
+  // Sync embarqué
+  const emb = parseFloat(document.getElementById('logEmbarque').value) || 100;
+  document.getElementById('fuelEmbarque').value = emb;
+  switchMainTab('fuel');
+}
+
+// --- Ajouter point manuel ---
 function addLogRow() {
-  logRows.push({ name: '', zSecu: '', rm: '', dist: 0, gs: FUEL_SPEED, tempsMin: 0, hEst: null, hReelle: null, radio: '', radionav: '' });
+  logRows.push({ name: '', zSecu: '', rm: '', dist: 0, gs: Math.round(logGsDefault), tempsMin: 0, hEst: null, hReelle: null });
   recalcHEstimees();
   renderLogTable();
-  // Focus sur le nouveau nom
   setTimeout(() => {
     const inputs = document.querySelectorAll('#logTableBody .nl-name');
     if (inputs.length) inputs[inputs.length - 1].focus();
   }, 50);
 }
 
-// --- Recalcul H estimées depuis H bloc ---
+// --- Recalcul H estimées ---
 function recalcHEstimees() {
   const hBloc = parseHHMM(document.getElementById('logHBloc').value);
-  let cumMin = hBloc !== null ? hBloc : null;
-  // Roulage 5 min
-  if (cumMin !== null) cumMin += 5;
+  let cumMin = hBloc !== null ? hBloc + 5 : null; // +5 roulage
   for (let i = 0; i < logRows.length; i++) {
     const r = logRows[i];
-    // Si une H réelle précédente connue, utiliser ça comme base
     const prevReal = i > 0 ? parseHHMM(logRows[i-1].hReelle) : (hBloc !== null ? hBloc + 5 : null);
     if (prevReal !== null) {
       cumMin = prevReal + Math.round(r.tempsMin);
@@ -2664,17 +2777,42 @@ function recalcHEstimees() {
   }
 }
 
-// --- Render ---
+// --- H arrêt moteur → H fin de vol ---
+function computeFinVol(totalTripMin) {
+  const hBloc = parseHHMM(document.getElementById('logHBloc').value);
+  const emb   = parseFloat(document.getElementById('logEmbarque').value) || 100;
+
+  // Autonomie totale = (embarqué + inutilisables) / conso * 60
+  const autonomieTotaleMin = (emb + FUEL_UNUSABLE) / FUEL_CONSO * 60;
+
+  // H arrêt moteur = H bloc + autonomie totale (aucune marge)
+  const hMotMin = hBloc !== null ? (hBloc + autonomieTotaleMin) : null;
+  const hMotStr = hMotMin !== null ? toHHMM(Math.round(hMotMin)) : '—';
+  document.getElementById('logHMoteur').textContent = hMotStr;
+
+  // H fin de vol = H arrêt moteur − réserve finale
+  const reserveMin = parseInt(document.getElementById('fuelVol')?.value || '45', 10);
+  const hFinMin = hMotMin !== null ? hMotMin - reserveMin : null;
+  document.getElementById('logHFinVol').textContent = hFinMin !== null ? toHHMM(Math.round((hFinMin + 1440) % 1440)) : '—';
+}
+
+// --- Render (layout décalé : leg data en haut, wpt data en bas de chaque paire) ---
 function renderLogTable() {
   const tbody = document.getElementById('logTableBody');
   if (logRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:1.5rem">Aucun point. Importer depuis Carburant ou ajouter manuellement.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:1.5rem">Aucun point.</td></tr>';
     document.getElementById('logTotalRow').style.display = 'none';
     document.getElementById('logFuelRecap').style.display = 'none';
     return;
   }
 
-  tbody.innerHTML = logRows.map((r, i) => {
+  // Chaque logRow génère 2 <tr> :
+  //   tr.wpt-row : cols vides (leg) | Position | H est | H réelle | Radio | RadioNav
+  //   tr.leg-row : z sécu | Rm | Dist | GS | Temps | cols vides (wpt)
+  // La leg-row est omise pour le dernier point (c'est l'arrivée)
+  const html = [];
+  logRows.forEach((r, i) => {
+    const isLast = i === logRows.length - 1;
     const hEstStr = r.hEst || '—';
     const hReelleVal = r.hReelle || '';
     const ecartClass = (() => {
@@ -2686,32 +2824,50 @@ function renderLogTable() {
       return 'filled';
     })();
 
-    return `<tr>
+    const rmDisp = r.rm ? pad3rm(r.rm) : '';
+
+    // ── Row WPT ──
+    html.push(`<tr class="wpt-row" style="background:#fff">
+      <td></td><td></td><td></td><td></td><td></td>
       <td><input class="nl-input nl-name" value="${r.name}" placeholder="Point…"
-        onchange="logRows[${i}].name=this.value; renderLogTable()" style="min-width:70px" /></td>
-      <td><input class="nl-input" type="number" value="${r.zSecu}" placeholder="ft"
-        onchange="logRows[${i}].zSecu=this.value" style="min-width:50px" /></td>
-      <td><input class="nl-input" type="number" value="${r.rm}" placeholder="°"
-        onchange="logRows[${i}].rm=+this.value; recomputeRow(${i}); renderLogTable()" style="min-width:45px" /></td>
-      <td><input class="nl-input" type="number" value="${r.dist}" placeholder="NM"
-        onchange="logRows[${i}].dist=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()" style="min-width:45px" /></td>
-      <td style="text-align:center;font-weight:600;color:var(--navy)">${r.gs ? r.gs + ' kt' : '—'}</td>
-      <td style="text-align:center">${r.tempsMin > 0 ? Math.round(r.tempsMin) + ' min' : '—'}</td>
-      <td class="nl-hest">${hEstStr}</td>
-      <td><input class="nl-treelle ${ecartClass}" value="${hReelleVal}" placeholder="HH:MM" type="time"
-        onchange="onHReelleChange(${i}, this.value)" /></td>
-      <td><input class="nl-input" value="${r.radio}" placeholder="fréq."
-        onchange="logRows[${i}].radio=this.value" style="min-width:55px" /></td>
-      <td><input class="nl-input" value="${r.radionav}" placeholder="VOR/NDB…"
-        onchange="logRows[${i}].radionav=this.value" style="min-width:60px" /></td>
-    </tr>`;
-  }).join('');
+        onchange="logRows[${i}].name=this.value; renderLogTable()" style="min-width:68px" /></td>
+      <td class="nl-hest" style="text-align:center">${hEstStr}</td>
+      <td style="min-width:110px">
+        <div class="nl-time-wrap">
+          <div class="nl-tw-display ${ecartClass}" id="nl-disp-${i}">${hReelleVal || '--:--'}</div>
+          <div class="nl-tw-zone nl-tw-zone-left"   onclick="adjustLogTime(${i},-1)">−1</div>
+          <div class="nl-tw-zone nl-tw-zone-center" onclick="captureNow(${i})">NOW</div>
+          <div class="nl-tw-zone nl-tw-zone-right"  onclick="adjustLogTime(${i},+1)">+1</div>
+        </div>
+      </td>
+    </tr>`);
+
+    // ── Row LEG (sauf dernier point) ──
+    if (!isLast) {
+      html.push(`<tr class="leg-row" style="background:#f8fafc;border-top:none">
+        <td><input class="nl-input" type="number" value="${r.zSecu}" placeholder="ft"
+          onchange="logRows[${i}].zSecu=this.value" style="min-width:45px" /></td>
+        <td><input class="nl-input" value="${rmDisp}" placeholder="001"
+          onblur="formatRm(this,${i})" onchange="logRows[${i}].rm=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()"
+          style="min-width:42px;text-align:center" /></td>
+        <td><input class="nl-input" type="number" value="${r.dist || ''}" placeholder="NM"
+          onchange="logRows[${i}].dist=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()" style="min-width:40px" /></td>
+        <td><input class="nl-input" type="number" value="${logGsUnit==='kmh' ? Math.round(r.gs*1.852) : r.gs}" placeholder="${logGsUnit==='kmh'?'185':'100'}"
+          onchange="logRows[${i}].gs=Math.max(1,Math.round(gsInputToKt(this.value))); recomputeRow(${i}); recalcHEstimees(); renderLogTable()"
+          style="min-width:42px" /></td>
+        <td style="text-align:center;font-size:.78rem;color:#374151">${r.tempsMin > 0 ? Math.round(r.tempsMin) + '\'' : '—'}</td>
+        <td colspan="3" style="background:#f8fafc"></td>
+      </tr>`);
+    }
+  });
+
+  tbody.innerHTML = html.join('');
 
   // Totaux
   const totalDist  = logRows.reduce((s, r) => s + (r.dist || 0), 0);
-  const totalTemps = logRows.reduce((s, r) => s + (r.tempsMin || 0), 0);
+  const totalTemps = logRows.slice(0, -1).reduce((s, r) => s + (r.tempsMin || 0), 0); // dernier = arrivée, pas de leg
   document.getElementById('logTotalDist').textContent  = totalDist.toFixed(0) + ' NM';
-  document.getElementById('logTotalTemps').textContent = Math.round(totalTemps) + ' min (' + toHHMM(Math.round(totalTemps)) + ')';
+  document.getElementById('logTotalTemps').textContent = Math.round(totalTemps) + '\' (' + toHHMM(Math.round(totalTemps)) + ')';
   document.getElementById('logTotalRow').style.display = '';
 
   // Fuel recap
@@ -2719,25 +2875,60 @@ function renderLogTable() {
   const tripFuel = FUEL_CONSO / 60 * totalTemps;
   const rfobArr  = emb - tripFuel;
   const autoRest = rfobArr / FUEL_CONSO * 60;
-  document.getElementById('logTripFuel').textContent    = tripFuel.toFixed(1) + ' L';
-  document.getElementById('logRfobArr').textContent     = Math.max(0, rfobArr).toFixed(1) + ' L';
+  document.getElementById('logTripFuel').textContent     = tripFuel.toFixed(1) + ' L';
+  document.getElementById('logRfobArr').textContent      = Math.max(0, rfobArr).toFixed(1) + ' L';
   document.getElementById('logAutoRestante').textContent = autoRest > 0 ? Math.round(autoRest) + ' min' : '0 min';
-  document.getElementById('logFuelRecap').style.display = '';
+  document.getElementById('logFuelRecap').style.display  = '';
+
+  computeFinVol(totalTemps);
+}
+
+function formatRm(el, i) {
+  const v = el.value.replace(/\D/g,'');
+  if (!v) { el.value = ''; return; }
+  const n = Math.max(1, Math.min(360, parseInt(v, 10)));
+  el.value = pad3rm(n);
+  logRows[i].rm = n;
+  recomputeRow(i);
+  recalcHEstimees();
+  renderLogTable();
 }
 
 function recomputeRow(i) {
   const r = logRows[i];
-  if (r.dist > 0 && r.gs > 0) {
-    r.tempsMin = r.dist / r.gs * 60;
-  }
+  if (r.dist > 0 && r.gs > 0) r.tempsMin = r.dist / r.gs * 60;
 }
 
-// --- H réelle changée ---
+function adjustLogTime(i, delta) {
+  const cur = logRows[i].hReelle;
+  let totalMin;
+  if (cur) {
+    const [hh, mm] = cur.split(':').map(Number);
+    totalMin = hh * 60 + mm + delta;
+  } else {
+    const now = new Date();
+    totalMin = now.getUTCHours() * 60 + now.getUTCMinutes() + delta;
+  }
+  if (totalMin < 0) totalMin += 1440;
+  if (totalMin >= 1440) totalMin -= 1440;
+  logRows[i].hReelle = String(Math.floor(totalMin/60)).padStart(2,'0') + ':' + String(totalMin%60).padStart(2,'0');
+  recalcHEstimees();
+  renderLogTable();
+  showFuelCheck(i);
+}
+
+function captureNow(i) {
+  const now = new Date();
+  logRows[i].hReelle = String(now.getUTCHours()).padStart(2,'0') + ':' + String(now.getUTCMinutes()).padStart(2,'0');
+  recalcHEstimees();
+  renderLogTable();
+  showFuelCheck(i);
+}
+
 function onHReelleChange(i, val) {
   logRows[i].hReelle = val || null;
   recalcHEstimees();
   renderLogTable();
-  // Afficher fuel check si H réelle saisie
   if (val) showFuelCheck(i);
 }
 
@@ -2745,47 +2936,35 @@ function onHReelleChange(i, val) {
 function showFuelCheck(idx) {
   const r = logRows[idx];
   if (!r.hReelle) return;
-
   const emb = parseFloat(document.getElementById('logEmbarque').value) || 100;
   const hBloc = parseHHMM(document.getElementById('logHBloc').value);
-
-  // Temps écoulé depuis bloc départ jusqu'à ce point
-  const hBlocBase = hBloc !== null ? hBloc : parseHHMM(logRows[0].hEst);
+  const hBlocBase = hBloc !== null ? hBloc : parseHHMM(logRows[0]?.hEst);
   const hReelleMin = parseHHMM(r.hReelle);
   const elapsedMin = hBlocBase !== null && hReelleMin !== null
-    ? minutesDiff(toHHMM(hBlocBase), r.hReelle) + 5 // +5 roulage
-    : null;
-
-  // CONSO et RFOB
+    ? minutesDiff(toHHMM(hBlocBase), r.hReelle) + 5 : null;
   const conso = elapsedMin !== null ? FUEL_CONSO / 60 * elapsedMin : null;
-  const rfob  = conso !== null ? emb - conso + FUEL_UNUSABLE : null; // +10 car embarqué = utilisables
-
-  // GS réel sur cette branche
+  const rfob  = conso !== null ? emb - conso + FUEL_UNUSABLE : null;
   const prevReal = idx > 0 ? parseHHMM(logRows[idx-1].hReelle) : (hBloc !== null ? hBloc + 5 : null);
   const legActualMin = prevReal !== null && hReelleMin !== null ? hReelleMin - prevReal : null;
   const gsReel = legActualMin !== null && r.dist > 0 ? Math.round(r.dist / legActualMin * 60) : null;
-
-  // Écart
   const ecartMin = r.hEst ? minutesDiff(r.hEst, r.hReelle) : null;
   let ecartStr = '—', ecartClass = '';
   if (ecartMin !== null) {
-    if (ecartMin > 0) { ecartStr = '+' + ecartMin + ' min (retard)'; ecartClass = 'bad'; }
+    if (ecartMin > 0)  { ecartStr = '+' + ecartMin + ' min (retard)'; ecartClass = 'bad'; }
     else if (ecartMin < 0) { ecartStr = ecartMin + ' min (avance)'; ecartClass = 'ok'; }
     else { ecartStr = 'Dans les temps'; ecartClass = 'ok'; }
   }
-
   document.getElementById('fuelCheckTitle').textContent = 'FUEL CHECK — ' + (r.name || `B${idx+1}`);
   document.getElementById('fckHReelle').textContent = r.hReelle;
   document.getElementById('fckHEst').textContent    = r.hEst || '—';
   document.getElementById('fckEcart').textContent   = ecartStr;
   document.getElementById('fckEcart').className     = 'fck-val ' + ecartClass;
-  document.getElementById('fckGsReel').textContent  = gsReel !== null ? gsReel + ' kt' : '—';
-  document.getElementById('fckGsPlan').textContent  = r.gs ? r.gs + ' kt' : '—';
+  document.getElementById('fckGsReel').textContent  = gsReel !== null ? gsDisplay(gsReel) : '—';
+  document.getElementById('fckGsPlan').textContent  = r.gs ? gsDisplay(r.gs) : '—';
   document.getElementById('fckConso').textContent   = conso !== null ? conso.toFixed(1) + ' L' : '—';
   document.getElementById('fckRfob').textContent    = rfob !== null ? rfob.toFixed(1) + ' L' : '—';
   document.getElementById('fckRfob').className      = 'fck-val ' + (rfob !== null ? (rfob >= 15 ? 'ok' : 'bad') : '');
   document.getElementById('fckAuto').textContent    = rfob !== null ? Math.round(rfob / FUEL_CONSO * 60) + ' min' : '—';
-
   fuelCheckContext = idx;
   document.getElementById('fuelCheckOverlay').style.display = 'flex';
 }
@@ -2808,16 +2987,20 @@ function resetLog() {
   document.getElementById('logDepIcao').value  = '';
   document.getElementById('logArrIcao').value  = '';
   document.getElementById('logEmbarque').value = '100';
+  document.getElementById('logHMoteur').value  = '';
+  document.getElementById('logHFinVol').textContent = '—';
   renderLogTable();
 }
 
-// Sync H bloc → recalc estimées en temps réel
-document.getElementById('logHBloc').addEventListener('change', () => {
-  recalcHEstimees();
-  renderLogTable();
-});
-document.getElementById('logEmbarque').addEventListener('input', () => {
-  if (logRows.length) renderLogTable();
+document.getElementById('logHBloc').addEventListener('change', () => { recalcHEstimees(); renderLogTable(); computeFinVol(); });
+document.getElementById('logEmbarque').addEventListener('input', () => { if (logRows.length) renderLogTable(); computeFinVol(); });
+
+// Sync ICAO onglet perfs → log au chargement de l'onglet log
+document.getElementById('tabLog').addEventListener('click', () => {
+  const dep = document.getElementById('depIcao')?.value;
+  const arr = document.getElementById('arrIcao')?.value;
+  if (dep && !document.getElementById('logDepIcao').value) document.getElementById('logDepIcao').value = dep;
+  if (arr && !document.getElementById('logArrIcao').value) document.getElementById('logArrIcao').value = arr;
 });
 
 /* ===================== README accordéon ===================== */
