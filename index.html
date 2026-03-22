@@ -133,7 +133,30 @@
       .columns.is-variable.is-2 { --columnGap: .35rem; }
     }
 
-    /* ── Mobile tab toggle ── */
+    /* ── Assumption vent arrière 5kt ── */
+    .tw-assume-wrap { display: none; margin-top: .6rem; }
+    .tw-assume-wrap.visible { display: block; }
+    .tw-assume-btn {
+      width: 100%;
+      border: 1.5px dashed #d97706;
+      border-radius: 10px;
+      background: #fffbeb;
+      color: #92400e;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .5rem .75rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background .15s, border-color .15s, color .15s;
+      letter-spacing: .02em;
+    }
+    .tw-assume-btn.active {
+      background: #fef3c7;
+      border-color: #b45309;
+      border-style: solid;
+      color: #78350f;
+    }
+    .tw-assume-btn .tw-check { margin-right: .4rem; }
     .tab-toggle {
       display: flex;
       background: #e2e8f0;
@@ -396,6 +419,13 @@
             </div>
           </div>
 
+          <!-- Assumption vent arrière 5kt — départ -->
+          <div id="depTwAssumeWrap" class="tw-assume-wrap">
+            <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
+              <span class="tw-check">☐</span>Calculer avec 5 kt arrière (hypothèse conservatrice)
+            </button>
+          </div>
+
           <!-- Toggles carénages + surface -->
           <div class="columns is-mobile mt-3">
             <div class="column has-text-centered">
@@ -627,6 +657,13 @@
             </div>
           </div>
 
+          <!-- Assumption vent arrière 5kt — arrivée -->
+          <div id="arrTwAssumeWrap" class="tw-assume-wrap">
+            <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
+              <span class="tw-check">☐</span>Calculer avec 5 kt arrière (hypothèse conservatrice)
+            </button>
+          </div>
+
           <!-- Toggle freinage -->
           <div class="has-text-centered mt-3">
             <p class="label is-small mb-1">Type de freinage</p>
@@ -761,6 +798,8 @@ let profile     = 'DR400';
 let depSurface  = 'hard';
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
+let depAssumeTA = false; // assumption 5kt arrière départ
+let arrAssumeTA = false; // assumption 5kt arrière arrivée
 
 const propByAircraft = {
   'F-GCAL (120cv)': 'Sensenich',
@@ -797,6 +836,23 @@ function setChip(el, state) {
   if (state === 'ok')  { el.classList.add('is-ok-chip');      el.textContent = 'OK ✓'; }
   else if (state === 'bad') { el.classList.add('is-bad-chip'); el.textContent = 'KO ✗'; }
   else { el.classList.add('is-neutral-chip'); el.textContent = '—'; }
+}
+
+function toggleTwAssume(side) {
+  if (side === 'dep') {
+    depAssumeTA = !depAssumeTA;
+  } else {
+    arrAssumeTA = !arrAssumeTA;
+  }
+  const btn = document.getElementById(side + 'TwAssumeBtn');
+  const check = btn.querySelector('.tw-check');
+  if ((side === 'dep' ? depAssumeTA : arrAssumeTA)) {
+    btn.classList.add('active');
+    check.textContent = '☑';
+  } else {
+    btn.classList.remove('active');
+    check.textContent = '☐';
+  }
 }
 
 function showValidMsg(side, msg) {
@@ -1059,9 +1115,23 @@ function updateWindDisplay(side) {
     xwElem.textContent = baseText;
     crosswindLimitColor(side, worstX);
   }
-}
 
-/* ===================== VENT LE PLUS CONTRAIGNANT ===================== */
+  // Afficher l'option TA seulement si le vent réel donne < 5kt arrière
+  const twAssumeWrap = document.getElementById(side + 'TwAssumeWrap');
+  if (twAssumeWrap) {
+    const actualTail = Math.max(0, -(w.headwindForFactor));
+    if (actualTail < 5) {
+      twAssumeWrap.classList.add('visible');
+    } else {
+      // Vent réel déjà ≥ 5kt arrière → masquer et désactiver silencieusement
+      twAssumeWrap.classList.remove('visible');
+      if (side === 'dep') depAssumeTA = false;
+      else arrAssumeTA = false;
+      const btn = document.getElementById(side + 'TwAssumeBtn');
+      if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+    }
+  }
+}
 function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo) {
   const V = Math.max(0, kt | 0);
   const G = Math.max(V, gust | 0);
@@ -1221,6 +1291,9 @@ function computeDepPerf() {
   const sf      = parseInt(document.getElementById('depVrbFrom').value||'0',10);
   const st      = parseInt(document.getElementById('depVrbTo').value||'0',10);
   const w       = worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+  // Assumption 5kt arrière : si activée ET vent réel moins défavorable, forcer -5kt
+  const headwindForCalc = (depAssumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
+  const taActive = depAssumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
 
   let baseTO_pass, baseTO_roll;
   if (profile === 'DR300') {
@@ -1231,14 +1304,14 @@ function computeDepPerf() {
     baseTO_roll = interpTO_DR400(depAlt, depOat, depTow, depSurface, 'roll');
   }
 
-  const depWindF = windDistanceFactor(w.headwindForFactor || 0);
+  const depWindF = windDistanceFactor(headwindForCalc);
   const spatsF   = withSpats ? 1.00 : 1.03;
   const toCalc   = Math.round(baseTO_pass * depWindF * depExtra * spatsF);
   const toMargin = Math.round(toCalc * (1 + safety / 100));
 
   document.getElementById('toBasePass').textContent = Math.round(baseTO_pass) + ' m';
   document.getElementById('toBaseRoll').textContent = Math.round(baseTO_roll) + ' m';
-  document.getElementById('toWindF').textContent    = depWindF.toFixed(2) + '×';
+  document.getElementById('toWindF').textContent    = depWindF.toFixed(2) + '×' + (taActive ? ' (5 kt arrière assumés)' : '');
   document.getElementById('toSpat').textContent     = spatsF.toFixed(2) + '× ' + (withSpats ? '(carénages présents)' : '(sans carénages)');
   document.getElementById('toExtra').textContent    = depExtra.toFixed(2) + '×';
   document.getElementById('toRes').textContent      = toCalc + ' m';
@@ -1249,7 +1322,9 @@ function computeDepPerf() {
   setChip(document.getElementById('toChip'), st2);
   const kpi = document.getElementById('toKpi');
   kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
-  document.getElementById('toExplain').textContent = 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  document.getElementById('toExplain').textContent = taActive
+    ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
+    : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
 }
 
 /* ===================== CALCUL ATTERRISSAGE ===================== */
@@ -1270,16 +1345,18 @@ function computeArrPerf() {
   const sf      = parseInt(document.getElementById('arrVrbFrom').value||'0',10);
   const st      = parseInt(document.getElementById('arrVrbTo').value||'0',10);
   const w       = worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+  const headwindForCalc = (arrAssumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
+  const taActive = arrAssumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
 
   const baseLDG_pass = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
   const baseLDG_roll = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
-  const arrWindF     = windDistanceFactor(w.headwindForFactor || 0);
+  const arrWindF     = windDistanceFactor(headwindForCalc);
   const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
 
   document.getElementById('ldgBasePass').textContent = Math.round(baseLDG_pass) + ' m';
   document.getElementById('ldgBaseRoll').textContent = Math.round(baseLDG_roll) + ' m';
-  document.getElementById('ldgWindF').textContent    = arrWindF.toFixed(2) + '×';
+  document.getElementById('ldgWindF').textContent    = arrWindF.toFixed(2) + '×' + (taActive ? ' (5 kt arrière assumés)' : '');
   document.getElementById('ldgExtra').textContent    = arrExtra.toFixed(2) + '×';
   document.getElementById('ldgRes').textContent      = ldgCalc + ' m';
   document.getElementById('ldaMini').textContent     = arrLda ? arrLda + ' m' : '—';
@@ -1289,7 +1366,9 @@ function computeArrPerf() {
   setChip(document.getElementById('ldgChip'), st2);
   const kpi = document.getElementById('ldgKpi');
   kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
-  document.getElementById('ldgExplain').textContent = 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  document.getElementById('ldgExplain').textContent = taActive
+    ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
+    : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
 }
 
 document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
