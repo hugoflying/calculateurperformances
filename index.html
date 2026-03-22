@@ -240,102 +240,122 @@
     .tab-section { display: none; }
     .tab-section.active { display: block; }
 
-    /* ── Time-wrap (−1 / NOW / +1) ── */
-    .nl-time-wrap { position: relative; display: block; border-radius: 8px; overflow: hidden; }
-    .nl-tw-display {
-      width: 100%; text-align: center; display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: .82rem; cursor: default; user-select: none;
-      border: 1.5px solid #d1d5db; border-radius: 8px; background: #f8fafc;
-      height: 36px; min-height: 36px; transition: border-color .15s, background .15s;
+    /* ── Time-wrap (identique au fichier source) ── */
+    .time-wrap        { position: relative; display: block; border-radius: 10px; overflow: hidden; }
+    .tw-hidden-input  { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+    .tw-display {
+      width: 100%; text-align: center;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: .92rem;
+      cursor: default; user-select: none;
+      border: 1.5px solid #d1d5db; border-radius: 10px;
+      background: #f8fafc; color: #0f172a;
+      height: 44px; min-height: 44px;
+      transition: background .15s, border-color .15s, color .15s;
     }
-    .nl-tw-display.filled { background: #ecfdf5; border-color: var(--green-border); color: var(--green-ok); }
-    .nl-tw-display.late   { background: #fef2f2; border-color: var(--red-border);   color: var(--red-bad); }
-    .nl-tw-display.early  { background: #eff6ff; border-color: #93c5fd;             color: #1d4ed8; }
-    .nl-tw-zone {
+    .tw-display.tw-filled  { background: #ecfdf5; border-color: var(--green-border); color: var(--green-ok); }
+    .tw-display.tw-late    { background: #fef2f2; border-color: var(--red-border);   color: var(--red-bad); }
+    .tw-display.tw-early   { background: #eff6ff; border-color: #93c5fd;             color: #1d4ed8; }
+    .tw-display.tw-set     { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+    .tw-zone {
       position: absolute; top: 0; bottom: 0;
       display: flex; align-items: center; justify-content: center;
       font-size: .68rem; font-weight: 900; color: #6b7280;
       opacity: .4; cursor: pointer; user-select: none; z-index: 3;
+      border-radius: 8px;
       transition: opacity .12s, background .12s;
     }
-    .nl-tw-zone:hover              { opacity: 1; background: rgba(0,0,0,.06); }
-    .nl-tw-zone-center:hover       { background: rgba(124,58,237,.1); color: #7c3aed; }
-    .nl-tw-zone:active             { background: rgba(0,0,0,.14); opacity: 1; }
-    .nl-tw-zone-left   { left: 0;   width: 28%; }
-    .nl-tw-zone-center { left: 28%; width: 44%; }
-    .nl-tw-zone-right  { right: 0;  width: 28%; }
+    .tw-zone:hover           { opacity: 1; background: rgba(0,0,0,.05); }
+    .tw-zone-center:hover    { background: rgba(11,59,134,.08); color: var(--navy); }
+    .tw-zone:active          { background: rgba(0,0,0,.14); opacity: 1; }
+    .tw-zone-left   { left: 0;   width: 28%; }
+    .tw-zone-center { left: 28%; width: 44%; }
+    .tw-zone-right  { right: 0;  width: 28%; }
+    .tw-editor {
+      position: fixed; z-index: 9999;
+      text-align: center; font-weight: 900; font-size: 1rem;
+      border-radius: 10px;
+      background: #fff; color: #0f172a;
+      border: 2px solid var(--navy); padding: 0; box-sizing: border-box;
+    }
 
     /* ── Nav Log ── */
+    /* ── Nav Log — Grosses cases tactiles pour utilisation en vol ── */
     .navlog-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .navlog-table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: .78rem;
-      min-width: 700px;
+      border-collapse: collapse;
+      font-size: 1rem;
+      min-width: 520px;
+      background: #fff;
     }
     .navlog-table th {
-      background: var(--navy);
+      background: #1e293b;
       color: #fff;
-      padding: .45rem .5rem;
-      font-size: .65rem;
+      padding: .5rem .4rem;
+      font-size: .7rem;
       text-transform: uppercase;
       letter-spacing: .04em;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      z-index: 2;
+      font-weight: 800;
+      border: 2px solid #334155;
+      text-align: center;
       white-space: nowrap;
     }
-    .navlog-table th:first-child { border-radius: 8px 0 0 0; }
-    .navlog-table th:last-child  { border-radius: 0 8px 0 0; }
-    .navlog-table td {
-      padding: .3rem .4rem;
-      border-bottom: 1px solid #e5e7eb;
+    /* ── Ligne WPT ── */
+    .log-wpt-row td {
+      border: 2px solid #374151;
+      padding: 0;
       vertical-align: middle;
+      background: #fff;
+      height: 52px;
     }
-    .navlog-table tr:last-child td { border-bottom: none; }
-    .navlog-table tr.total-row td {
-      background: #f1f5f9;
-      font-weight: 800;
-      border-top: 2px solid var(--navy);
-    }
-    .navlog-table input.nl-input {
-      width: 100%;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
+    .log-wpt-row td.log-left-blank { background: #f1f5f9; border-color: #94a3b8; }
+    .log-wpt-row td.log-fork-wpt  { background: #fff; border: none; padding: 0; width: 36px; }
+
+    /* ── Ligne LEG ── */
+    .log-leg-row td {
+      border: 2px solid #374151;
       padding: .3rem .4rem;
-      font-size: .78rem;
-      background: #f8fafc;
-      text-align: center;
-      min-width: 0;
+      vertical-align: middle;
+      background: #e2e8f0;
+      height: 60px;
+      font-size: .9rem;
+    }
+    .log-leg-row td.log-fork-leg {
+      background: #fff;
+      border: none;
+      padding: 0;
+      width: 36px;
+      position: relative;
+      overflow: visible;
+    }
+    .log-leg-row td.log-right-blank { background: #fff; border-color: #94a3b8; }
+    .log-leg-main  { font-weight: 900; font-size: 1.05rem; text-align: center; color: #0f172a; line-height: 1.1; }
+    .log-leg-sub   { font-size: .68rem; color: #64748b; font-style: italic; text-align: center; line-height: 1.2; }
+    .log-report    { font-weight: 900; font-size: 1rem; text-align: center; }
+    .log-he        { text-align: center; font-weight: 800; color: var(--navy); font-size: 1.05rem; }
+
+    /* ── Inputs dans la table — gros et tactiles ── */
+    .navlog-table input.nl-input {
+      width: 100%; border: none; background: transparent;
+      font-size: 1rem; font-weight: 900;
+      text-align: center; min-width: 0;
+      padding: .3rem .2rem;
+      -webkit-appearance: none; appearance: none;
     }
     .navlog-table input.nl-input:focus {
-      outline: none;
-      border-color: var(--navy);
+      outline: 2px solid var(--navy);
+      border-radius: 4px;
       background: #fff;
     }
-    .nl-hest  { color: var(--navy); font-weight: 700; text-align: center; white-space: nowrap; }
-    .nl-treelle {
-      background: #fff;
-      border: 1.5px solid #d1d5db;
-      border-radius: 6px;
-      padding: .3rem .4rem;
-      width: 100%;
-      font-size: .78rem;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      min-width: 0;
+    .navlog-table input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* ── Total row ── */
+    .navlog-table tr.total-row td {
+      background: #1e293b; color: #fff;
+      font-weight: 800; border-color: #1e293b;
+      padding: .5rem .4rem; font-size: .9rem;
     }
-    .nl-treelle.filled {
-      background: #ecfdf5;
-      border-color: var(--green-border);
-      color: var(--green-ok);
-      font-weight: 700;
-    }
-    .nl-treelle.late  { background: #fef2f2; border-color: var(--red-border); color: var(--red-bad); font-weight:700; }
-    .nl-treelle.early { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; font-weight:700; }
 
     /* ── Fuel check popup ── */
     .fuelcheck-overlay {
@@ -1238,7 +1258,13 @@
           <div class="column is-half-mobile">
             <div class="field">
               <label class="label is-small">H bloc départ (UTC)</label>
-              <div class="control"><input id="logHBloc" class="input" type="time" /></div>
+              <div class="time-wrap" data-id="logHBloc">
+                <input type="time" id="logHBloc" class="tw-hidden-input" />
+                <div class="tw-display" id="tw-disp-logHBloc">--:--</div>
+                <div class="tw-zone tw-zone-left"   data-action="minus">−1</div>
+                <div class="tw-zone tw-zone-center" data-action="now"></div>
+                <div class="tw-zone tw-zone-right"  data-action="plus">+1</div>
+              </div>
             </div>
           </div>
           <div class="column is-half-mobile">
@@ -1285,16 +1311,14 @@
           <table class="navlog-table" id="logTable">
             <thead>
               <tr>
-                <!-- Leg cols (left, staggered) -->
-                <th style="min-width:50px">z sécu<br><span style="font-weight:400;font-style:italic;font-size:.6rem">ft</span></th>
-                <th style="min-width:48px">Rm<br><span style="font-weight:400;font-style:italic;font-size:.6rem">Deg</span></th>
-                <th style="min-width:45px">Dist<br><span style="font-weight:400;font-style:italic;font-size:.6rem">NM</span></th>
-                <th style="min-width:45px">GS<br><span id="logGsUnitHead" style="font-weight:400;font-style:italic;font-size:.6rem">kt</span></th>
-                <th style="min-width:42px">Temps<br><span style="font-weight:400;font-style:italic;font-size:.6rem">min</span></th>
-                <!-- Wpt cols (right) -->
-                <th style="min-width:80px">Position</th>
-                <th style="min-width:60px">H estimée</th>
-                <th style="min-width:110px">H réelle</th>
+                <th style="width:72px">Z vol<br><span style="font-weight:400;font-style:italic">ft</span></th>
+                <th style="width:66px">Rm<br><span style="font-weight:400;font-style:italic">Deg</span></th>
+                <th style="width:70px">Dist<br><span style="font-weight:400;font-style:italic">NM</span></th>
+                <th style="width:66px">GS<br><span id="logGsUnitHead" style="font-weight:400;font-style:italic">kt</span></th>
+                <th style="width:60px">TSV<br><span style="font-weight:400;font-style:italic">min</span></th>
+                <th style="min-width:80px">Report</th>
+                <th style="width:60px">HE</th>
+                <th style="min-width:120px">HR</th>
               </tr>
             </thead>
             <tbody id="logTableBody">
@@ -1305,10 +1329,10 @@
             <tfoot>
               <tr class="total-row" id="logTotalRow" style="display:none">
                 <td></td><td></td>
-                <td id="logTotalDist" style="font-weight:800">—</td>
+                <td id="logTotalDist" style="text-align:center">—</td>
                 <td></td>
-                <td id="logTotalTemps" style="font-weight:800">—</td>
-                <td colspan="3"></td>
+                <td id="logTotalTemps" style="text-align:center">—</td>
+                <td colspan="3" style="font-size:.72rem;opacity:.7">TOTAUX</td>
               </tr>
             </tfoot>
           </table>
@@ -2800,77 +2824,135 @@ function computeFinVol(totalTripMin) {
 function renderLogTable() {
   const tbody = document.getElementById('logTableBody');
   if (logRows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:1.5rem">Aucun point.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:1.5rem;border:2px solid #e5e7eb">Aucun point.</td></tr>';
     document.getElementById('logTotalRow').style.display = 'none';
     document.getElementById('logFuelRecap').style.display = 'none';
     return;
   }
 
-  // Chaque logRow génère 2 <tr> :
-  //   tr.wpt-row : cols vides (leg) | Position | H est | H réelle | Radio | RadioNav
-  //   tr.leg-row : z sécu | Rm | Dist | GS | Temps | cols vides (wpt)
-  // La leg-row est omise pour le dernier point (c'est l'arrivée)
+  /*
+   * Chaque waypoint (sauf le dernier) génère 2 lignes de hauteur ÉGALE (ROW_H px) :
+   *
+   *  ROW fantôme  : 5 cellules gauche VIDES (height forcée) | Report (rowspan=2) | HE (rowspan=2) | HR (rowspan=2)
+   *  ROW données  : Z / Rm / Dist / GS / TSV                | ← couvertes par rowspan
+   *
+   * → Report est centré exactement à l'intersection de deux blocs de données.
+   * Le dernier waypoint = 1 seule ligne (Report sans leg en dessous).
+   */
+
+  const ROW_H = 60; // px — hauteur unitaire des deux lignes (fantôme = données)
+
+  const BORDER = '2px solid #374151';
+  const BG_L   = '#e2e8f0';   // fond colonnes gauche (données)
+  const BG_R   = '#fff';      // fond colonnes droite (report)
+  const INP    = 'width:100%;border:none;background:transparent;font-size:1.05rem;font-weight:900;text-align:center;padding:.1rem;-webkit-appearance:none;appearance:none;box-sizing:border-box';
+
+  // Bordures pour les 5 cellules gauche (fantôme et données)
+  const tdLeftBase  = `background:${BG_L};padding:.2rem;vertical-align:middle;text-align:center;height:${ROW_H}px`;
+  const tdRightBase = `background:${BG_R};padding:.3rem .4rem;vertical-align:middle`;
+
   const html = [];
+  let cumDist = 0;
+  const n = logRows.length;
+
   logRows.forEach((r, i) => {
-    const isLast = i === logRows.length - 1;
-    const hEstStr = r.hEst || '—';
+    const isLast     = i === n - 1;
+    const hEstStr    = r.hEst || '\u2014';
     const hReelleVal = r.hReelle || '';
     const ecartClass = (() => {
       if (!r.hReelle || !r.hEst) return '';
       const d = minutesDiff(r.hEst, r.hReelle);
       if (d === null) return '';
-      if (d > 2) return 'late';
-      if (d < -2) return 'early';
-      return 'filled';
+      if (d > 2) return 'tw-late';
+      if (d < -2) return 'tw-early';
+      return 'tw-filled';
     })();
 
-    const rmDisp = r.rm ? pad3rm(r.rm) : '';
-
-    // ── Row WPT ──
-    html.push(`<tr class="wpt-row" style="background:#fff">
-      <td></td><td></td><td></td><td></td><td></td>
-      <td><input class="nl-input nl-name" value="${r.name}" placeholder="Point…"
-        onchange="logRows[${i}].name=this.value; renderLogTable()" style="min-width:68px" /></td>
-      <td class="nl-hest" style="text-align:center">${hEstStr}</td>
-      <td style="min-width:110px">
-        <div class="nl-time-wrap">
-          <div class="nl-tw-display ${ecartClass}" id="nl-disp-${i}">${hReelleVal || '--:--'}</div>
-          <div class="nl-tw-zone nl-tw-zone-left"   onclick="adjustLogTime(${i},-1)">−1</div>
-          <div class="nl-tw-zone nl-tw-zone-center" onclick="captureNow(${i})">NOW</div>
-          <div class="nl-tw-zone nl-tw-zone-right"  onclick="adjustLogTime(${i},+1)">+1</div>
-        </div>
-      </td>
-    </tr>`);
-
-    // ── Row LEG (sauf dernier point) ──
-    if (!isLast) {
-      html.push(`<tr class="leg-row" style="background:#f8fafc;border-top:none">
-        <td><input class="nl-input" type="number" value="${r.zSecu}" placeholder="ft"
-          onchange="logRows[${i}].zSecu=this.value" style="min-width:45px" /></td>
-        <td><input class="nl-input" value="${rmDisp}" placeholder="001"
-          onblur="formatRm(this,${i})" onchange="logRows[${i}].rm=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()"
-          style="min-width:42px;text-align:center" /></td>
-        <td><input class="nl-input" type="number" value="${r.dist || ''}" placeholder="NM"
-          onchange="logRows[${i}].dist=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()" style="min-width:40px" /></td>
-        <td><input class="nl-input" type="number" value="${logGsUnit==='kmh' ? Math.round(r.gs*1.852) : r.gs}" placeholder="${logGsUnit==='kmh'?'185':'100'}"
-          onchange="logRows[${i}].gs=Math.max(1,Math.round(gsInputToKt(this.value))); recomputeRow(${i}); recalcHEstimees(); renderLogTable()"
-          style="min-width:42px" /></td>
-        <td style="text-align:center;font-size:.78rem;color:#374151">${r.tempsMin > 0 ? Math.round(r.tempsMin) + '\'' : '—'}</td>
-        <td colspan="3" style="background:#f8fafc"></td>
+    if (isLast) {
+      // ── Dernier point : ligne unique, pas de rowspan ──
+      html.push(`<tr style="height:${ROW_H}px">
+        <td colspan="5" style="${tdLeftBase};border:${BORDER};border-right:none"></td>
+        <td style="${tdRightBase};border:${BORDER};font-weight:900;font-size:1rem">
+          <input style="${INP}" value="${r.name}" placeholder="Report\u2026"
+            onchange="logRows[${i}].name=this.value" />
+        </td>
+        <td style="${tdRightBase};border:${BORDER};border-left:none;text-align:center;font-weight:800;color:var(--navy);font-size:1.05rem">${hEstStr}</td>
+        <td style="${tdRightBase};border:${BORDER};border-left:none;padding:.15rem;min-width:120px">
+          <div class="time-wrap" data-id="nlRow${i}">
+            <input type="time" id="nlRow${i}" class="tw-hidden-input" value="${hReelleVal}" />
+            <div class="tw-display ${ecartClass}" id="tw-disp-nlRow${i}">${hReelleVal || '--:--'}</div>
+            <div class="tw-zone tw-zone-left" data-action="minus">\u22121</div>
+            <div class="tw-zone tw-zone-center" data-action="now"></div>
+            <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
+          </div>
+        </td>
       </tr>`);
+    } else {
+      // ── Ligne fantôme : 5 cellules gauche vides, hauteur forcée, Report démarre ici (rowspan=2) ──
+      const legCumDist = cumDist + (r.dist || 0);
+      const gsVal      = logGsUnit === 'kmh' ? Math.round(r.gs * 1.852) : r.gs;
+      const tempsDisp  = r.tempsMin > 0 ? Math.round(r.tempsMin) + "'" : '';
+
+      html.push(`<tr style="height:${ROW_H}px">
+        <td style="${tdLeftBase};border-left:${BORDER};border-top:${BORDER};border-bottom:none;border-right:none"></td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:none;border-right:none"></td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:none;border-right:none"></td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:none;border-right:none"></td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:none;border-right:${BORDER}"></td>
+        <td style="${tdRightBase};border:${BORDER};font-weight:900;font-size:1rem;height:${ROW_H*2}px;vertical-align:middle" rowspan="2">
+          <input style="${INP}" value="${r.name}" placeholder="Report\u2026"
+            onchange="logRows[${i}].name=this.value" />
+        </td>
+        <td style="${tdRightBase};border:${BORDER};border-left:none;text-align:center;font-weight:800;color:var(--navy);font-size:1.05rem;height:${ROW_H*2}px;vertical-align:middle" rowspan="2">${hEstStr}</td>
+        <td style="${tdRightBase};border:${BORDER};border-left:none;padding:.15rem;min-width:120px;height:${ROW_H*2}px;vertical-align:middle" rowspan="2">
+          <div class="time-wrap" data-id="nlRow${i}">
+            <input type="time" id="nlRow${i}" class="tw-hidden-input" value="${hReelleVal}" />
+            <div class="tw-display ${ecartClass}" id="tw-disp-nlRow${i}">${hReelleVal || '--:--'}</div>
+            <div class="tw-zone tw-zone-left" data-action="minus">\u22121</div>
+            <div class="tw-zone tw-zone-center" data-action="now"></div>
+            <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
+          </div>
+        </td>
+      </tr>`);
+
+      // ── Ligne données : Z / Rm / Dist / GS / TSV ──
+      html.push(`<tr style="height:${ROW_H}px">
+        <td style="${tdLeftBase};border-left:${BORDER};border-top:${BORDER};border-bottom:${BORDER};border-right:none">
+          <div style="font-size:.55rem;color:#475569;font-style:italic;line-height:1">Z min</div>
+          <input type="number" style="${INP}" value="${r.zSecuMin||''}" placeholder="ft"
+            onchange="logRows[${i}].zSecuMin=this.value" inputmode="numeric" />
+        </td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:${BORDER};border-right:none">
+          <input style="${INP}" value="${r.rm ? pad3rm(r.rm)+'°' : ''}" placeholder="001°"
+            onblur="formatRm(this,${i})"
+            onchange="logRows[${i}].rm=parseInt(this.value)||0;recomputeRow(${i});recalcHEstimees();renderLogTable()" />
+        </td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:${BORDER};border-right:none">
+          <input type="number" style="${INP}" value="${r.dist||''}" placeholder="NM"
+            onchange="logRows[${i}].dist=+this.value;recomputeRow(${i});recalcHEstimees();renderLogTable()" inputmode="numeric" />
+          ${legCumDist > 0 ? `<div style="font-size:.55rem;color:#64748b;font-style:italic">${legCumDist}</div>` : ''}
+        </td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:${BORDER};border-right:none">
+          <input type="number" style="${INP}" value="${gsVal||''}" placeholder="${logGsUnit==='kmh'?185:100}"
+            onchange="logRows[${i}].gs=Math.max(1,Math.round(gsInputToKt(this.value)));recomputeRow(${i});recalcHEstimees();renderLogTable()" inputmode="numeric" />
+        </td>
+        <td style="${tdLeftBase};border-left:none;border-top:${BORDER};border-bottom:${BORDER};border-right:${BORDER}">
+          <div style="font-weight:900;font-size:1rem">${tempsDisp}</div>
+        </td>
+      </tr>`);
+
+      cumDist = legCumDist;
     }
   });
 
   tbody.innerHTML = html.join('');
 
-  // Totaux
   const totalDist  = logRows.reduce((s, r) => s + (r.dist || 0), 0);
-  const totalTemps = logRows.slice(0, -1).reduce((s, r) => s + (r.tempsMin || 0), 0); // dernier = arrivée, pas de leg
-  document.getElementById('logTotalDist').textContent  = totalDist.toFixed(0) + ' NM';
-  document.getElementById('logTotalTemps').textContent = Math.round(totalTemps) + '\' (' + toHHMM(Math.round(totalTemps)) + ')';
+  const totalTemps = logRows.slice(0, -1).reduce((s, r) => s + (r.tempsMin || 0), 0);
+  document.getElementById('logTotalDist').textContent  = totalDist.toFixed(0);
+  document.getElementById('logTotalTemps').textContent = Math.round(totalTemps) + "' (" + toHHMM(Math.round(totalTemps)) + ')';
   document.getElementById('logTotalRow').style.display = '';
 
-  // Fuel recap
   const emb      = parseFloat(document.getElementById('logEmbarque').value) || 100;
   const tripFuel = FUEL_CONSO / 60 * totalTemps;
   const rfobArr  = emb - tripFuel;
@@ -2882,7 +2964,6 @@ function renderLogTable() {
 
   computeFinVol(totalTemps);
 }
-
 function formatRm(el, i) {
   const v = el.value.replace(/\D/g,'');
   if (!v) { el.value = ''; return; }
@@ -2900,10 +2981,11 @@ function recomputeRow(i) {
 }
 
 function adjustLogTime(i, delta) {
-  const cur = logRows[i].hReelle;
+  const inp = document.getElementById(`nlRow${i}`);
+  if (!inp) return;
   let totalMin;
-  if (cur) {
-    const [hh, mm] = cur.split(':').map(Number);
+  if (inp.value) {
+    const [hh, mm] = inp.value.split(':').map(Number);
     totalMin = hh * 60 + mm + delta;
   } else {
     const now = new Date();
@@ -2911,26 +2993,169 @@ function adjustLogTime(i, delta) {
   }
   if (totalMin < 0) totalMin += 1440;
   if (totalMin >= 1440) totalMin -= 1440;
-  logRows[i].hReelle = String(Math.floor(totalMin/60)).padStart(2,'0') + ':' + String(totalMin%60).padStart(2,'0');
-  recalcHEstimees();
-  renderLogTable();
-  showFuelCheck(i);
+  inp.value = String(Math.floor(totalMin/60)).padStart(2,'0') + ':' + String(totalMin%60).padStart(2,'0');
+  inp.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 function captureNow(i) {
+  const inp = document.getElementById(`nlRow${i}`);
+  if (!inp) return;
   const now = new Date();
-  logRows[i].hReelle = String(now.getUTCHours()).padStart(2,'0') + ':' + String(now.getUTCMinutes()).padStart(2,'0');
-  recalcHEstimees();
-  renderLogTable();
-  showFuelCheck(i);
+  inp.value = String(now.getUTCHours()).padStart(2,'0') + ':' + String(now.getUTCMinutes()).padStart(2,'0');
+  inp.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
-function onHReelleChange(i, val) {
-  logRows[i].hReelle = val || null;
-  recalcHEstimees();
-  renderLogTable();
-  if (val) showFuelCheck(i);
+function twNowUTC(id) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  const now = new Date();
+  inp.value = String(now.getUTCHours()).padStart(2,'0') + ':' + String(now.getUTCMinutes()).padStart(2,'0');
+  inp.dispatchEvent(new Event('change', {bubbles: true}));
 }
+
+function twAdjust(id, delta) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  let totalMin;
+  if (inp.value) {
+    const [hh, mm] = inp.value.split(':').map(Number);
+    totalMin = hh * 60 + mm + delta;
+  } else {
+    const now = new Date();
+    totalMin = now.getUTCHours() * 60 + now.getUTCMinutes() + delta;
+  }
+  if (totalMin < 0) totalMin += 1440;
+  if (totalMin >= 1440) totalMin -= 1440;
+  inp.value = String(Math.floor(totalMin/60)).padStart(2,'0') + ':' + String(totalMin%60).padStart(2,'0');
+  inp.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function twClear(id) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  inp.value = '';
+  inp.dispatchEvent(new Event('change', {bubbles: true}));
+}
+
+function twSync(id) {
+  const inp  = document.getElementById(id);
+  const disp = document.getElementById('tw-disp-' + id);
+  if (!inp || !disp) return;
+  disp.textContent = inp.value || '--:--';
+}
+
+/* ===== Gestures time-wrap (long press = éditer, double clic = effacer, clic = NOW) ===== */
+(function() {
+  const LONG_MS = 600, DBL_MS = 320;
+  const s = {};
+  function st(id) { if (!s[id]) s[id] = {t:null, fired:false, last:0}; return s[id]; }
+
+  function openEdit(id) {
+    const wrap = document.querySelector(`.time-wrap[data-id="${id}"]`);
+    const inp  = document.getElementById(id);
+    const disp = document.getElementById('tw-disp-' + id);
+    if (!wrap || !inp || !disp) return;
+    if (document.querySelector(`.tw-editor[data-for="${id}"]`)) return;
+    const rect = wrap.getBoundingClientRect();
+    const ed = document.createElement('input');
+    ed.type = 'text'; ed.className = 'input tw-editor';
+    ed.setAttribute('data-for', id);
+    ed.value = inp.value || ''; ed.placeholder = 'HH:MM';
+    ed.maxLength = 5; ed.inputMode = 'numeric';
+    ed.setAttribute('enterkeyhint', 'done');
+    ed.style.cssText = `position:fixed;top:${rect.top}px;left:${rect.left}px;width:${rect.width}px;height:${rect.height}px;z-index:9999;`;
+    disp.style.visibility = 'hidden';
+    document.body.appendChild(ed);
+    setTimeout(() => { ed.focus(); ed.select(); }, 30);
+    let done = false;
+    function commit() {
+      if (done) return; done = true;
+      const m = ed.value.trim().match(/^(\d{1,2}):?(\d{2})$/);
+      if (m) {
+        const hh = m[1].padStart(2,'0'), mm = m[2];
+        if (+hh < 24 && +mm < 60) {
+          inp.value = hh + ':' + mm;
+          inp.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+      }
+      ed.remove(); disp.style.visibility = '';
+    }
+    ed.addEventListener('blur', commit);
+    ed.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') { done = true; ed.remove(); disp.style.visibility = ''; }
+    });
+  }
+
+  /* clicks −1 / now / +1 */
+  const clickTimers = {};
+  document.addEventListener('click', function(e) {
+    const zone = e.target.closest('.tw-zone'); if (!zone) return;
+    const wrap = zone.closest('.time-wrap'); if (!wrap) return;
+    const id   = wrap.dataset.id; if (!id) return;
+    if (_twTouchHandled && (zone.classList.contains('tw-zone-left') || zone.classList.contains('tw-zone-right'))) return;
+    const action = zone.dataset.action;
+    if (action === 'minus') { twAdjust(id, -1); return; }
+    if (action === 'plus')  { twAdjust(id, +1); return; }
+    if (action === 'now') {
+      // Délai pour laisser passer un éventuel dblclick
+      clearTimeout(clickTimers[id]);
+      clickTimers[id] = setTimeout(() => { twNowUTC(id); }, DBL_MS + 20);
+    }
+    if (window.getSelection) window.getSelection().removeAllRanges();
+  });
+
+  /* long press / double tap sur centre */
+  function onStart(id) { const o=st(id); o.fired=false; clearTimeout(o.t); o.t=setTimeout(()=>{ o.fired=true; openEdit(id); },LONG_MS); }
+  function onEnd(id)   { const o=st(id); clearTimeout(o.t); if(o.fired) return; const now=Date.now(); if(now-o.last<DBL_MS){ o.last=0; twClear(id); } else { o.last=now; } }
+  function onCancel(id){ clearTimeout(st(id).t); }
+
+  document.addEventListener('touchstart', function(e) {
+    const z = e.target.closest('.tw-zone-center'); if (!z) return;
+    const id = z.closest('.time-wrap')?.dataset?.id; if (!id) return;
+    onStart(id);
+  }, {passive:true});
+
+  let _twTouchHandled = false;
+  document.addEventListener('touchend', function(e) {
+    const zone = e.target.closest('.tw-zone-left, .tw-zone-right'); if (!zone) return;
+    const wrap = zone.closest('.time-wrap'); if (!wrap) return;
+    const id = wrap.dataset.id; if (!id) return;
+    const action = zone.dataset.action;
+    if (action === 'minus') twAdjust(id, -1);
+    else if (action === 'plus') twAdjust(id, +1);
+    if (window.getSelection) window.getSelection().removeAllRanges();
+    _twTouchHandled = true;
+    setTimeout(() => { _twTouchHandled = false; }, 400);
+  }, {passive:true});
+  document.addEventListener('touchend', function(e) {
+    const z = e.target.closest('.tw-zone-center'); if (!z) return;
+    const id = z.closest('.time-wrap')?.dataset?.id; if (!id) return;
+    onEnd(id);
+  }, {passive:true});
+  document.addEventListener('touchmove', function(e) {
+    const z = e.target.closest('.tw-zone-center'); if (!z) return;
+    const id = z.closest('.time-wrap')?.dataset?.id; if (!id) return;
+    onCancel(id);
+  }, {passive:true});
+
+  /* desktop : mousedown long = éditer, dblclick = effacer */
+  let mTimer = null;
+  document.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    const z = e.target.closest('.tw-zone-center'); if (!z) return;
+    const id = z.closest('.time-wrap')?.dataset?.id; if (!id) return;
+    const o = st(id); o.fired = false;
+    mTimer = setTimeout(() => { o.fired = true; openEdit(id); }, LONG_MS);
+  });
+  document.addEventListener('mouseup', () => { clearTimeout(mTimer); mTimer = null; });
+  document.addEventListener('dblclick', function(e) {
+    const z = e.target.closest('.tw-zone-center'); if (!z) return;
+    const id = z.closest('.time-wrap')?.dataset?.id; if (!id) return;
+    clearTimeout(clickTimers[id]); // annule le clic simple en attente
+    twClear(id);
+  });
+})();
 
 // --- Fuel check popup ---
 function showFuelCheck(idx) {
@@ -2992,8 +3217,44 @@ function resetLog() {
   renderLogTable();
 }
 
-document.getElementById('logHBloc').addEventListener('change', () => { recalcHEstimees(); renderLogTable(); computeFinVol(); });
-document.getElementById('logEmbarque').addEventListener('input', () => { if (logRows.length) renderLogTable(); computeFinVol(); });
+// H bloc → recalc + twSync
+document.getElementById('logHBloc').addEventListener('change', () => {
+  twSync('logHBloc');
+  recalcHEstimees();
+  renderLogTable();
+  computeFinVol();
+});
+document.getElementById('logEmbarque').addEventListener('input', () => {
+  if (logRows.length) renderLogTable();
+  computeFinVol();
+});
+
+// Délégation : changement sur les hidden inputs nlRow{i}
+document.addEventListener('change', function(e) {
+  const inp = e.target;
+  if (!inp.id || !inp.id.startsWith('nlRow')) return;
+  const i = parseInt(inp.id.replace('nlRow',''), 10);
+  if (isNaN(i) || i >= logRows.length) return;
+  const val = inp.value || null;
+  logRows[i].hReelle = val;
+  twSync(inp.id);
+  // Mettre à jour la classe couleur du display
+  const disp = document.getElementById('tw-disp-' + inp.id);
+  if (disp) {
+    disp.classList.remove('tw-filled','tw-late','tw-early');
+    if (val && logRows[i].hEst) {
+      const d = minutesDiff(logRows[i].hEst, val);
+      if (d !== null) {
+        if (d > 2) disp.classList.add('tw-late');
+        else if (d < -2) disp.classList.add('tw-early');
+        else disp.classList.add('tw-filled');
+      }
+    }
+  }
+  recalcHEstimees();
+  renderLogTable();
+  if (val) showFuelCheck(i);
+});
 
 // Sync ICAO onglet perfs → log au chargement de l'onglet log
 document.getElementById('tabLog').addEventListener('click', () => {
@@ -3001,6 +3262,7 @@ document.getElementById('tabLog').addEventListener('click', () => {
   const arr = document.getElementById('arrIcao')?.value;
   if (dep && !document.getElementById('logDepIcao').value) document.getElementById('logDepIcao').value = dep;
   if (arr && !document.getElementById('logArrIcao').value) document.getElementById('logArrIcao').value = arr;
+  twSync('logHBloc');
 });
 
 /* ===================== README accordéon ===================== */
