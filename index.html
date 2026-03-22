@@ -1053,7 +1053,7 @@ function updateWindDisplay(side) {
       if (c.tail > worst.val) worst = { type:'arrière', val:c.tail, dir };
       else if (c.tail === 0 && c.xw > worst.val) worst = { type:'travers', val:c.xw, dir };
     }
-    xwElem.textContent = `${baseText}\n+${Math.round(worst.val)} kt ${worst.type} (${pad3(worst.dir)}°) sur ${pad3(f)}V${pad3(t)}`;
+    xwElem.textContent = `${worstX} kt (moyen)\n${Math.round(worst.val)} kt max secteur ${pad3(f)}V${pad3(t)} (${pad3(worst.dir)}°)`;
     crosswindLimitColor(side, worst.val);
   } else {
     xwElem.textContent = baseText;
