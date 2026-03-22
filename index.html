@@ -115,6 +115,24 @@
     .vrb-sep { font-weight: 700; color: #6b7280; flex-shrink: 0; }
     .input.is-invalid { border-color: var(--red-bad) !important; }
 
+    /* ── Wind direction : masquer la flèche de datalist ── */
+    input[list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0; }
+    input[list] { -webkit-appearance: none; appearance: none; }
+
+    /* ── Réduction taille sur mobile ── */
+    @media (max-width: 1023px) {
+      html, body { font-size: 14px; }
+      .card-content { padding: .85rem; }
+      .label.is-small { font-size: .65rem; }
+      .input, .select select, .button { font-size: .82rem !important; padding: .45em .65em; min-height: 36px; }
+      .kpi-value { font-size: 1.7rem; }
+      .wind-cell .wc-value { font-size: .82rem; }
+      .perf-field .pf-value { font-size: .82rem; }
+      .title.is-6 { font-size: .82rem !important; }
+      .tag.is-medium { font-size: .75rem; }
+      .columns.is-variable.is-2 { --columnGap: .35rem; }
+    }
+
     /* ── Mobile tab toggle ── */
     .tab-toggle {
       display: flex;
@@ -871,7 +889,21 @@ function validateVrb(side) {
 
 /* ===================== Recalcul vent sur input ===================== */
 ['dep','arr'].forEach(side => {
-  ['WindDir','WindKt','WindGust','VrbFrom','VrbTo'].forEach(suffix => {
+  // Direction : formatage 3 chiffres sur blur (sauf VRB)
+  const dirEl = document.getElementById(side+'WindDir');
+  if (dirEl) {
+    dirEl.addEventListener('blur', () => {
+      const v = dirEl.value.trim().toUpperCase();
+      if (v && v !== 'VRB') {
+        const n = parseInt(v.replace(/\D/g,''), 10);
+        if (!isNaN(n)) dirEl.value = pad3(Math.max(1, Math.min(360, n)));
+      }
+      updateWindDisplay(side);
+    });
+    dirEl.addEventListener('input', () => updateWindDisplay(side));
+  }
+
+  ['WindKt','WindGust','VrbFrom','VrbTo'].forEach(suffix => {
     const el = document.getElementById(side+suffix);
     if (el) {
       el.addEventListener('input', () => updateWindDisplay(side));
