@@ -903,13 +903,48 @@ function validateVrb(side) {
     dirEl.addEventListener('input', () => updateWindDisplay(side));
   }
 
-  ['WindKt','WindGust','VrbFrom','VrbTo'].forEach(suffix => {
+  ['WindKt','WindGust'].forEach(suffix => {
     const el = document.getElementById(side+suffix);
     if (el) {
       el.addEventListener('input', () => updateWindDisplay(side));
       el.addEventListener('blur',  () => updateWindDisplay(side));
     }
   });
+
+  // VRB From/To : formatage 3 chiffres sur blur
+  ['VrbFrom','VrbTo'].forEach(suffix => {
+    const el = document.getElementById(side+suffix);
+    if (el) {
+      el.addEventListener('input', () => updateWindDisplay(side));
+      el.addEventListener('blur', () => {
+        const v = el.value.replace(/\D/g,'');
+        if (v) {
+          const n = Math.max(10, Math.min(360, parseInt(v, 10)));
+          el.value = pad3(n);
+        }
+        validateVrb(side);
+        updateWindDisplay(side);
+      });
+    }
+  });
+
+  // Élévation : max 4 chiffres
+  const altEl = document.getElementById(side+'Alt');
+  if (altEl) {
+    altEl.addEventListener('input', () => {
+      const v = altEl.value.replace(/\D/g,'').slice(0, 4);
+      altEl.value = v;
+    });
+  }
+
+  // Température : max 2 chiffres (signe autorisé)
+  const oatEl = document.getElementById(side+'Oat');
+  if (oatEl) {
+    oatEl.addEventListener('blur', () => {
+      const n = parseInt(oatEl.value, 10);
+      if (!isNaN(n)) oatEl.value = Math.max(-99, Math.min(99, n));
+    });
+  }
 });
 
 /* ===================== COMPOSANTES VENT ===================== */
