@@ -233,8 +233,117 @@
       background: var(--green-ok);
       border-color: var(--green-ok);
     }
+    .main-tab-btn.active.log {
+      background: #7c3aed;
+      border-color: #7c3aed;
+    }
     .tab-section { display: none; }
     .tab-section.active { display: block; }
+
+    /* ── Nav Log ── */
+    .navlog-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .navlog-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .78rem;
+      min-width: 700px;
+    }
+    .navlog-table th {
+      background: var(--navy);
+      color: #fff;
+      padding: .45rem .5rem;
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .navlog-table th:first-child { border-radius: 8px 0 0 0; }
+    .navlog-table th:last-child  { border-radius: 0 8px 0 0; }
+    .navlog-table td {
+      padding: .3rem .4rem;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    .navlog-table tr:last-child td { border-bottom: none; }
+    .navlog-table tr.total-row td {
+      background: #f1f5f9;
+      font-weight: 800;
+      border-top: 2px solid var(--navy);
+    }
+    .navlog-table input.nl-input {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: .3rem .4rem;
+      font-size: .78rem;
+      background: #f8fafc;
+      text-align: center;
+      min-width: 0;
+    }
+    .navlog-table input.nl-input:focus {
+      outline: none;
+      border-color: var(--navy);
+      background: #fff;
+    }
+    .nl-hest  { color: var(--navy); font-weight: 700; text-align: center; white-space: nowrap; }
+    .nl-treelle {
+      background: #fff;
+      border: 1.5px solid #d1d5db;
+      border-radius: 6px;
+      padding: .3rem .4rem;
+      width: 100%;
+      font-size: .78rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      min-width: 0;
+    }
+    .nl-treelle.filled {
+      background: #ecfdf5;
+      border-color: var(--green-border);
+      color: var(--green-ok);
+      font-weight: 700;
+    }
+    .nl-treelle.late  { background: #fef2f2; border-color: var(--red-border); color: var(--red-bad); font-weight:700; }
+    .nl-treelle.early { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; font-weight:700; }
+
+    /* ── Fuel check popup ── */
+    .fuelcheck-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fuelcheck-popup {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      width: min(360px, 92vw);
+      box-shadow: 0 20px 60px rgba(0,0,0,.6);
+    }
+    .fuelcheck-title {
+      font-size: 1.1rem; font-weight: 800; color: #38bdf8;
+      margin-bottom: .75rem; letter-spacing: .04em;
+    }
+    .fuelcheck-row {
+      display: flex; justify-content: space-between;
+      padding: .3rem 0; border-bottom: 1px solid #1e293b;
+      font-size: .85rem;
+    }
+    .fuelcheck-row:last-of-type { border-bottom: none; }
+    .fuelcheck-row .fck-label { color: #94a3b8; }
+    .fuelcheck-row .fck-val   { font-weight: 700; color: #f1f5f9; }
+    .fuelcheck-row .fck-val.ok  { color: #4ade80; }
+    .fuelcheck-row .fck-val.bad { color: #f87171; }
+    .fuelcheck-row .fck-val.cyan { color: #38bdf8; }
+    .fuelcheck-btns { display: flex; gap: 8px; margin-top: .9rem; }
+    .fuelcheck-btns button { flex:1; border:none; border-radius: 8px; padding: .6rem; font-weight:700; font-size:.85rem; cursor:pointer; }
 
     /* ── Fuel section ── */
     .branch-row {
@@ -386,6 +495,7 @@
   <div class="main-tabs">
     <button class="main-tab-btn active" id="tabPerf" onclick="switchMainTab('perf')">Performances</button>
     <button class="main-tab-btn fuel"   id="tabFuel" onclick="switchMainTab('fuel')">Carburant</button>
+    <button class="main-tab-btn log"    id="tabLog"  onclick="switchMainTab('log')">Log de Nav</button>
   </div>
 
   <!-- ════════════════ ONGLET PERFORMANCES ════════════════ -->
@@ -1072,6 +1182,177 @@
 
   </div><!-- /sectionFuel -->
 
+  <!-- ════════════════ ONGLET LOG DE NAV ════════════════ -->
+  <div id="sectionLog" class="tab-section">
+
+    <!-- En-tête vol -->
+    <div class="card mb-3">
+      <div class="card-content">
+        <p class="card-title">En-tête du vol</p>
+        <div class="columns is-mobile is-multiline is-variable is-2">
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">Terrain départ (ICAO)</label>
+              <div class="control"><input id="logDepIcao" class="input" maxlength="4" placeholder="LFOB" /></div>
+            </div>
+          </div>
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">Terrain arrivée (ICAO)</label>
+              <div class="control"><input id="logArrIcao" class="input" maxlength="4" placeholder="LFPG" /></div>
+            </div>
+          </div>
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">Date</label>
+              <div class="control"><input id="logDate" class="input" type="date" /></div>
+            </div>
+          </div>
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">H bloc départ (UTC)</label>
+              <div class="control"><input id="logHBloc" class="input" type="time" placeholder="HH:MM" /></div>
+            </div>
+          </div>
+          <div class="column is-half-mobile">
+            <div class="field">
+              <label class="label is-small">Carburant embarqué (L)</label>
+              <div class="control"><input id="logEmbarque" class="input" type="number" value="100" min="0" max="100" /></div>
+            </div>
+          </div>
+          <div class="column is-half-mobile is-flex is-align-items-flex-end">
+            <button class="button is-fullwidth" style="background:#7c3aed;color:#fff;font-weight:700;border:none;border-radius:10px" onclick="importFromFuel()">
+              ⟵ Importer depuis Carburant
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table log -->
+    <div class="card mb-3">
+      <div class="card-content">
+        <p class="card-title" style="margin-bottom:.75rem">Log de navigation</p>
+        <div class="navlog-table-wrap">
+          <table class="navlog-table" id="logTable">
+            <thead>
+              <tr>
+                <th style="min-width:80px">Position</th>
+                <th style="min-width:55px">Alt sécu (ft)</th>
+                <th style="min-width:48px">Rm (°)</th>
+                <th style="min-width:48px">Dist (NM)</th>
+                <th style="min-width:48px">GS (kt)</th>
+                <th style="min-width:48px">Temps (min)</th>
+                <th style="min-width:65px">H estimée</th>
+                <th style="min-width:72px">H réelle</th>
+                <th style="min-width:65px">Radio</th>
+                <th style="min-width:65px">RadioNav</th>
+              </tr>
+            </thead>
+            <tbody id="logTableBody">
+              <tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:1.5rem">
+                Importer depuis l'onglet Carburant ou ajouter des branches manuellement.
+              </td></tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row" id="logTotalRow" style="display:none">
+                <td><strong>TOTAL</strong></td>
+                <td></td><td></td>
+                <td id="logTotalDist">—</td>
+                <td></td>
+                <td id="logTotalTemps">—</td>
+                <td></td><td></td><td></td><td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Fuel recap -->
+        <div id="logFuelRecap" class="mt-3" style="display:none">
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="perf-field">
+                <div class="pf-label">Trip fuel prévu</div>
+                <div class="pf-value" id="logTripFuel">—</div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="perf-field">
+                <div class="pf-label">RFOB à l'atterrissage (prévu)</div>
+                <div class="pf-value" id="logRfobArr">—</div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="perf-field">
+                <div class="pf-label">Autonomie restante</div>
+                <div class="pf-value" id="logAutoRestante">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bouton ajouter branche manuelle -->
+    <div class="columns is-mobile is-variable is-2 mb-4">
+      <div class="column">
+        <button class="button is-fullwidth" style="border-radius:10px;font-weight:700;border:2px dashed #7c3aed;color:#7c3aed;background:#fdf4ff" onclick="addLogRow()">
+          + Ajouter un point manuellement
+        </button>
+      </div>
+      <div class="column is-narrow">
+        <button class="button is-light is-fullwidth" style="font-weight:700;border-radius:10px" onclick="resetLog()">
+          Effacer
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /sectionLog -->
+
+  <!-- Fuel check popup -->
+  <div id="fuelCheckOverlay" class="fuelcheck-overlay" style="display:none" onclick="closeFuelCheck(event)">
+    <div class="fuelcheck-popup">
+      <div class="fuelcheck-title" id="fuelCheckTitle">FUEL CHECK — B1</div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">H réelle</span>
+        <span class="fck-val cyan" id="fckHReelle">—</span>
+      </div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">H estimée (plan)</span>
+        <span class="fck-val" id="fckHEst">—</span>
+      </div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">Écart</span>
+        <span class="fck-val" id="fckEcart">—</span>
+      </div>
+      <div class="fuelcheck-row" style="border-top:1px solid #334155;margin-top:.4rem;padding-top:.4rem">
+        <span class="fck-label">GS réel</span>
+        <span class="fck-val cyan" id="fckGsReel">—</span>
+      </div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">GS plan</span>
+        <span class="fck-val" id="fckGsPlan">—</span>
+      </div>
+      <div class="fuelcheck-row" style="border-top:1px solid #334155;margin-top:.4rem;padding-top:.4rem">
+        <span class="fck-label">CONSO écoulée</span>
+        <span class="fck-val" id="fckConso">—</span>
+      </div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">RFOB estimé</span>
+        <span class="fck-val" id="fckRfob">—</span>
+      </div>
+      <div class="fuelcheck-row">
+        <span class="fck-label">Autonomie restante</span>
+        <span class="fck-val" id="fckAuto">—</span>
+      </div>
+      <div class="fuelcheck-btns">
+        <button style="background:#1e3a5f;color:#93c5fd" onclick="closeFuelCheck()">Annuler</button>
+        <button style="background:#16a34a;color:#fff" onclick="validateFuelCheck()">Valider</button>
+      </div>
+    </div>
+  </div>
+
   <div class="credits">
     <div>Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé</div>
     <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
@@ -1087,6 +1368,10 @@
       <div class="readme-section">
         <h3>Vue d'ensemble</h3>
         <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes et ne sont jamais modifiées — seule l'interpolation entre les points du tableau varie selon les paramètres saisis.</p>
+        <p style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:.65rem .9rem;color:#7f1d1d;font-weight:600">
+          ⚠ Cet outil est une aide à la préparation du vol. La <strong>source officielle reste le manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.<br><br>
+          Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
+        </p>
       </div>
 
       <div class="readme-section">
@@ -2071,10 +2356,12 @@ document.getElementById('btnPrint').addEventListener('click', () => {
 
 /* ===================== NAVIGATION PRINCIPALE ===================== */
 function switchMainTab(tab) {
-  document.getElementById('sectionPerf').classList.toggle('active', tab === 'perf');
-  document.getElementById('sectionFuel').classList.toggle('active', tab === 'fuel');
-  document.getElementById('tabPerf').classList.toggle('active', tab === 'perf');
-  document.getElementById('tabFuel').classList.toggle('active', tab === 'fuel');
+  ['perf','fuel','log'].forEach(t => {
+    document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1))
+      .classList.toggle('active', t === tab);
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1))
+      .classList.toggle('active', t === tab);
+  });
 }
 
 /* ===================== CARBURANT ===================== */
@@ -2293,6 +2580,245 @@ function computeFuel() {
 
   document.getElementById('fuelResults').style.display = 'block';
 }
+
+/* ===================== LOG DE NAV ===================== */
+let logRows = [];       // [{name, zSecu, rm, dist, gs, tempsMin, hEst, hReelle, radio, radionav}]
+let fuelCheckContext = null; // branche en cours de validation
+
+// --- Helpers temps ---
+function parseHHMM(str) {
+  if (!str) return null;
+  const m = str.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+function toHHMM(totalMin) {
+  if (totalMin === null || isNaN(totalMin)) return '—';
+  const h = Math.floor(((totalMin % 1440) + 1440) % 1440 / 60);
+  const m = Math.round(((totalMin % 1440) + 1440) % 1440 % 60);
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+function minutesDiff(h1str, h2str) {
+  const h1 = parseHHMM(h1str), h2 = parseHHMM(h2str);
+  if (h1 === null || h2 === null) return null;
+  let d = h2 - h1;
+  if (d < -720) d += 1440; // passage minuit
+  return d;
+}
+function windAxial(rm, wDir, wKt) {
+  if (!wDir || !wKt) return 0;
+  const ang = ((wDir - rm + 540) % 360) - 180;
+  return wKt * Math.cos(ang * Math.PI / 180);
+}
+
+// --- Import depuis onglet carburant ---
+function importFromFuel() {
+  const nb = fuelNbBranches;
+  logRows = [];
+  for (let i = 1; i <= nb; i++) {
+    const dist  = parseFloat(document.getElementById(`fuelB${i}Dist`)?.value || '0') || 0;
+    const cap   = parseFloat(document.getElementById(`fuelB${i}Cap`)?.value  || '0') || 0;
+    const wDir  = parseFloat(document.getElementById(`fuelB${i}WDir`)?.value || '0') || 0;
+    const wKt   = parseFloat(document.getElementById(`fuelB${i}WKt`)?.value  || '0') || 0;
+    const axial = windAxial(cap, wDir, wKt);
+    const gs    = Math.max(1, Math.round(FUEL_SPEED + axial));
+    const tempsMin = dist > 0 ? (dist / gs * 60) : 0;
+    logRows.push({ name: `B${i}`, zSecu: '', rm: cap ? Math.round(cap) : '', dist, gs, tempsMin, hEst: null, hReelle: null, radio: '', radionav: '' });
+  }
+  // Sync embarqué
+  const emb = parseFloat(document.getElementById('fuelEmbarque').value) || 100;
+  document.getElementById('logEmbarque').value = emb;
+
+  recalcHEstimees();
+  renderLogTable();
+}
+
+// --- Ajouter ligne manuelle ---
+function addLogRow() {
+  logRows.push({ name: '', zSecu: '', rm: '', dist: 0, gs: FUEL_SPEED, tempsMin: 0, hEst: null, hReelle: null, radio: '', radionav: '' });
+  recalcHEstimees();
+  renderLogTable();
+  // Focus sur le nouveau nom
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('#logTableBody .nl-name');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }, 50);
+}
+
+// --- Recalcul H estimées depuis H bloc ---
+function recalcHEstimees() {
+  const hBloc = parseHHMM(document.getElementById('logHBloc').value);
+  let cumMin = hBloc !== null ? hBloc : null;
+  // Roulage 5 min
+  if (cumMin !== null) cumMin += 5;
+  for (let i = 0; i < logRows.length; i++) {
+    const r = logRows[i];
+    // Si une H réelle précédente connue, utiliser ça comme base
+    const prevReal = i > 0 ? parseHHMM(logRows[i-1].hReelle) : (hBloc !== null ? hBloc + 5 : null);
+    if (prevReal !== null) {
+      cumMin = prevReal + Math.round(r.tempsMin);
+    } else if (cumMin !== null) {
+      cumMin = cumMin + Math.round(r.tempsMin);
+    }
+    r.hEst = cumMin !== null ? toHHMM(cumMin) : null;
+  }
+}
+
+// --- Render ---
+function renderLogTable() {
+  const tbody = document.getElementById('logTableBody');
+  if (logRows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:1.5rem">Aucun point. Importer depuis Carburant ou ajouter manuellement.</td></tr>';
+    document.getElementById('logTotalRow').style.display = 'none';
+    document.getElementById('logFuelRecap').style.display = 'none';
+    return;
+  }
+
+  tbody.innerHTML = logRows.map((r, i) => {
+    const hEstStr = r.hEst || '—';
+    const hReelleVal = r.hReelle || '';
+    const ecartClass = (() => {
+      if (!r.hReelle || !r.hEst) return '';
+      const d = minutesDiff(r.hEst, r.hReelle);
+      if (d === null) return '';
+      if (d > 2) return 'late';
+      if (d < -2) return 'early';
+      return 'filled';
+    })();
+
+    return `<tr>
+      <td><input class="nl-input nl-name" value="${r.name}" placeholder="Point…"
+        onchange="logRows[${i}].name=this.value; renderLogTable()" style="min-width:70px" /></td>
+      <td><input class="nl-input" type="number" value="${r.zSecu}" placeholder="ft"
+        onchange="logRows[${i}].zSecu=this.value" style="min-width:50px" /></td>
+      <td><input class="nl-input" type="number" value="${r.rm}" placeholder="°"
+        onchange="logRows[${i}].rm=+this.value; recomputeRow(${i}); renderLogTable()" style="min-width:45px" /></td>
+      <td><input class="nl-input" type="number" value="${r.dist}" placeholder="NM"
+        onchange="logRows[${i}].dist=+this.value; recomputeRow(${i}); recalcHEstimees(); renderLogTable()" style="min-width:45px" /></td>
+      <td style="text-align:center;font-weight:600;color:var(--navy)">${r.gs ? r.gs + ' kt' : '—'}</td>
+      <td style="text-align:center">${r.tempsMin > 0 ? Math.round(r.tempsMin) + ' min' : '—'}</td>
+      <td class="nl-hest">${hEstStr}</td>
+      <td><input class="nl-treelle ${ecartClass}" value="${hReelleVal}" placeholder="HH:MM" type="time"
+        onchange="onHReelleChange(${i}, this.value)" /></td>
+      <td><input class="nl-input" value="${r.radio}" placeholder="fréq."
+        onchange="logRows[${i}].radio=this.value" style="min-width:55px" /></td>
+      <td><input class="nl-input" value="${r.radionav}" placeholder="VOR/NDB…"
+        onchange="logRows[${i}].radionav=this.value" style="min-width:60px" /></td>
+    </tr>`;
+  }).join('');
+
+  // Totaux
+  const totalDist  = logRows.reduce((s, r) => s + (r.dist || 0), 0);
+  const totalTemps = logRows.reduce((s, r) => s + (r.tempsMin || 0), 0);
+  document.getElementById('logTotalDist').textContent  = totalDist.toFixed(0) + ' NM';
+  document.getElementById('logTotalTemps').textContent = Math.round(totalTemps) + ' min (' + toHHMM(Math.round(totalTemps)) + ')';
+  document.getElementById('logTotalRow').style.display = '';
+
+  // Fuel recap
+  const emb      = parseFloat(document.getElementById('logEmbarque').value) || 100;
+  const tripFuel = FUEL_CONSO / 60 * totalTemps;
+  const rfobArr  = emb - tripFuel;
+  const autoRest = rfobArr / FUEL_CONSO * 60;
+  document.getElementById('logTripFuel').textContent    = tripFuel.toFixed(1) + ' L';
+  document.getElementById('logRfobArr').textContent     = Math.max(0, rfobArr).toFixed(1) + ' L';
+  document.getElementById('logAutoRestante').textContent = autoRest > 0 ? Math.round(autoRest) + ' min' : '0 min';
+  document.getElementById('logFuelRecap').style.display = '';
+}
+
+function recomputeRow(i) {
+  const r = logRows[i];
+  if (r.dist > 0 && r.gs > 0) {
+    r.tempsMin = r.dist / r.gs * 60;
+  }
+}
+
+// --- H réelle changée ---
+function onHReelleChange(i, val) {
+  logRows[i].hReelle = val || null;
+  recalcHEstimees();
+  renderLogTable();
+  // Afficher fuel check si H réelle saisie
+  if (val) showFuelCheck(i);
+}
+
+// --- Fuel check popup ---
+function showFuelCheck(idx) {
+  const r = logRows[idx];
+  if (!r.hReelle) return;
+
+  const emb = parseFloat(document.getElementById('logEmbarque').value) || 100;
+  const hBloc = parseHHMM(document.getElementById('logHBloc').value);
+
+  // Temps écoulé depuis bloc départ jusqu'à ce point
+  const hBlocBase = hBloc !== null ? hBloc : parseHHMM(logRows[0].hEst);
+  const hReelleMin = parseHHMM(r.hReelle);
+  const elapsedMin = hBlocBase !== null && hReelleMin !== null
+    ? minutesDiff(toHHMM(hBlocBase), r.hReelle) + 5 // +5 roulage
+    : null;
+
+  // CONSO et RFOB
+  const conso = elapsedMin !== null ? FUEL_CONSO / 60 * elapsedMin : null;
+  const rfob  = conso !== null ? emb - conso + FUEL_UNUSABLE : null; // +10 car embarqué = utilisables
+
+  // GS réel sur cette branche
+  const prevReal = idx > 0 ? parseHHMM(logRows[idx-1].hReelle) : (hBloc !== null ? hBloc + 5 : null);
+  const legActualMin = prevReal !== null && hReelleMin !== null ? hReelleMin - prevReal : null;
+  const gsReel = legActualMin !== null && r.dist > 0 ? Math.round(r.dist / legActualMin * 60) : null;
+
+  // Écart
+  const ecartMin = r.hEst ? minutesDiff(r.hEst, r.hReelle) : null;
+  let ecartStr = '—', ecartClass = '';
+  if (ecartMin !== null) {
+    if (ecartMin > 0) { ecartStr = '+' + ecartMin + ' min (retard)'; ecartClass = 'bad'; }
+    else if (ecartMin < 0) { ecartStr = ecartMin + ' min (avance)'; ecartClass = 'ok'; }
+    else { ecartStr = 'Dans les temps'; ecartClass = 'ok'; }
+  }
+
+  document.getElementById('fuelCheckTitle').textContent = 'FUEL CHECK — ' + (r.name || `B${idx+1}`);
+  document.getElementById('fckHReelle').textContent = r.hReelle;
+  document.getElementById('fckHEst').textContent    = r.hEst || '—';
+  document.getElementById('fckEcart').textContent   = ecartStr;
+  document.getElementById('fckEcart').className     = 'fck-val ' + ecartClass;
+  document.getElementById('fckGsReel').textContent  = gsReel !== null ? gsReel + ' kt' : '—';
+  document.getElementById('fckGsPlan').textContent  = r.gs ? r.gs + ' kt' : '—';
+  document.getElementById('fckConso').textContent   = conso !== null ? conso.toFixed(1) + ' L' : '—';
+  document.getElementById('fckRfob').textContent    = rfob !== null ? rfob.toFixed(1) + ' L' : '—';
+  document.getElementById('fckRfob').className      = 'fck-val ' + (rfob !== null ? (rfob >= 15 ? 'ok' : 'bad') : '');
+  document.getElementById('fckAuto').textContent    = rfob !== null ? Math.round(rfob / FUEL_CONSO * 60) + ' min' : '—';
+
+  fuelCheckContext = idx;
+  document.getElementById('fuelCheckOverlay').style.display = 'flex';
+}
+
+function closeFuelCheck(e) {
+  if (e && e.target !== document.getElementById('fuelCheckOverlay')) return;
+  document.getElementById('fuelCheckOverlay').style.display = 'none';
+  fuelCheckContext = null;
+}
+
+function validateFuelCheck() {
+  document.getElementById('fuelCheckOverlay').style.display = 'none';
+  fuelCheckContext = null;
+}
+
+function resetLog() {
+  logRows = [];
+  document.getElementById('logHBloc').value    = '';
+  document.getElementById('logDate').value     = '';
+  document.getElementById('logDepIcao').value  = '';
+  document.getElementById('logArrIcao').value  = '';
+  document.getElementById('logEmbarque').value = '100';
+  renderLogTable();
+}
+
+// Sync H bloc → recalc estimées en temps réel
+document.getElementById('logHBloc').addEventListener('change', () => {
+  recalcHEstimees();
+  renderLogTable();
+});
+document.getElementById('logEmbarque').addEventListener('input', () => {
+  if (logRows.length) renderLogTable();
+});
 
 /* ===================== README accordéon ===================== */
 function toggleReadme() {
