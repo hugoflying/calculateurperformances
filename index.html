@@ -380,6 +380,71 @@
       .column.tab-col.hidden-mobile { display: none !important; }
     }
 
+    /* ══════════════════ RUNWAY PICKER ══════════════════ */
+    .runway-picker { margin-bottom: .5rem; }
+    .runway-picker-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted); margin-bottom: .35rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .rwy-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .rwy-btn {
+      display: flex; flex-direction: column; align-items: center;
+      background: #f1f5f9; border: 1.5px solid var(--border);
+      border-radius: 9px; padding: .4rem .75rem; cursor: pointer;
+      transition: all .15s; font-family: 'DM Sans', sans-serif;
+      min-width: 70px;
+    }
+    .rwy-btn:hover { border-color: var(--navy); background: var(--navy-light); }
+    .rwy-btn.active { background: var(--navy-light); border-color: var(--navy); }
+    .rwy-btn .rwy-desig { font-size: .95rem; font-weight: 800; color: var(--navy); font-family: 'DM Mono', monospace; }
+    .rwy-btn .rwy-len   { font-size: .62rem; color: var(--muted); font-weight: 600; margin-top: 1px; }
+    .rwy-btn .rwy-hdg   { font-size: .58rem; color: #94a3b8; }
+
+    /* ══════════════════ TAF PICKER ══════════════════ */
+    .taf-wrap { margin-top: .6rem; display: none; }
+    .taf-wrap.visible { display: block; }
+    .taf-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .4rem;
+    }
+    .taf-header-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+    }
+    .taf-eta-wrap { display: flex; align-items: center; gap: .4rem; }
+    .taf-eta-label { font-size: .6rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+    .taf-eta-input {
+      width: 76px; font-size: .78rem !important; padding: .25em .4em !important;
+      min-height: unset !important; height: 28px !important;
+      border-radius: 6px !important;
+    }
+    .taf-raw {
+      background: #f4f4f5; border: 1px solid #d4d4d8; border-radius: 8px;
+      padding: .5rem .7rem; font-size: .68rem; font-family: 'DM Mono', monospace;
+      color: #3f3f46; white-space: pre-wrap; word-break: break-all;
+      margin-bottom: .5rem; line-height: 1.5;
+    }
+    .taf-periods { display: flex; flex-direction: column; gap: .3rem; }
+    .taf-period {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f8fafc; border: 1.5px solid var(--border);
+      border-radius: 9px; padding: .45rem .75rem; cursor: pointer;
+      transition: all .15s; gap: .5rem;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .taf-period:hover { border-color: var(--arr); background: var(--arr-light); }
+    .taf-period.is-current { border-color: var(--arr); background: var(--arr-light); }
+    .taf-period.is-tempo { border-style: dashed; border-color: var(--warn-border); background: var(--warn-bg); }
+    .taf-period.is-tempo:hover { background: #fef3c7; }
+    .taf-period .tp-type { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); min-width: 42px; }
+    .taf-period.is-tempo .tp-type { color: #b45309; }
+    .taf-period.is-current .tp-type { color: var(--arr); }
+    .taf-period .tp-time { font-size: .68rem; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; }
+    .taf-period .tp-wind { font-size: .85rem; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; flex: 1; text-align: right; }
+    .taf-period .tp-apply { font-size: .65rem; font-weight: 700; color: var(--arr); white-space: nowrap; }
+    .taf-period.is-tempo .tp-apply { color: #b45309; }
+
     /* ══════════════════ VENT ARRIÈRE HYPOTHÈSE ══════════════════ */
     .tw-assume-wrap { display: none; margin-top: .6rem; }
     .tw-assume-wrap.visible { display: block; }
@@ -621,7 +686,8 @@
               <button id="btnDepMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
             </div>
           </div>
-          <p id="depMetarMsg" class="help has-text-grey mb-2" style="font-size:.72rem"></p>
+          <p id="depMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="depRunwayPicker" class="runway-picker" style="display:none"></div>
 
           <!-- QFU + TODA + ASDA -->
           <div class="columns is-mobile is-variable is-2">
@@ -838,11 +904,25 @@
                 </div>
               </div>
             </div>
-            <div class="column is-narrow is-flex is-align-items-flex-end">
+            <div class="column is-narrow is-flex is-align-items-flex-end" style="gap:.4rem">
               <button id="btnArrMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
+              <button id="btnArrTaf"   class="button is-success is-outlined is-small" style="white-space:nowrap;font-weight:700">TAF</button>
             </div>
           </div>
-          <p id="arrMetarMsg" class="help has-text-grey mb-2" style="font-size:.72rem"></p>
+          <p id="arrMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="arrRunwayPicker" class="runway-picker" style="display:none"></div>
+          <!-- TAF arrivée -->
+          <div id="arrTafWrap" class="taf-wrap">
+            <div class="taf-header">
+              <span class="taf-header-label">📋 TAF — choisir une période</span>
+              <div class="taf-eta-wrap">
+                <span class="taf-eta-label">ETA :</span>
+                <input id="arrEta" type="time" class="input taf-eta-input" placeholder="--:--" />
+              </div>
+            </div>
+            <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
+            <div id="arrTafPeriods" class="taf-periods"></div>
+          </div>
 
           <!-- QFU + LDA -->
           <div class="columns is-mobile is-variable is-2">
@@ -1865,18 +1945,36 @@ function applyMetar(side, data) {
 async function loadMetarFor(side) {
   const icao  = (document.getElementById(side+'Icao').value||'').toUpperCase();
   const msgEl = document.getElementById(side+'MetarMsg');
-  msgEl.textContent = 'Chargement METAR…';
+  const rwPicker = document.getElementById(side+'RunwayPicker');
+  msgEl.textContent = 'Chargement…';
+  rwPicker.style.display = 'none';
 
   try {
-    const station = await fetchStation(icao);
-    const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
-    const altInput = document.getElementById(side+'Alt');
-    if (typeof elevFt === 'number' && elevFt > 0 && altInput) altInput.value = String(Math.round(elevFt));
+    // Lance METAR + OpenAIP en parallèle
+    const [stationResult, runwaysResult] = await Promise.allSettled([
+      fetchStation(icao),
+      OPENAIP_KEY !== 'VOTRE_CLE_OPENAIP' ? fetchRunways(icao) : Promise.reject('Clé manquante')
+    ]);
 
+    // Élévation depuis AVWX station
+    if (stationResult.status === 'fulfilled') {
+      const station = stationResult.value;
+      const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
+      const altInput = document.getElementById(side+'Alt');
+      if (typeof elevFt === 'number' && elevFt > 0 && altInput) altInput.value = String(Math.round(elevFt));
+    }
+
+    // Pistes OpenAIP
+    if (runwaysResult.status === 'fulfilled') {
+      renderRunwayPicker(side, runwaysResult.value);
+    }
+
+    // METAR
     let metar, usedIcao = icao, isNearest = false, distTxt = '';
     try {
       metar = await fetchMetar(icao);
     } catch (_e) {
+      const station = stationResult.value;
       if (typeof station?.latitude === 'number' && typeof station?.longitude === 'number') {
         metar     = await fetchNearestMetar(station.latitude, station.longitude);
         isNearest = true;
@@ -1899,6 +1997,202 @@ async function loadMetarFor(side) {
 
 document.getElementById('btnDepMetar').addEventListener('click', () => loadMetarFor('dep'));
 document.getElementById('btnArrMetar').addEventListener('click', () => loadMetarFor('arr'));
+document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFor('arr'));
+
+/* ===================== OpenAIP — PISTES ===================== */
+const OPENAIP_KEY = 'e55ddcaf7ce13248e809d4166640a7c3';
+
+async function fetchRunways(icao) {
+  const url = `https://api.core.openaip.net/api/airports?icao=${encodeURIComponent(icao)}&limit=1`;
+  const r = await fetch(url, { headers: { 'x-openaip-api-key': OPENAIP_KEY, 'Accept': 'application/json' } });
+  if (!r.ok) throw new Error('OpenAIP HTTP ' + r.status);
+  const data = await r.json();
+  const airport = data.items?.[0];
+  if (!airport) throw new Error('Aéroport non trouvé dans OpenAIP');
+  return (airport.runways || []).filter(rwy => rwy.dimension?.length?.value > 0);
+}
+
+function renderRunwayPicker(side, runways) {
+  const wrap = document.getElementById(side + 'RunwayPicker');
+  if (!runways.length) { wrap.style.display = 'none'; return; }
+
+  // Trier par désignateur
+  runways.sort((a, b) => (a.designator || '').localeCompare(b.designator || ''));
+
+  const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
+  const html = `
+    <div class="runway-picker-label">🛬 Pistes disponibles — cliquer pour remplir QFU + ${lenLabel}</div>
+    <div class="rwy-list">
+      ${runways.map((rwy, i) => {
+        const desig = rwy.designator || '—';
+        const hdg   = rwy.trueHeading != null ? String(Math.round(rwy.trueHeading)).padStart(3,'0') + '°' : '—';
+        const len   = rwy.dimension?.length?.value ? Math.round(rwy.dimension.length.value) + ' m' : '—';
+        return `<button class="rwy-btn" onclick="applyRunway('${side}', ${i})" data-rwy-idx="${i}">${
+          `<span class="rwy-desig">${desig}</span><span class="rwy-len">${len}</span><span class="rwy-hdg">${hdg}</span>`
+        }</button>`;
+      }).join('')}
+    </div>`;
+
+  wrap.innerHTML = html;
+  wrap.style.display = 'block';
+  // Stocker les données pour applyRunway
+  wrap._runways = runways;
+}
+
+function applyRunway(side, idx) {
+  const wrap = document.getElementById(side + 'RunwayPicker');
+  const rwy  = wrap._runways?.[idx];
+  if (!rwy) return;
+
+  // Heading → QFU (cap magnétique ≈ cap vrai pour usage pratique)
+  const hdg = rwy.trueHeading != null ? Math.round(rwy.trueHeading) : null;
+  if (hdg != null) {
+    const qfuEl = document.getElementById(side + 'Qfu');
+    qfuEl.value = String(hdg === 0 ? 360 : hdg).padStart(3, '0');
+  }
+
+  // Longueur → TODA (dep) ou LDA (arr)
+  const len = rwy.dimension?.length?.value;
+  if (len) {
+    const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
+    lenEl.value = String(Math.round(len));
+  }
+
+  // Highlight bouton actif
+  wrap.querySelectorAll('.rwy-btn').forEach((b, i) =>
+    b.classList.toggle('active', i === idx));
+
+  updateWindDisplay(side);
+}
+
+/* ===================== AVWX TAF ===================== */
+const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
+
+function fmtTafTime(dtStr) {
+  if (!dtStr) return '—';
+  const d = new Date(dtStr);
+  const pad = n => String(n).padStart(2,'0');
+  return pad(d.getUTCDate()) + '/' + pad(d.getUTCHours()) + 'z';
+}
+
+function fmtTafWind(period) {
+  const dir  = period.wind_direction?.repr  || '—';
+  const spd  = period.wind_speed?.value     ?? '—';
+  const gust = period.wind_gust?.value;
+  let s = dir + '/' + spd + 'kt';
+  if (gust) s += ' G' + gust;
+  return s;
+}
+
+function periodContainsEta(period, etaMin) {
+  // etaMin = minutes since midnight UTC
+  if (etaMin == null) return false;
+  const toUtcMin = dtStr => {
+    const d = new Date(dtStr);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  };
+  const start = toUtcMin(period.start_time?.dt);
+  const end   = toUtcMin(period.end_time?.dt);
+  if (end > start) return etaMin >= start && etaMin < end;
+  // chevauchement minuit
+  return etaMin >= start || etaMin < end;
+}
+
+function renderTafPicker(tafData) {
+  const wrap       = document.getElementById('arrTafWrap');
+  const rawEl      = document.getElementById('arrTafRaw');
+  const periodsEl  = document.getElementById('arrTafPeriods');
+  const etaInput   = document.getElementById('arrEta');
+
+  rawEl.textContent = tafData.raw || '—';
+  rawEl.style.display = 'block';
+
+  const forecast = (tafData.forecast || []).filter(p =>
+    p.wind_direction && p.wind_speed && p.type !== 'PROB30' && p.type !== 'PROB40');
+
+  function render(etaMin) {
+    periodsEl.innerHTML = forecast.map((p, i) => {
+      const type    = p.type || 'FM';
+      const isTempo = type === 'TEMPO';
+      const isCur   = periodContainsEta(p, etaMin);
+      const wind    = fmtTafWind(p);
+      const t1      = fmtTafTime(p.start_time?.dt);
+      const t2      = fmtTafTime(p.end_time?.dt);
+      const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
+      return `<div class="${cls}" onclick="applyTafPeriod(${i})">
+        <span class="tp-type">${type}</span>
+        <span class="tp-time">${t1}→${t2}</span>
+        <span class="tp-wind">${wind}</span>
+        <span class="tp-apply">${isCur ? '✓ ETA' : '↙ appliquer'}</span>
+      </div>`;
+    }).join('');
+    // Stocker forecast
+    periodsEl._forecast = forecast;
+  }
+
+  // Render initial
+  const etaVal = etaInput.value;
+  const etaMin = etaVal ? parseInt(etaVal.split(':')[0])*60 + parseInt(etaVal.split(':')[1]) : null;
+  render(etaMin);
+  wrap.classList.add('visible');
+
+  // Re-render quand ETA change
+  etaInput.addEventListener('input', () => {
+    const v = etaInput.value;
+    const m = v ? parseInt(v.split(':')[0])*60 + parseInt(v.split(':')[1]) : null;
+    render(m);
+  });
+}
+
+function applyTafPeriod(idx) {
+  const forecast = document.getElementById('arrTafPeriods')._forecast;
+  const period   = forecast?.[idx];
+  if (!period) return;
+
+  const dirRepr = (period.wind_direction?.repr || '').toUpperCase();
+  const dirVal  = period.wind_direction?.value ?? null;
+  const spdVal  = Math.round(period.wind_speed?.value || 0);
+  const gustVal = Math.round(period.wind_gust?.value  || 0);
+
+  const dirEl = document.getElementById('arrWindDir');
+  if (dirRepr === 'VRB') dirEl.value = 'VRB';
+  else if (dirVal != null) dirEl.value = String(dirVal === 0 ? 360 : dirVal).padStart(3,'0');
+
+  document.getElementById('arrWindKt').value   = String(spdVal);
+  document.getElementById('arrWindGust').value = String(gustVal);
+
+  // Secteur variable si présent
+  const vd = period.variable_direction;
+  if (vd && typeof vd.from === 'number') {
+    document.getElementById('arrVrbFrom').value = String(vd.from).padStart(3,'0');
+    document.getElementById('arrVrbTo').value   = String(vd.to).padStart(3,'0');
+  } else {
+    document.getElementById('arrVrbFrom').value = '';
+    document.getElementById('arrVrbTo').value   = '';
+  }
+
+  updateWindDisplay('arr');
+
+  // Feedback visuel
+  document.querySelectorAll('.taf-period').forEach((el, i) => {
+    el.style.outline = i === idx ? '2px solid var(--arr)' : '';
+  });
+}
+
+async function loadTafFor(side) {
+  const icao  = (document.getElementById(side + 'Icao').value || '').toUpperCase();
+  const msgEl = document.getElementById(side + 'MetarMsg');
+  if (!icao || icao.length < 4) { msgEl.textContent = 'Saisir un ICAO avant de charger le TAF.'; return; }
+
+  msgEl.textContent = 'Chargement TAF…';
+  try {
+    const taf = await fetchTaf(icao);
+    msgEl.textContent = 'TAF chargé : ' + (taf.raw || '—');
+    renderTafPicker(taf);
+  } catch(e) {
+    msgEl.textContent = 'TAF indisponible (' + (e?.message || 'erreur') + ')';
+  }
+}
 
 /* ===================== IMPRESSION ===================== */
 function nowStamp() {
