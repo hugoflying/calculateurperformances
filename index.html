@@ -2003,41 +2003,37 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 const OPENAIP_KEY = 'e55ddcaf7ce13248e809d4166640a7c3';
 
 async function fetchRunways(icao) {
-  // OpenAIP v1 — recherche par ICAO
-  const url = `https://api.core.openaip.net/api/airports?icao=${icao.toUpperCase()}&limit=5`;
+  // OpenAIP v2 — la clé peut être envoyée en header ET en query param
+  // Le filtre ICAO utilise le paramètre 'icaoCode' (pas 'icao')
+  const url = `https://api.core.openaip.net/api/airports?icaoCode=${icao.toUpperCase()}&limit=5&apiKey=${OPENAIP_KEY}`;
   const r = await fetch(url, {
     headers: { 'x-openaip-api-key': OPENAIP_KEY, 'Accept': 'application/json' }
   });
   if (!r.ok) throw new Error('OpenAIP HTTP ' + r.status);
   const data = await r.json();
 
-  console.log('[OpenAIP] réponse brute :', data);
+  console.log('[OpenAIP] réponse brute pour', icao, ':', JSON.stringify(data).slice(0, 500));
 
-  // Trouver l'aéroport dont l'ICAO correspond exactement
-  const airport = (data.items || []).find(a =>
-    (a.icaoCode || a.icao || '').toUpperCase() === icao.toUpperCase()
-  ) || data.items?.[0];
+  // OpenAIP retourne { items: [...], totalCount: N }
+  const items = data.items || data.results || data.data || [];
+  
+  // Chercher l'airport dont l'ICAO correspond
+  const airport = items.find(a => {
+    const code = (a.icaoCode || a.icao || a.code || '').toUpperCase();
+    return code === icao.toUpperCase();
+  }) || items[0];
 
-  if (!airport) throw new Error('Aéroport non trouvé dans OpenAIP');
-  console.log('[OpenAIP] aéroport sélectionné :', airport.icaoCode || airport.icao, airport);
+  if (!airport) throw new Error('Aéroport non trouvé (réponse : ' + JSON.stringify(data).slice(0, 200) + ')');
+  console.log('[OpenAIP] airport trouvé :', airport.icaoCode || airport.icao, '— nb pistes :', (airport.runways||[]).length);
 
-  const runways = airport.runways || [];
-  console.log('[OpenAIP] pistes brutes :', runways);
-
-  return runways
+  return (airport.runways || [])
     .filter(rwy => rwy.dimension?.length?.value > 0)
-    .map(rwy => {
-      // OpenAIP fournit directement le désignateur magnétique (ex: "04", "22")
-      const designator = rwy.designator || '??';
-      // QFU en degrés = désignateur × 10
-      const qfu = parseInt(designator, 10) * 10 || rwy.trueHeading || 0;
-      return {
-        ...rwy,
-        designator,
-        qfu,
-        lengthM: Math.round(rwy.dimension.length.value),
-      };
-    })
+    .map(rwy => ({
+      ...rwy,
+      designator: rwy.designator || String(Math.round((rwy.trueHeading||0)/10)).padStart(2,'0'),
+      qfu: parseInt(rwy.designator||'0', 10) * 10 || rwy.trueHeading || 0,
+      lengthM: Math.round(rwy.dimension.length.value),
+    }))
     .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
 }
 
