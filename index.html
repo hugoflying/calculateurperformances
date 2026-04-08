@@ -161,6 +161,9 @@
       letter-spacing: .07em;
       color: var(--muted);
       font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .input, .select select {
@@ -644,7 +647,7 @@
           <div class="columns is-mobile is-variable is-2">
             <div class="column">
               <div class="field">
-                <label class="label is-small">Direction (° ou VRB)</label>
+                <label class="label is-small">Direction</label>
                 <div class="control">
                   <input id="depWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
                 </div>
@@ -865,7 +868,7 @@
           <div class="columns is-mobile is-variable is-2">
             <div class="column">
               <div class="field">
-                <label class="label is-small">Direction (° ou VRB)</label>
+                <label class="label is-small">Direction</label>
                 <div class="control">
                   <input id="arrWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
                 </div>
