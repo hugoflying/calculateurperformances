@@ -1953,9 +1953,7 @@ async function loadMetarFor(side) {
     // Lance METAR + OpenAIP en parallèle
     const [stationResult, runwaysResult] = await Promise.allSettled([
       fetchStation(icao),
-      fetchStation(icao).then(st =>
-        fetchRunways(icao, st?.latitude ?? null, st?.longitude ?? null)
-      )
+      fetchRunways(icao)
     ]);
 
     // Élévation depuis AVWX station
@@ -2004,69 +2002,60 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 /* ===================== OpenAIP — PISTES ===================== */
 const OPENAIP_KEY = 'e55ddcaf7ce13248e809d4166640a7c3';
 
-async function getMagDeclination(lat, lon) {
-  try {
-    const today = new Date();
-    const url = `https://www.ngdc.noaa.gov/geomag-web/calculators/calculateDeclination` +
-      `?lat=${lat}&lon=${lon}&startYear=${today.getFullYear()}&startMonth=${today.getMonth()+1}` +
-      `&startDay=${today.getDate()}&key=zNEw7&resultFormat=json`;
-    const r = await fetch(url);
-    const d = await r.json();
-    return d.result?.[0]?.declination ?? 0;
-  } catch { return 0; }
-}
-
-async function fetchRunways(icao, lat, lon) {
-  const url = `https://api.core.openaip.net/api/airports?icao=${encodeURIComponent(icao)}&limit=1`;
-  const r = await fetch(url, { headers: { 'x-openaip-api-key': OPENAIP_KEY, 'Accept': 'application/json' } });
+async function fetchRunways(icao) {
+  // OpenAIP v1 — recherche par ICAO
+  const url = `https://api.core.openaip.net/api/airports?icao=${icao.toUpperCase()}&limit=5`;
+  const r = await fetch(url, {
+    headers: { 'x-openaip-api-key': OPENAIP_KEY, 'Accept': 'application/json' }
+  });
   if (!r.ok) throw new Error('OpenAIP HTTP ' + r.status);
   const data = await r.json();
-  const airport = data.items?.[0];
+
+  console.log('[OpenAIP] réponse brute :', data);
+
+  // Trouver l'aéroport dont l'ICAO correspond exactement
+  const airport = (data.items || []).find(a =>
+    (a.icaoCode || a.icao || '').toUpperCase() === icao.toUpperCase()
+  ) || data.items?.[0];
+
   if (!airport) throw new Error('Aéroport non trouvé dans OpenAIP');
+  console.log('[OpenAIP] aéroport sélectionné :', airport.icaoCode || airport.icao, airport);
 
-  // Déclinaison magnétique pour corriger les caps vrais → magnétiques
-  const decl = (lat != null && lon != null) ? await getMagDeclination(lat, lon) : 0;
+  const runways = airport.runways || [];
+  console.log('[OpenAIP] pistes brutes :', runways);
 
-  return (airport.runways || [])
+  return runways
     .filter(rwy => rwy.dimension?.length?.value > 0)
     .map(rwy => {
-      const trueHdg = rwy.trueHeading ?? 0;
-      // Cap magnétique = cap vrai − déclinaison Est (positive)
-      const magHdg  = ((trueHdg - decl) + 360) % 360;
-      // Désignateur magnétique arrondi à la dizaine, 01–36
-      let desig = Math.round(magHdg / 10) || 36;
-      if (desig > 36) desig = desig - 36;
+      // OpenAIP fournit directement le désignateur magnétique (ex: "04", "22")
+      const designator = rwy.designator || '??';
+      // QFU en degrés = désignateur × 10
+      const qfu = parseInt(designator, 10) * 10 || rwy.trueHeading || 0;
       return {
         ...rwy,
-        magHeading: Math.round(magHdg),
-        magDesignator: String(desig).padStart(2, '0'),
+        designator,
+        qfu,
+        lengthM: Math.round(rwy.dimension.length.value),
       };
-    });
+    })
+    .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
 }
 
 function renderRunwayPicker(side, runways) {
   const wrap = document.getElementById(side + 'RunwayPicker');
   if (!runways.length) { wrap.style.display = 'none'; return; }
 
-  runways.sort((a, b) => (a.magDesignator || '').localeCompare(b.magDesignator || ''));
-
   const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
-  const html = `
-    <div class="runway-picker-label">🛬 Pistes disponibles — cliquer pour remplir QFU + ${lenLabel}</div>
+  wrap.innerHTML = `
+    <div class="runway-picker-label">🛬 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
     <div class="rwy-list">
-      ${runways.map((rwy, i) => {
-        const desig = rwy.magDesignator || '—';
-        const hdg   = rwy.magHeading != null ? String(rwy.magHeading).padStart(3,'0') + '°' : '—';
-        const len   = rwy.dimension?.length?.value ? Math.round(rwy.dimension.length.value) + ' m' : '—';
-        return `<button class="rwy-btn" onclick="applyRunway('${side}', ${i})" data-rwy-idx="${i}">
-          <span class="rwy-desig">${desig}</span>
-          <span class="rwy-len">${len}</span>
-          <span class="rwy-hdg">${hdg}</span>
-        </button>`;
-      }).join('')}
+      ${runways.map((rwy, i) => `
+        <button class="rwy-btn" onclick="applyRunway('${side}', ${i})">
+          <span class="rwy-desig">${rwy.designator}</span>
+          <span class="rwy-len">${rwy.lengthM} m</span>
+          <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
+        </button>`).join('')}
     </div>`;
-
-  wrap.innerHTML = html;
   wrap.style.display = 'block';
   wrap._runways = runways;
 }
@@ -2076,18 +2065,11 @@ function applyRunway(side, idx) {
   const rwy  = wrap._runways?.[idx];
   if (!rwy) return;
 
-  // QFU = cap magnétique calculé
-  if (rwy.magHeading != null) {
-    const qfu = rwy.magHeading === 0 ? 360 : rwy.magHeading;
-    document.getElementById(side + 'Qfu').value = String(qfu).padStart(3, '0');
-  }
+  document.getElementById(side + 'Qfu').value =
+    String(rwy.qfu === 0 ? 360 : rwy.qfu).padStart(3, '0');
 
-  // Longueur → TODA (dep) ou LDA (arr)
-  const len = rwy.dimension?.length?.value;
-  if (len) {
-    const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
-    lenEl.value = String(Math.round(len));
-  }
+  const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
+  lenEl.value = String(rwy.lengthM);
 
   wrap.querySelectorAll('.rwy-btn').forEach((b, i) =>
     b.classList.toggle('active', i === idx));
