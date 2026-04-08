@@ -5,38 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Calculateur de Performances — ACBT</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    /* ══════════════════ FONDATIONS ══════════════════ */
     :root {
-      --navy: #0b3b86;
-      --navy-dark: #082d68;
-      --green-ok: #16a34a;
-      --green-light: #dcfce7;
-      --green-border: #86efac;
-      --red-bad: #dc2626;
-      --red-light: #fef2f2;
-      --red-border: #fecaca;
-      --warn-bg: #fff7ed;
-      --warn-border: #fbbf24;
-      --danger-bg: #fef2f2;
-      --danger-border: #ef4444;
+      --navy:        #0e3070;
+      --navy-dark:   #0a2458;
+      --navy-light:  #e8eef8;
+      --dep:         #1d4ed8;
+      --dep-light:   #eff6ff;
+      --dep-border:  #93c5fd;
+      --arr:         #059669;
+      --arr-light:   #ecfdf5;
+      --arr-border:  #6ee7b7;
+      --green-ok:    #059669;
+      --green-light: #ecfdf5;
+      --green-border:#6ee7b7;
+      --red-bad:     #dc2626;
+      --red-light:   #fef2f2;
+      --red-border:  #fecaca;
+      --warn-bg:     #fffbeb;
+      --warn-border: #f59e0b;
+      --danger-bg:   #fef2f2;
+      --danger-border:#ef4444;
+      --bg:          #edf1f7;
+      --card:        #ffffff;
+      --border:      #e2e8f0;
+      --text:        #0f172a;
+      --muted:       #64748b;
+      --radius:      12px;
     }
 
-    html, body { background: #eef2f7; }
+    html, body {
+      background: var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+    }
 
-    /* ── Banner ── */
+    /* ── Spinner remove ── */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── datalist arrow ── */
+    input[list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0; }
+    input[list] { -webkit-appearance: none; appearance: none; }
+
+    /* ══════════════════ BANNIÈRE ══════════════════ */
     .app-banner {
-      background: var(--navy);
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4fa0 100%);
       color: #fff;
-      border-radius: 14px;
-      padding: 1.1rem 1.5rem;
-      text-align: center;
+      border-radius: 16px;
+      padding: 1.4rem 1.8rem;
       margin-bottom: 1.2rem;
-      box-shadow: 0 4px 16px rgba(11,59,134,.25);
+      box-shadow: 0 8px 24px rgba(14,48,112,.22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .app-banner h1 {
-      font-size: clamp(1.1rem, 3.5vw, 1.75rem);
+      font-size: clamp(1.1rem, 3vw, 1.65rem);
       font-weight: 800;
       letter-spacing: .06em;
       margin: 0;
@@ -44,110 +75,337 @@
     }
     .app-banner .subtitle-line {
       font-size: .78rem;
-      opacity: .7;
-      margin-top: .25rem;
+      opacity: .65;
+      margin-top: .2rem;
       letter-spacing: .04em;
     }
+    .banner-badge {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      padding: .4rem .85rem;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      color: rgba(255,255,255,.85);
+      white-space: nowrap;
+    }
 
-    /* ── Bulma overrides ── */
-    .card { border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    /* ══════════════════ CARDS ══════════════════ */
+    .card {
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
     .card-content { padding: 1.25rem; }
 
-    .button.is-primary { background-color: var(--navy) !important; border-color: var(--navy) !important; }
-    .button.is-primary:hover { background-color: var(--navy-dark) !important; }
-    .button.is-primary.is-selected { background-color: var(--navy) !important; color: #fff !important; }
+    /* Carte Départ — trait bleu en haut */
+    .card-dep { border-top: 3px solid var(--dep) !important; }
+    /* Carte Arrivée — trait vert en haut */
+    .card-arr { border-top: 3px solid var(--arr) !important; }
 
-    .button.is-grass-selected { background-color: var(--green-ok) !important; border-color: var(--green-ok) !important; color: #fff !important; }
-
-    .label { color: #374151; font-weight: 600; }
-    .label.is-small { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
-
+    /* ── Titre de section ── */
     .card-title {
-      font-size: 1rem !important;
-      font-weight: 800 !important;
+      font-size: .72rem !important;
+      font-weight: 700 !important;
       text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 1rem !important;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card-title .ct-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .7rem;
+      font-weight: 700;
       letter-spacing: .06em;
-      text-align: center;
-      margin-bottom: .9rem;
+      padding: .2rem .6rem;
+      border-radius: 99px;
     }
-    .kpi-box {
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
-      margin: .75rem 0;
-      background: #f9fafb;
+    .ct-badge.dep { background: var(--dep-light); color: var(--dep); }
+    .ct-badge.arr { background: var(--arr-light); color: var(--arr); }
+
+    /* ── Toolbar paramètres généraux ── */
+    .toolbar-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.1rem;
     }
-    .kpi-box.is-ok { background: #ecfdf5; border-color: var(--green-border); }
-    .kpi-box.is-bad { background: var(--red-light); border-color: var(--red-border); }
-    .kpi-value { font-size: 2.2rem; font-weight: 800; line-height: 1.1; color: #0f172a; }
-    .kpi-label { font-size: .72rem; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
-    .kpi-sub { font-size: .75rem; color: #6b7280; margin-top: 3px; }
+    .toolbar-label {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: .3rem;
+      display: block;
+    }
 
-    /* ── Chip tag ── */
-    .tag.is-ok-chip { background: #dcfce7; color: #14532d; border: 1px solid var(--green-border); font-weight: 800; }
-    .tag.is-bad-chip { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; font-weight: 800; }
-    .tag.is-neutral-chip { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; font-weight: 700; }
+    /* ══════════════════ INPUTS & CONTRÔLES ══════════════════ */
+    .label {
+      color: #374151;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .label.is-small {
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      font-weight: 700;
+    }
 
-    /* ── Wind cells ── */
-    .wind-cell {
-      background: #f8fafc;
-      border: 1px solid #d1d5db;
+    .input, .select select {
+      border-radius: 8px !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem !important;
+      color: var(--text) !important;
+      background: #f8fafc !important;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .input:focus, .select select:focus {
+      border-color: var(--navy) !important;
+      box-shadow: 0 0 0 3px rgba(14,48,112,.1) !important;
+      background: #fff !important;
+      outline: none;
+    }
+    .input[readonly] { background: #f1f5f9 !important; color: var(--muted) !important; cursor: default; }
+
+    /* ══════════════════ BOUTONS ══════════════════ */
+    .button {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      border-radius: 8px !important;
+      transition: all .15s;
+    }
+    .button.is-primary {
+      background-color: var(--navy) !important;
+      border-color: var(--navy) !important;
+      color: #fff !important;
+    }
+    .button.is-primary:hover { background-color: var(--navy-dark) !important; box-shadow: 0 4px 12px rgba(14,48,112,.25); }
+    .button.is-primary.is-selected { background-color: var(--navy) !important; color: #fff !important; }
+    .button.is-grass-selected { background-color: var(--arr) !important; border-color: var(--arr) !important; color: #fff !important; }
+
+    /* Bouton Calculer — pleine largeur, arrondi, accent */
+    #btnCalcDep, #btnCalcArr {
+      border-radius: 10px !important;
+      font-size: .95rem !important;
+      font-weight: 700 !important;
+      letter-spacing: .02em;
+      padding: .75em 1em !important;
+      height: auto !important;
+    }
+    #btnCalcDep { background: linear-gradient(135deg, var(--navy) 0%, var(--dep) 100%) !important; border: none !important; }
+    #btnCalcArr { background: linear-gradient(135deg, #047857 0%, var(--arr) 100%) !important; border: none !important; }
+    #btnCalcDep:hover { opacity: .92; box-shadow: 0 4px 16px rgba(29,78,216,.3); }
+    #btnCalcArr:hover { opacity: .92; box-shadow: 0 4px 16px rgba(5,150,105,.3); }
+
+    /* Bouton Exporter PDF */
+    #btnPrint {
+      background: var(--text) !important;
+      border-color: var(--text) !important;
+      border-radius: 9px !important;
+      font-weight: 700 !important;
+      letter-spacing: .01em;
+    }
+    #btnPrint:hover { background: #1e293b !important; box-shadow: 0 3px 10px rgba(0,0,0,.18); }
+
+    /* Bouton METAR */
+    #btnDepMetar, #btnArrMetar {
+      border-radius: 8px !important;
+      font-weight: 600 !important;
+      font-size: .8rem !important;
+    }
+
+    /* Addons toggle (carénages, surface...) */
+    .buttons.has-addons .button {
+      border-radius: 0 !important;
+      font-size: .82rem !important;
+      font-weight: 600 !important;
+    }
+    .buttons.has-addons .button:first-child { border-radius: 8px 0 0 8px !important; }
+    .buttons.has-addons .button:last-child  { border-radius: 0 8px 8px 0 !important; }
+    .buttons.has-addons .button:not(.is-primary):not(.is-selected) {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: var(--muted) !important;
+    }
+
+    /* ══════════════════ CHIPS / TAGS ══════════════════ */
+    .tag.is-ok-chip      { background: var(--green-light); color: #065f46; border: 1.5px solid var(--green-border); font-weight: 800; border-radius: 6px; }
+    .tag.is-bad-chip     { background: var(--red-light);   color: #7f1d1d; border: 1.5px solid var(--red-border);   font-weight: 800; border-radius: 6px; }
+    .tag.is-neutral-chip { background: #f1f5f9;            color: var(--muted); border: 1.5px solid #e2e8f0;        font-weight: 700; border-radius: 6px; }
+
+    /* ══════════════════ CELLULES VENT ══════════════════ */
+    .wind-row {
+      display: flex;
+      gap: 0;
       border-radius: 10px;
-      padding: .6rem .75rem;
+      overflow: hidden;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      margin: .75rem 0 .25rem;
+    }
+    .wind-cell {
+      flex: 1;
+      padding: .55rem .6rem;
+      border-right: 1.5px solid #e2e8f0;
+      background: transparent;
       transition: background .2s, border-color .2s;
     }
-    .wind-cell .wc-label { font-size: .65rem; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
-    .wind-cell .wc-value { font-weight: 600; white-space: pre-line; font-size: .9rem; margin-top: 2px; }
+    .wind-cell:last-child { border-right: none; }
+    .wind-cell .wc-label {
+      font-size: .6rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 700;
+    }
+    .wind-cell .wc-value {
+      font-weight: 700;
+      font-size: .9rem;
+      color: var(--text);
+      margin-top: 2px;
+      white-space: pre-line;
+    }
     .wind-cell.warn-yellow { background: var(--warn-bg) !important; border-color: var(--warn-border) !important; }
-    .wind-cell.warn-red   { background: var(--danger-bg) !important; border-color: var(--danger-border) !important; }
+    .wind-cell.warn-red    { background: var(--danger-bg) !important; border-color: var(--danger-border) !important; }
 
-    /* ── Perf result fields ── */
+    /* ══════════════════ KPI RÉSULTATS ══════════════════ */
+    .kpi-box {
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin: .6rem 0;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .kpi-box.is-ok  { background: var(--green-light); border-color: var(--green-border); }
+    .kpi-box.is-bad { background: var(--red-light);   border-color: var(--red-border);   }
+    .kpi-box .kpi-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+    .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+    .kpi-label { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .kpi-sub   { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Résultat header avec chip ── */
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .6rem;
+      padding-bottom: .6rem;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .result-header .rh-title {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    /* ══════════════════ PERF FIELDS ══════════════════ */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+      margin-top: .5rem;
+    }
     .perf-field {
       background: #f8fafc;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: .6rem .75rem;
-      height: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .55rem .75rem;
     }
-    .perf-field .pf-label { font-size: .65rem; color: #6b7280; text-transform: uppercase; letter-spacing: .04em; }
-    .perf-field .pf-value { font-weight: 600; font-size: .9rem; margin-top: 2px; }
+    .perf-field .pf-label { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .perf-field .pf-value { font-weight: 700; font-size: .88rem; margin-top: 2px; color: var(--text); font-family: 'DM Mono', monospace; }
 
-    /* ── Mass warning ── */
-    .mass-warn { font-size: .73rem; color: #b45309; margin-top: 4px; display: none; }
+    /* ══════════════════ MASS WARN ══════════════════ */
+    .mass-warn { font-size: .72rem; color: #b45309; margin-top: 4px; display: none; }
     .mass-warn.visible { display: block; }
 
-    /* ── Validation notification ── */
+    /* ══════════════════ VALID MSG ══════════════════ */
     .valid-msg { font-size: .82rem; border-radius: 8px; }
 
-    /* ── VRB sector inputs ── */
+    /* ══════════════════ VRB ══════════════════ */
     .vrb-wrap { display: flex; gap: 8px; align-items: center; }
-    .vrb-sep { font-weight: 700; color: #6b7280; flex-shrink: 0; }
+    .vrb-sep  { font-weight: 800; color: var(--muted); flex-shrink: 0; font-size: .9rem; }
     .input.is-invalid { border-color: var(--red-bad) !important; }
 
-    /* ── Wind direction : masquer la flèche de datalist ── */
-    input[list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0; }
-    input[list] { -webkit-appearance: none; appearance: none; }
-
-    /* ── Réduction taille sur mobile ── */
+    /* ══════════════════ MOBILE TABS ══════════════════ */
+    .tab-toggle {
+      display: flex;
+      background: #dde3ef;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 1rem;
+    }
+    .tab-toggle button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      padding: .6rem 1rem;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      transition: background .2s, color .2s, box-shadow .2s;
+      letter-spacing: .03em;
+    }
+    .tab-toggle button.active     { background: #fff; color: var(--dep); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .tab-toggle button.active.arr { color: var(--arr); }
+    @media (min-width: 1024px) {
+      .mobile-tab-toggle          { display: none !important; }
+      .column.tab-col             { display: block !important; }
+    }
     @media (max-width: 1023px) {
-      html, body { font-size: 14px; }
-      .card-content { padding: .85rem; }
-      .label.is-small { font-size: .65rem; }
-      .input, .select select, .button { font-size: .82rem !important; padding: .45em .65em; min-height: 36px; }
-      .kpi-value { font-size: 1.7rem; }
-      .wind-cell .wc-value { font-size: .82rem; }
-      .perf-field .pf-value { font-size: .82rem; }
-      .title.is-6 { font-size: .82rem !important; }
-      .tag.is-medium { font-size: .75rem; }
-      .columns.is-variable.is-2 { --columnGap: .35rem; }
+      .column.tab-col.hidden-mobile { display: none !important; }
     }
 
+    /* ══════════════════ VENT ARRIÈRE HYPOTHÈSE ══════════════════ */
+    .tw-assume-wrap { display: none; margin-top: .6rem; }
+    .tw-assume-wrap.visible { display: block; }
+    .tw-assume-btn {
+      width: 100%; border: 1.5px dashed #d97706; border-radius: 10px;
+      background: var(--warn-bg); color: #92400e;
+      font-size: .78rem; font-weight: 700;
+      padding: .5rem .75rem; cursor: pointer;
+      text-align: center; font-family: 'DM Sans', sans-serif;
+      transition: background .15s, border-color .15s;
+    }
+    .tw-assume-btn.active { background: #fef3c7; border-color: #b45309; border-style: solid; }
+    .tw-assume-btn .tw-check { margin-right: .4rem; }
 
+    /* ══════════════════ MOBILE RESPONSIVE ══════════════════ */
+    @media (max-width: 1023px) {
+      html, body { font-size: 14px; }
+      .card-content { padding: .9rem; }
+      .label.is-small { font-size: .62rem; }
+      .input, .select select, .button { font-size: .82rem !important; padding: .45em .65em; min-height: 36px; }
+      .kpi-value { font-size: 1.65rem; }
+      .wind-cell .wc-value { font-size: .82rem; }
+      .perf-field .pf-value { font-size: .8rem; }
+      .columns.is-variable.is-2 { --columnGap: .35rem; }
+      .app-banner { flex-direction: column; align-items: flex-start; gap: .5rem; }
+      .banner-badge { align-self: flex-start; }
+    }
 
-    /* ── Nav Log ── */
-
-
-    /* ── Ligne LEG ── */
+    /* ══════════════════ NAV LOG TABLE ══════════════════ */
     .log-leg-row td {
       border: 2px solid #374151;
       padding: .3rem .4rem;
@@ -157,132 +415,64 @@
       font-size: .9rem;
     }
     .log-leg-row td.log-fork-leg {
-      background: #fff;
-      border: none;
-      padding: 0;
-      width: 36px;
-      position: relative;
-      overflow: visible;
+      background: #fff; border: none; padding: 0;
+      width: 36px; position: relative; overflow: visible;
     }
     .log-leg-row td.log-right-blank { background: #fff; border-color: #94a3b8; }
-    .log-leg-main  { font-weight: 900; font-size: 1.05rem; text-align: center; color: #0f172a; line-height: 1.1; }
+    .log-leg-main  { font-weight: 900; font-size: 1.05rem; text-align: center; color: var(--text); line-height: 1.1; }
     .log-leg-sub   { font-size: .68rem; color: #64748b; font-style: italic; text-align: center; line-height: 1.2; }
     .log-report    { font-weight: 900; font-size: 1rem; text-align: center; }
     .log-he        { text-align: center; font-weight: 800; color: var(--navy); font-size: 1.05rem; }
-
-    /* ── Inputs dans la table — gros et tactiles ── */
     .navlog-table input.nl-input {
       width: 100%; border: none; background: transparent;
       font-size: 1rem; font-weight: 900;
-      text-align: center; min-width: 0;
-      padding: .3rem .2rem;
+      text-align: center; min-width: 0; padding: .3rem .2rem;
       -webkit-appearance: none; appearance: none;
     }
-    .navlog-table input.nl-input:focus {
-      outline: 2px solid var(--navy);
-      border-radius: 4px;
-      background: #fff;
-    }
-    .navlog-table input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-    /* ── Total row ── */
+    .navlog-table input.nl-input:focus { outline: 2px solid var(--navy); border-radius: 4px; background: #fff; }
     .navlog-table tr.total-row td {
-      background: #1e293b; color: #fff;
-      font-weight: 800; border-color: #1e293b;
-      padding: .5rem .4rem; font-size: .9rem;
+      background: #1e293b; color: #fff; font-weight: 800;
+      border-color: #1e293b; padding: .5rem .4rem; font-size: .9rem;
     }
 
-
-
-    /* ── README accordéon ── */
+    /* ══════════════════ README ACCORDÉON ══════════════════ */
     .readme-wrap { max-width: 860px; margin: 0 auto; }
     .readme-toggle {
-      width: 100%;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: .8rem 1.2rem;
-      font-size: .85rem;
-      font-weight: 700;
-      color: #334155;
-      cursor: pointer;
-      text-align: left;
-      letter-spacing: .03em;
-      transition: background .15s;
+      width: 100%; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: .85rem 1.2rem; font-size: .85rem; font-weight: 700;
+      color: var(--text); cursor: pointer; text-align: left;
+      letter-spacing: .02em; font-family: 'DM Sans', sans-serif;
+      transition: background .15s, border-color .15s;
     }
-    .readme-toggle:hover { background: #e2e8f0; }
+    .readme-toggle:hover { background: #f8fafc; border-color: #cbd5e1; }
     .readme-body {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: .5rem;
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin-top: .5rem;
     }
     .readme-section { margin-bottom: 1.4rem; }
     .readme-section:last-child { margin-bottom: 0; }
     .readme-section h3 {
-      font-size: .85rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--navy);
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: .35rem;
-      margin-bottom: .6rem;
+      font-size: .8rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--navy);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: .35rem; margin-bottom: .6rem;
     }
     .readme-section p, .readme-section li {
-      font-size: .82rem;
-      color: #374151;
-      line-height: 1.6;
-      margin-bottom: .4rem;
+      font-size: .82rem; color: #374151;
+      line-height: 1.65; margin-bottom: .4rem;
     }
     .readme-section ul, .readme-section ol { padding-left: 1.2rem; margin-bottom: .4rem; }
     .readme-section li { margin-bottom: .2rem; }
     @media print { .readme-wrap { display: none !important; } }
 
-    /* ── Mobile tab toggle Départ/Arrivée ── */
-    .tab-toggle {
-      display: flex; background: #e2e8f0; border-radius: 999px;
-      padding: 4px; gap: 4px; margin-bottom: 1rem;
-    }
-    .tab-toggle button {
-      flex: 1; border: none; background: transparent; border-radius: 999px;
-      padding: .55rem 1rem; font-weight: 700; font-size: .85rem;
-      cursor: pointer; color: #6b7280;
-      transition: background .2s, color .2s, box-shadow .2s; letter-spacing: .03em;
-    }
-    .tab-toggle button.active { background: #fff; color: var(--navy); box-shadow: 0 1px 6px rgba(0,0,0,.12); }
-    .tab-toggle button.active.arr { color: var(--green-ok); }
-    @media (min-width: 1024px) {
-      .mobile-tab-toggle { display: none !important; }
-      .column.tab-col    { display: block !important; }
-    }
-    @media (max-width: 1023px) {
-      .column.tab-col.hidden-mobile { display: none !important; }
-    }
-
-    /* ── Assumption vent arrière 5kt ── */
-    .tw-assume-wrap { display: none; margin-top: .6rem; }
-    .tw-assume-wrap.visible { display: block; }
-    .tw-assume-btn {
-      width: 100%; border: 1.5px dashed #d97706; border-radius: 10px;
-      background: #fffbeb; color: #92400e; font-size: .78rem; font-weight: 700;
-      padding: .5rem .75rem; cursor: pointer; text-align: center;
-      transition: background .15s, border-color .15s, color .15s; letter-spacing: .02em;
-    }
-    .tw-assume-btn.active { background: #fef3c7; border-color: #b45309; border-style: solid; color: #78350f; }
-    .tw-assume-btn .tw-check { margin-right: .4rem; }
-
     /* ══════════════════ PRINT / EXPORT PDF ══════════════════ */
     #printRaw { display: none; }
-
     .printWrap {
       color: #111;
       font: 10.5pt/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       background: #fff;
     }
-
-    /* ── Page avec marges internes ── */
     .page {
       padding: 13mm 15mm 10mm 15mm;
       box-sizing: border-box;
@@ -291,94 +481,36 @@
       page-break-after: always;
     }
     .page:last-child { page-break-after: auto; }
-
-    /* ── En-tête principal du document ── */
     .print-header {
-      background: #0b3b86;
-      color: #fff;
-      border-radius: 10px;
-      padding: 10px 16px 11px;
-      margin-bottom: 7mm;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      background: var(--navy);
+      color: #fff; border-radius: 10px;
+      padding: 10px 16px 11px; margin-bottom: 7mm;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .print-header .ph-title {
-      font-size: 14pt;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .print-header .ph-club {
-      font-size: 8.5pt;
-      opacity: .7;
-      margin-top: 2px;
-      letter-spacing: .04em;
-    }
-    .print-header .ph-meta {
-      text-align: right;
-      font-size: 8pt;
-      opacity: .75;
-      line-height: 1.5;
-    }
-
-    /* ── Titres de section ── */
+    .print-header .ph-title { font-size: 14pt; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .print-header .ph-club  { font-size: 8.5pt; opacity: .7; margin-top: 2px; }
+    .print-header .ph-meta  { text-align: right; font-size: 8pt; opacity: .75; line-height: 1.5; }
     .ptitle {
-      display: block;
-      font-size: 9.5pt;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      color: #0b3b86;
-      border-left: 4px solid #0b3b86;
-      padding: 3px 0 3px 9px;
-      margin: 5mm 0 3mm 0;
-      background: transparent;
-      border-radius: 0;
+      display: block; font-size: 9.5pt; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--navy); border-left: 4px solid var(--navy);
+      padding: 3px 0 3px 9px; margin: 5mm 0 3mm 0;
     }
-
-    /* ── Sections ── */
     .psection { margin: 0 0 5mm 0; }
-
-    /* ── Grille clé / valeur ── */
-    .kv {
-      display: grid;
-      grid-template-columns: 46% 54%;
-      gap: 4px 10px;
-      align-items: baseline;
-    }
+    .kv { display: grid; grid-template-columns: 46% 54%; gap: 4px 10px; align-items: baseline; }
     .kv .k { color: #52525b; font-size: 10pt; }
     .kv .v { font-weight: 700; font-size: 10pt; color: #111; }
     .kv-result { border-radius: 5px; padding: 3px 8px; margin-top: 1px; }
     .kv-result.ok  { background: #dcfce7; color: #14532d; }
     .kv-result.bad { background: #fee2e2; color: #7f1d1d; }
     .kv-result.b   { font-weight: 800; font-size: 10.5pt; }
-
-    /* ── Sous-grille vent ── */
-    .subgrid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 14px;
-      margin-top: 4px;
-    }
-
-    /* ── METAR brut ── */
+    .subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin-top: 4px; }
     .metar-raw {
-      background: #f4f4f5;
-      border: 1px solid #d4d4d8;
-      border-radius: 6px;
-      padding: 5px 8px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 8.5pt;
-      font-family: ui-monospace, 'Courier New', monospace;
-      margin-top: 4px;
-      color: #3f3f46;
+      background: #f4f4f5; border: 1px solid #d4d4d8; border-radius: 6px;
+      padding: 5px 8px; white-space: pre-wrap; word-break: break-word;
+      font-size: 8.5pt; font-family: monospace; margin-top: 4px; color: #3f3f46;
     }
-
-    /* ── Séparateur léger entre sections ── */
     .psection + .psection { border-top: 1px solid #e4e4e7; padding-top: 4mm; }
-
     @media print {
       @page { size: A4; margin: 0; }
       #appRoot { display: none !important; }
@@ -393,8 +525,11 @@
 
   <!-- Banner -->
   <div class="app-banner">
-    <h1>Calculateur de Performances</h1>
-    <div class="subtitle-line">Aéroclub de Beauvais-Tillé</div>
+    <div>
+      <h1>Calculateur de Performances</h1>
+      <div class="subtitle-line">Aéroclub de Beauvais-Tillé</div>
+    </div>
+    <div class="banner-badge">✈ ACBT</div>
   </div>
 
 
@@ -457,9 +592,9 @@
     <div class="column tab-col" id="colDep">
 
       <!-- Terrain départ -->
-      <div class="card mb-3" id="cardDep">
+      <div class="card mb-3 card-dep" id="cardDep">
         <div class="card-content">
-          <p class="card-title">Terrain de départ</p>
+          <p class="card-title"><span class="ct-badge dep">✈ Départ</span></p>
 
           <!-- ICAO + Élévation + METAR -->
           <div class="columns is-mobile is-variable is-2">
@@ -556,24 +691,18 @@
           </div>
 
           <!-- Affichage composantes vent -->
-          <div class="columns is-mobile is-variable is-2 mt-1">
-            <div class="column">
-              <div class="wind-cell">
-                <div class="wc-label">Vent de face</div>
-                <div class="wc-value"><span id="depHwFace">—</span> kt</div>
-              </div>
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="depHwFace">—</span> kt</div>
             </div>
-            <div class="column">
-              <div id="depXwCard" class="wind-cell">
-                <div class="wc-label">Vent de travers</div>
-                <div class="wc-value" id="depXw">—</div>
-              </div>
+            <div id="depXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="depXw">—</div>
             </div>
-            <div class="column">
-              <div class="wind-cell">
-                <div class="wc-label">Vent arrière</div>
-                <div class="wc-value"><span id="depTw">—</span> kt</div>
-              </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="depTw">—</span> kt</div>
             </div>
           </div>
 
@@ -633,14 +762,15 @@
       </div>
 
       <!-- Résultats décollage -->
-      <div class="card" id="cardDepPerf">
+      <div class="card card-dep" id="cardDepPerf">
         <div class="card-content">
-          <div class="is-flex is-align-items-center mb-2" style="gap:.5rem">
-            <p class="title is-6 mb-0" style="flex:1;text-align:center;text-transform:uppercase;letter-spacing:.05em">Décollage — Résultats</p>
+          <div class="result-header">
+            <span class="rh-title">Décollage — Résultats</span>
             <span id="toChip" class="tag is-medium is-neutral-chip">—</span>
           </div>
 
           <div id="toKpi" class="kpi-box">
+            <div class="kpi-icon">🛫</div>
             <div>
               <div class="kpi-label">Requis (marge incluse)</div>
               <div class="kpi-value" id="toKpiVal">— m</div>
@@ -648,42 +778,30 @@
             </div>
           </div>
 
-          <div class="columns is-mobile is-multiline is-variable is-2 mt-1">
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Roulement (sans marge)</div>
-                <div id="toBaseRoll" class="pf-value">—</div>
-              </div>
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="toBaseRoll" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Passage 15m (sans marge)</div>
-                <div id="toBasePass" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="toBasePass" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Facteur vent</div>
-                <div id="toWindF" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="toWindF" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Carénages</div>
-                <div id="toSpat" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Carénages</div>
+              <div id="toSpat" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Facteur supplémentaire</div>
-                <div id="toExtra" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="toExtra" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Résultat sans marge</div>
-                <div id="toRes" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="toRes" class="pf-value">—</div>
             </div>
           </div>
           <p id="toExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
@@ -695,9 +813,9 @@
     <div class="column tab-col hidden-mobile" id="colArr">
 
       <!-- Terrain arrivée -->
-      <div class="card mb-3" id="cardArr">
+      <div class="card mb-3 card-arr" id="cardArr">
         <div class="card-content">
-          <p class="card-title">Terrain d'arrivée</p>
+          <p class="card-title"><span class="ct-badge arr">🛬 Arrivée</span></p>
 
           <!-- ICAO + Élévation + METAR -->
           <div class="columns is-mobile is-variable is-2">
@@ -794,24 +912,18 @@
           </div>
 
           <!-- Affichage composantes vent -->
-          <div class="columns is-mobile is-variable is-2 mt-1">
-            <div class="column">
-              <div class="wind-cell">
-                <div class="wc-label">Vent de face</div>
-                <div class="wc-value"><span id="arrHwFace">—</span> kt</div>
-              </div>
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="arrHwFace">—</span> kt</div>
             </div>
-            <div class="column">
-              <div id="arrXwCard" class="wind-cell">
-                <div class="wc-label">Vent de travers</div>
-                <div class="wc-value" id="arrXw">—</div>
-              </div>
+            <div id="arrXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="arrXw">—</div>
             </div>
-            <div class="column">
-              <div class="wind-cell">
-                <div class="wc-label">Vent arrière</div>
-                <div class="wc-value"><span id="arrTw">—</span> kt</div>
-              </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="arrTw">—</span> kt</div>
             </div>
           </div>
 
@@ -862,14 +974,15 @@
       </div>
 
       <!-- Résultats atterrissage -->
-      <div class="card" id="cardArrPerf">
+      <div class="card card-arr" id="cardArrPerf">
         <div class="card-content">
-          <div class="is-flex is-align-items-center mb-2" style="gap:.5rem">
-            <p class="title is-6 mb-0" style="flex:1;text-align:center;text-transform:uppercase;letter-spacing:.05em">Atterrissage — Résultats</p>
+          <div class="result-header">
+            <span class="rh-title">Atterrissage — Résultats</span>
             <span id="ldgChip" class="tag is-medium is-neutral-chip">—</span>
           </div>
 
           <div id="ldgKpi" class="kpi-box">
+            <div class="kpi-icon">🛬</div>
             <div>
               <div class="kpi-label">Requis (marge incluse)</div>
               <div class="kpi-value" id="ldgKpiVal">— m</div>
@@ -877,36 +990,26 @@
             </div>
           </div>
 
-          <div class="columns is-mobile is-multiline is-variable is-2 mt-1">
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Roulement (sans marge)</div>
-                <div id="ldgBaseRoll" class="pf-value">—</div>
-              </div>
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="ldgBaseRoll" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Passage 15m (sans marge)</div>
-                <div id="ldgBasePass" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="ldgBasePass" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Facteur vent</div>
-                <div id="ldgWindF" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="ldgWindF" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Facteur supplémentaire</div>
-                <div id="ldgExtra" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="ldgExtra" class="pf-value">—</div>
             </div>
-            <div class="column is-half">
-              <div class="perf-field">
-                <div class="pf-label">Résultat sans marge</div>
-                <div id="ldgRes" class="pf-value">—</div>
-              </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="ldgRes" class="pf-value">—</div>
             </div>
           </div>
           <p id="ldgExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
