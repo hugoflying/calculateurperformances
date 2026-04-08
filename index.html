@@ -1043,6 +1043,40 @@
     </div><!-- /readme-body -->
   </div><!-- /readme-wrap -->
 
+  <!-- Footer -->
+  <footer class="has-text-centered pb-5 pt-2" style="font-size:.72rem;color:#94a3b8;line-height:1.8">
+    <div>Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé</div>
+    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+  </footer>
+
+  <!-- Modal disclaimer (affiché au chargement) -->
+  <div id="modalDisclaimer" class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="max-width:480px;width:calc(100% - 2rem);border-radius:14px;overflow:hidden">
+      <header class="modal-card-head" style="background:#0b3b86;border-bottom:none;padding:1.1rem 1.4rem">
+        <p class="modal-card-title" style="color:#fff;font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase">
+          ⚠️ Avertissement
+        </p>
+      </header>
+      <section class="modal-card-body" style="padding:1.4rem">
+        <p style="font-size:.9rem;line-height:1.65;color:#1e293b">
+          Cet outil est une <strong>aide à la préparation du vol</strong>. La source officielle reste le <strong>manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.
+        </p>
+        <p style="font-size:.9rem;line-height:1.65;color:#1e293b;margin-top:.85rem">
+          Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
+        </p>
+        <p style="font-size:.75rem;color:#94a3b8;margin-top:1rem">
+          Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé
+        </p>
+      </section>
+      <footer class="modal-card-foot" style="border-top:1px solid #e2e8f0;padding:.9rem 1.4rem;justify-content:flex-end">
+        <button class="button is-primary" id="btnCloseDisclaimer" style="font-weight:700;min-width:140px">
+          J'ai compris
+        </button>
+      </footer>
+    </div>
+  </div>
+
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
 <section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
 
@@ -1979,7 +2013,13 @@ document.getElementById('btnPrint').addEventListener('click', async () => {
   }
 });
 
-/* ===================== README accordéon ===================== */
+/* ===================== DISCLAIMER MODAL ===================== */
+(function() {
+  const modal = document.getElementById('modalDisclaimer');
+  function closeModal() { modal.classList.remove('is-active'); }
+  document.getElementById('btnCloseDisclaimer').addEventListener('click', closeModal);
+  modal.querySelector('.modal-background').addEventListener('click', closeModal);
+})();
 function toggleReadme() {
   const body  = document.getElementById('readmeBody');
   const arrow = document.getElementById('readmeArrow');
