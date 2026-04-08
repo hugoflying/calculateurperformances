@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Calculateur de Performances — ACBT</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       --navy: #0b3b86;
@@ -356,7 +358,7 @@
           </div>
         </div>
         <div class="column is-half-mobile is-one-quarter-desktop is-flex is-align-items-flex-end">
-          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700">🖨 Imprimer</button>
+          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700">📄 Exporter PDF</button>
         </div>
       </div>
     </div>
@@ -1686,7 +1688,7 @@ document.getElementById('btnArrMetar').addEventListener('click', () => loadMetar
 /* ===================== IMPRESSION ===================== */
 function nowStamp() {
   const d = new Date();
-  return 'Imprimé le ' +
+  return 'Exporté le ' +
     String(d.getDate()).padStart(2,'0') + '/' +
     String(d.getMonth()+1).padStart(2,'0') + '/' +
     d.getFullYear() + ' à ' +
@@ -1832,9 +1834,54 @@ function buildPrintHTML() {
   return page1 + page2;
 }
 
-document.getElementById('btnPrint').addEventListener('click', () => {
-  document.getElementById('rawPre').innerHTML = buildPrintHTML();
-  window.print();
+document.getElementById('btnPrint').addEventListener('click', async () => {
+  const btn = document.getElementById('btnPrint');
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération…';
+
+  const rawPre  = document.getElementById('rawPre');
+  const printEl = document.getElementById('printRaw');
+
+  rawPre.innerHTML = buildPrintHTML();
+
+  // Rendre le conteneur visible (hors écran) pour que html2canvas puisse le lire
+  printEl.style.cssText = 'display:block;position:fixed;top:0;left:0;width:794px;background:#fff;z-index:-9999;pointer-events:none;';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf   = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const pages = printEl.querySelectorAll('.page');
+
+    for (let i = 0; i < pages.length; i++) {
+      const canvas = await html2canvas(pages[i], {
+        scale      : 2,
+        useCORS    : true,
+        backgroundColor: '#ffffff',
+        logging    : false,
+        width      : 794,
+      });
+
+      const imgData  = canvas.toDataURL('image/jpeg', 0.92);
+      const pdfW     = pdf.internal.pageSize.getWidth();   // 210 mm
+      const pdfH     = (canvas.height / canvas.width) * pdfW;
+
+      if (i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+    }
+
+    // Date pour le nom de fichier
+    const d   = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const fn  = `perf-ACBT_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.pdf`;
+
+    pdf.save(fn);
+  } catch(err) {
+    alert('Erreur lors de la génération du PDF : ' + err.message);
+  } finally {
+    printEl.style.cssText = 'display:none;';
+    btn.disabled   = false;
+    btn.textContent = '📄 Exporter PDF';
+  }
 });
 
 /* ===================== README accordéon ===================== */
