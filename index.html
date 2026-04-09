@@ -1965,7 +1965,7 @@ async function fetchRunways(icao) {
       return {
         designator : String(rwy.designator || '??'),
         qfu        : magHdg,
-        toraM      : Math.round(rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
+        toraM      : Math.round(rwy.declaredDistance?.toda?.value || rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
         ldaM       : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
         lengthM    : Math.round(rwy.dimension.length.value),
       };
@@ -1977,7 +1977,7 @@ function renderRunwayPicker(side, runways) {
   const wrap = document.getElementById(side + 'RunwayPicker');
   if (!runways.length) { wrap.style.display = 'none'; return; }
 
-  const lenLabel = side === 'dep' ? 'TORA' : 'LDA';
+  const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
   wrap.innerHTML = `
     <div class="runway-picker-label">🛬 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
     <div class="rwy-list">
