@@ -461,7 +461,8 @@
       font-family: 'DM Mono', ui-monospace, monospace;
       color: #3f3f46;
       white-space: pre-wrap;
-      word-break: break-all;
+      word-break: break-word;
+      overflow-wrap: break-word;
       line-height: 1.5;
       margin-bottom: .4rem;
       margin-top: .3rem;
@@ -608,8 +609,10 @@
 
     /* ── Results content ── */
     .rm-content {
-      flex: 1; display: flex; flex-direction: column;
+      flex: none;
+      display: flex; flex-direction: column;
       overflow: hidden;
+      max-height: 92vh;
     }
     .rm-header {
       padding: .8rem 1rem .75rem;
@@ -686,19 +689,27 @@
       font-family: 'DM Mono', monospace; text-align: right;
     }
 
-    /* ── Footer ── */
     .rm-footer {
-      padding: .9rem 1.25rem calc(.9rem + env(safe-area-inset-bottom));
-      background: #fff; border-top: 1px solid var(--border); flex-shrink: 0;
+      padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom));
+      background: #fff; border-top: 1px solid var(--border);
+      flex-shrink: 0; display: flex; gap: .5rem;
     }
     .rm-back-btn {
-      width: 100%; padding: .85rem; border-radius: 12px;
+      flex: 1; padding: .75rem; border-radius: 10px;
+      background: #f1f5f9; color: var(--text); border: 1.5px solid var(--border);
+      font-size: .88rem; font-weight: 700; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background .15s;
+    }
+    .rm-back-btn:hover { background: #e2e8f0; }
+    .rm-validate-btn {
+      flex: 1; padding: .75rem; border-radius: 10px;
       background: var(--navy); color: #fff; border: none;
-      font-size: .95rem; font-weight: 700; cursor: pointer;
-      font-family: 'DM Sans', sans-serif; letter-spacing: .02em;
+      font-size: .88rem; font-weight: 700; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
       transition: opacity .15s;
     }
-    .rm-back-btn:hover { opacity: .9; }
+    .rm-validate-btn:hover { opacity: .9; }
 
     @media (min-width: 768px) {
       .results-modal {
@@ -1100,7 +1111,33 @@
               <span class="taf-header-label">📋 TAF — choisir une période</span>
               <div class="taf-eta-wrap">
                 <span class="taf-eta-label">ETA (UTC) :</span>
-                <input id="arrEta" type="time" class="input taf-eta-input" placeholder="--:--" />
+                <select id="arrEta" class="input taf-eta-input" style="height:28px!important;padding:.2em .4em!important;font-size:.78rem!important;border-radius:6px!important;min-width:100px">
+                  <option value="">-- : --</option>
+                  <option value="0">00h – 01h</option>
+                  <option value="1">01h – 02h</option>
+                  <option value="2">02h – 03h</option>
+                  <option value="3">03h – 04h</option>
+                  <option value="4">04h – 05h</option>
+                  <option value="5">05h – 06h</option>
+                  <option value="6">06h – 07h</option>
+                  <option value="7">07h – 08h</option>
+                  <option value="8">08h – 09h</option>
+                  <option value="9">09h – 10h</option>
+                  <option value="10">10h – 11h</option>
+                  <option value="11">11h – 12h</option>
+                  <option value="12">12h – 13h</option>
+                  <option value="13">13h – 14h</option>
+                  <option value="14">14h – 15h</option>
+                  <option value="15">15h – 16h</option>
+                  <option value="16">16h – 17h</option>
+                  <option value="17">17h – 18h</option>
+                  <option value="18">18h – 19h</option>
+                  <option value="19">19h – 20h</option>
+                  <option value="20">20h – 21h</option>
+                  <option value="21">21h – 22h</option>
+                  <option value="22">22h – 23h</option>
+                  <option value="23">23h – 00h</option>
+                </select>
               </div>
             </div>
             <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
@@ -1476,7 +1513,8 @@
       <div class="rm-rows" id="rmRows"></div>
     </div>
     <div class="rm-footer">
-      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
+      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier</button>
+      <button class="rm-validate-btn" id="rmValidateBtn" onclick="closeResultsModal()">✓ Valider</button>
     </div>
   </div>
 
@@ -2123,6 +2161,71 @@ function computeArrPerf() {
 }
 
 /* ===================== RESULTS MODAL ===================== */
+// Snapshots des valeurs au moment du dernier calcul
+const lastSnapshot = { dep: null, arr: null };
+
+function getInputSnapshot(side) {
+  const ids = side === 'dep'
+    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','depExtraTO','safety']
+    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','arrExtraLDG','safety'];
+  const snap = {};
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) snap[id] = el.value;
+  });
+  // Inclure aussi l'état des boutons toggle
+  if (side === 'dep') {
+    snap._surface = document.getElementById('depSurfHard')?.classList.contains('is-selected') ? 'hard' : 'grass';
+    snap._spats   = document.getElementById('spatsWith')?.classList.contains('is-selected') ? '1' : '0';
+  } else {
+    snap._brake = document.getElementById('arrModerate')?.classList.contains('is-selected') ? 'mod' : 'nobrake';
+  }
+  return JSON.stringify(snap);
+}
+
+function updateCalcButton(side) {
+  const btn    = document.getElementById(side === 'dep' ? 'btnCalcDep' : 'btnCalcArr');
+  const isCalc = side === 'dep' ? depComputed : arrComputed;
+  const snap   = lastSnapshot[side];
+  const current = getInputSnapshot(side);
+  const changed  = snap !== null && snap !== current;
+
+  if (isCalc && !changed) {
+    btn.innerHTML = side === 'dep'
+      ? '✅ Décollage calculé — voir résultats'
+      : '✅ Atterrissage calculé — voir résultats';
+    btn.style.background = 'linear-gradient(135deg,#047857,var(--arr))';
+    btn.style.opacity    = '1';
+  } else if (isCalc && changed) {
+    btn.innerHTML = side === 'dep'
+      ? '🔄 Recalculer le décollage'
+      : '🔄 Recalculer l\'atterrissage';
+    btn.style.background = '';
+    btn.style.opacity    = '1';
+  } else {
+    btn.innerHTML = side === 'dep'
+      ? 'Calculer les performances décollage'
+      : 'Calculer les performances atterrissage';
+    btn.style.background = '';
+    btn.style.opacity    = '1';
+  }
+}
+
+// Surveiller les changements d'inputs pour mettre à jour les boutons
+['dep','arr'].forEach(side => {
+  const ids = side === 'dep'
+    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','depExtraTO','safety','spatsWith','spatsWithout','depSurfHard','depSurfGrass']
+    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','arrExtraLDG','safety','arrModerate','arrNoBrake'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input',  () => updateCalcButton(side));
+      el.addEventListener('change', () => updateCalcButton(side));
+      el.addEventListener('click',  () => setTimeout(() => updateCalcButton(side), 10));
+    }
+  });
+});
+
 const RM_STEPS = [
   'Calcul de l\'altitude-densité…',
   'Interpolation des tables du manuel…',
@@ -2131,59 +2234,70 @@ const RM_STEPS = [
 ];
 
 function openResultsModal(side, computeFn) {
-  // Valider d'abord sans ouvrir le modal
   if (!validateBeforeCompute(side)) return;
+
+  const alreadyCalc = side === 'dep' ? depComputed : arrComputed;
+  const snap        = lastSnapshot[side];
+  const current     = getInputSnapshot(side);
+  const unchanged   = alreadyCalc && snap === current;
+
   const modal   = document.getElementById('resultsModal');
   const loading = document.getElementById('rmLoading');
   const content = document.getElementById('rmContent');
-  const fill    = document.getElementById('rmFill');
-  const pct     = document.getElementById('rmPct');
-  const sub     = document.getElementById('rmSub');
 
-  // Reset
+  if (unchanged) {
+    // Afficher directement les résultats sans recalcul
+    loading.style.display = 'none';
+    content.style.display = 'flex';
+    modal.style.display   = 'flex';
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    document.body.style.overflow = 'hidden';
+    showResultsContent(side);
+    return;
+  }
+
+  // Nouveau calcul
+  const fill = document.getElementById('rmFill');
+  const pct  = document.getElementById('rmPct');
+  const sub  = document.getElementById('rmSub');
+
   loading.style.display = 'flex';
-  content.style.display  = 'none';
+  content.style.display = 'none';
   fill.style.width = '0%';
   pct.textContent  = '0 %';
   sub.textContent  = RM_STEPS[0];
 
-  // Afficher le modal
   modal.style.display = 'flex';
   requestAnimationFrame(() => modal.classList.add('is-open'));
   document.body.style.overflow = 'hidden';
 
-  // Lancer le calcul immédiatement (synchrone)
   computeFn();
+  lastSnapshot[side] = getInputSnapshot(side);
 
-  // Animation de progression sur 3 secondes
   const TOTAL = 3000;
   const start = performance.now();
   let stepIdx = 0;
 
   function tick(now) {
-    const elapsed = now - start;
+    const elapsed  = now - start;
     const progress = Math.min(elapsed / TOTAL, 1);
     const pctVal   = Math.round(progress * 100);
 
-    fill.style.width   = pctVal + '%';
-    pct.textContent    = pctVal + ' %';
+    fill.style.width = pctVal + '%';
+    pct.textContent  = pctVal + ' %';
 
     const newStep = Math.min(Math.floor(progress * RM_STEPS.length), RM_STEPS.length - 1);
     if (newStep !== stepIdx) {
       stepIdx = newStep;
       sub.style.opacity = '0';
-      setTimeout(() => {
-        sub.textContent  = RM_STEPS[stepIdx];
-        sub.style.opacity = '1';
-      }, 150);
+      setTimeout(() => { sub.textContent = RM_STEPS[stepIdx]; sub.style.opacity = '1'; }, 150);
     }
 
-    if (progress < 1) {
-      requestAnimationFrame(tick);
-    } else {
-      // Afficher les résultats
-      setTimeout(() => showResultsContent(side), 100);
-    }
+    if (progress < 1) requestAnimationFrame(tick);
+    else setTimeout(() => {
+      showResultsContent(side);
+      updateCalcButton(side);
+    }, 100);
   }
   requestAnimationFrame(tick);
 }
@@ -2438,8 +2552,9 @@ async function loadMetarFor(side) {
     }
     applyMetar(side, metar);
     setMetarMsg(msgEl, isNearest
-      ? 'METAR chargé (proche : ' + usedIcao + distTxt + ') : ' + (metar?.raw||'—')
-      : 'METAR chargé : ' + (metar?.raw||'—'));
+      ? '⚠ METAR le plus proche : ' + usedIcao + distTxt + '
+' + (metar?.raw||'—')
+      : (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
     setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
@@ -2701,46 +2816,41 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
   return periods.filter(p => p.start_time?.dt && p.end_time?.dt);
 }
 
-function periodContainsEta(period, etaUtcMin) {
-  if (etaUtcMin == null) return false;
+function periodContainsEta(period, etaHour) {
+  if (etaHour === '' || etaHour == null) return false;
+  const h = parseInt(etaHour, 10);
+  if (isNaN(h)) return false;
 
-  const toMin = pt => {
-    const dt = pt?.dt;
-    if (dt) return new Date(dt).getTime() / 60000;
-    const r = pt?.repr;
-    if (r && r.length >= 4) return parseInt(r.slice(0,2), 10) * 1440 + parseInt(r.slice(2,4), 10) * 60;
-    return null;
-  };
+  const startDt = period.start_time?.dt ? new Date(period.start_time.dt) : null;
+  const endDt   = period.end_time?.dt   ? new Date(period.end_time.dt)   : null;
+  if (!startDt || !endDt) return false;
 
-  const startMin = toMin(period.start_time);
-  const endMin   = toMin(period.end_time);
-  if (startMin == null || endMin == null) return false;
-
+  // Construire ETA = aujourd'hui UTC à l'heure h:00
   const now = new Date();
-  const todayBase = Math.floor(now.getTime() / 86400000) * 1440;
-  const etaEpoch  = todayBase + etaUtcMin;
+  let eta = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
+  // Si avant le début du TAF, essayer le lendemain
+  if (eta < startDt) eta = new Date(eta.getTime() + 86400000);
 
-  return etaEpoch >= startMin && etaEpoch < endMin;
+  return eta >= startDt && eta < endDt;
 }
 
 function renderTafPicker(tafData) {
   const wrap      = document.getElementById('arrTafWrap');
   const rawEl     = document.getElementById('arrTafRaw');
   const periodsEl = document.getElementById('arrTafPeriods');
-  const etaInput  = document.getElementById('arrEta');
+  const etaSelect = document.getElementById('arrEta');
 
-  // RAW TAF déjà affiché dans arrMetarMsg, ne pas le dupliquer ici
   rawEl.style.display = 'none';
 
-  const rawForecast = buildTafPeriodsFromRaw(tafData.raw || '');
+  const rawForecast      = buildTafPeriodsFromRaw(tafData.raw || '');
   const fallbackForecast = (tafData.forecast || []).filter(p => p.wind_direction && p.wind_speed);
-  const forecast = rawForecast.length ? rawForecast : fallbackForecast;
+  const forecast         = rawForecast.length ? rawForecast : fallbackForecast;
 
-  function render(etaMin) {
+  function render(etaHour) {
     periodsEl.innerHTML = forecast.map((p, i) => {
       const type    = p.type_label || p.type || 'FROM';
       const isTempo = /TEMPO/i.test(type) || p.type === 'TEMPO';
-      const isCur   = periodContainsEta(p, etaMin);
+      const isCur   = periodContainsEta(p, etaHour);
       const wind    = fmtTafWind(p);
       const t1      = fmtTafTime(p.start_time);
       const t2      = fmtTafTime(p.end_time);
@@ -2756,16 +2866,9 @@ function renderTafPicker(tafData) {
     periodsEl._forecast = forecast;
   }
 
-  const etaVal = etaInput.value;
-  const etaMin = etaVal ? parseInt(etaVal.split(':')[0], 10) * 60 + parseInt(etaVal.split(':')[1], 10) : null;
-  render(etaMin);
+  render(etaSelect.value);
   wrap.classList.add('visible');
-
-  etaInput.oninput = () => {
-    const v = etaInput.value;
-    const m = v ? parseInt(v.split(':')[0], 10) * 60 + parseInt(v.split(':')[1], 10) : null;
-    render(m);
-  };
+  etaSelect.onchange = () => render(etaSelect.value);
 }
 
 function applyTafPeriod(idx) {
@@ -2823,7 +2926,7 @@ async function loadTafFor(side) {
         .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
     ]);
 
-    setMetarMsg(msgEl, 'TAF chargé : ' + (taf.raw || '—'));
+    setMetarMsg(msgEl, (taf.raw || '—'));
     renderTafPicker(taf);
   } catch(e) {
     setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
