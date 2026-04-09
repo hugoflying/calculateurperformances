@@ -1949,17 +1949,21 @@ async function fetchRunways(icao) {
     throw new Error(err.error || 'HTTP ' + r.status);
   }
   const airport = await r.json();
+  const decl = airport.magneticDeclination ?? 0; // déclinaison magnétique locale
 
   return (airport.runways || [])
     .filter(rwy => rwy.dimension?.length?.value > 0)
-    .map(rwy => ({
-      designator : String(rwy.designator || '??'),
-      qfu        : parseInt(rwy.designator || '0', 10) * 10,
-      // Préférer TORA/LDA déclarée, sinon longueur physique
-      toraM      : Math.round(rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
-      ldaM       : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
-      lengthM    : Math.round(rwy.dimension.length.value),
-    }))
+    .map(rwy => {
+      // QFU = cap vrai − déclinaison magnétique, arrondi à l'entier
+      const magHdg = Math.round(((rwy.trueHeading - decl) + 360) % 360) || 360;
+      return {
+        designator : String(rwy.designator || '??'),
+        qfu        : magHdg,
+        toraM      : Math.round(rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
+        ldaM       : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
+        lengthM    : Math.round(rwy.dimension.length.value),
+      };
+    })
     .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
 }
 
