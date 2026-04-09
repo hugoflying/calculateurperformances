@@ -1,37 +1,26 @@
 export async function onRequest({ request, env }) {
   const cors = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
-  const url  = new URL(request.url);
-  const icao = url.searchParams.get('icao')?.toUpperCase();
+  const icao = new URL(request.url).searchParams.get('icao')?.toUpperCase();
 
   if (!icao) return new Response(JSON.stringify({ error: 'icao manquant' }), { status: 400, headers: cors });
 
   try {
-    // 1. Coords via aviationweather.gov (gratuit, sans clé, pas de blocage serveur)
-    const awRes = await fetch(
-      `https://aviationweather.gov/api/data/airport?ids=${icao}&format=json`
+    const res = await fetch(
+      `https://avwx.rest/api/station/${icao}`,
+      { headers: { Authorization: `Bearer ${env.AVWX_TOKEN}` } }
     );
-    if (!awRes.ok) throw new Error('aviationweather.gov ' + awRes.status);
-    const awData = await awRes.json();
-    const apt = Array.isArray(awData) ? awData[0] : awData;
-    const lat = apt?.lat, lon = apt?.lon;
-    if (!lat || !lon) throw new Error('Coordonnées introuvables pour ' + icao);
+    if (!res.ok) throw new Error('AVWX ' + res.status);
+    const station = await res.json();
 
-    // 2. OpenAIP géo — rayon 5 km
-    const geoRes = await fetch(
-      `https://api.core.openaip.net/api/airports?pos=${lon},${lat}&dist=5000&limit=10`,
-      { headers: { 'x-openaip-api-key': env.OPENAIP_KEY } }
-    );
-    const geoData = await geoRes.json();
-    const match   = (geoData.items || []).find(a => (a.icaoCode || '').toUpperCase() === icao);
-    if (!match) throw new Error(icao + ' absent (autour trouvé : ' + (geoData.items||[]).map(a => a.icaoCode).join(', ') + ')');
+    // AVWX retourne les pistes directement dans station.runways
+    const runways = (station.runways || []).map(rwy => ({
+      ident1:   rwy.ident1,           // ex: "04"
+      ident2:   rwy.ident2,           // ex: "22"
+      lengthM:  Math.round((rwy.length_ft || 0) * 0.3048),
+      widthM:   Math.round((rwy.width_ft  || 0) * 0.3048),
+    }));
 
-    // 3. Détail complet avec pistes
-    const detailRes = await fetch(
-      `https://api.core.openaip.net/api/airports/${match._id}`,
-      { headers: { 'x-openaip-api-key': env.OPENAIP_KEY } }
-    );
-    const airport = await detailRes.json();
-    return new Response(JSON.stringify(airport), { headers: cors });
+    return new Response(JSON.stringify({ icao, runways }), { headers: cors });
 
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors });
