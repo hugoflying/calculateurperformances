@@ -540,7 +540,168 @@
     .readme-section li { margin-bottom: .2rem; }
     @media print { .readme-wrap { display: none !important; } }
 
-    /* ══════════════════ PRINT / EXPORT PDF ══════════════════ */
+    /* ══════════════════ RESULTS MODAL ══════════════════ */
+    .results-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column;
+      background: #f0f4f8;
+      transform: translateY(100%);
+      transition: transform .38s cubic-bezier(.32,0,.67,0);
+    }
+    .results-modal.is-open {
+      transform: translateY(0);
+      transition: transform .38s cubic-bezier(.33,1,.68,1);
+    }
+
+    /* ── Loading ── */
+    .rm-loading {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.2rem; padding: 2rem; background: var(--navy);
+    }
+    .rm-plane {
+      font-size: 3rem; line-height: 1;
+      animation: rmFloat 2s ease-in-out infinite;
+    }
+    @keyframes rmFloat {
+      0%,100% { transform: translateY(0) rotate(-5deg); }
+      50%      { transform: translateY(-10px) rotate(5deg); }
+    }
+    .rm-loading-title {
+      font-size: 1.3rem; font-weight: 800; color: #fff;
+      letter-spacing: .04em; text-align: center;
+    }
+    .rm-loading-sub {
+      font-size: .82rem; color: rgba(255,255,255,.6);
+      letter-spacing: .03em; text-align: center; min-height: 1.2em;
+      transition: opacity .3s;
+    }
+    .rm-progress-track {
+      width: min(320px, 80vw); height: 6px;
+      background: rgba(255,255,255,.15); border-radius: 99px; overflow: hidden;
+    }
+    .rm-progress-fill {
+      height: 100%; border-radius: 99px; width: 0%;
+      background: linear-gradient(90deg, #60a5fa, #fff);
+      transition: width .15s linear;
+    }
+    .rm-pct {
+      font-size: .75rem; color: rgba(255,255,255,.5);
+      font-family: 'DM Mono', monospace; font-weight: 500;
+    }
+
+    /* ── Results content ── */
+    .rm-content {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .rm-header {
+      padding: 1rem 1.25rem .9rem;
+      display: flex; align-items: center; gap: .75rem;
+      flex-shrink: 0;
+    }
+    .rm-header.is-ok  { background: linear-gradient(135deg, #047857, var(--arr)); }
+    .rm-header.is-bad { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+    .rm-header.is-neutral { background: linear-gradient(135deg, var(--navy-dark), var(--navy)); }
+    .rm-close-btn {
+      background: rgba(255,255,255,.15); border: none; border-radius: 50%;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #fff; font-size: 1.1rem; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .rm-close-btn:hover { background: rgba(255,255,255,.25); }
+    .rm-header-info { flex: 1; min-width: 0; }
+    .rm-header-type {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.7);
+    }
+    .rm-header-verdict {
+      font-size: 1rem; font-weight: 800; color: #fff; line-height: 1.2;
+    }
+    .rm-verdict-badge {
+      flex-shrink: 0; background: rgba(255,255,255,.2);
+      border: 2px solid rgba(255,255,255,.4);
+      border-radius: 10px; padding: .3rem .7rem;
+      font-size: .8rem; font-weight: 800; color: #fff;
+      white-space: nowrap;
+    }
+
+    /* ── KPI ── */
+    .rm-body {
+      flex: 1; overflow-y: auto; padding: 1.1rem 1.25rem;
+      display: flex; flex-direction: column; gap: .75rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rm-kpi-card {
+      border-radius: 14px; padding: 1.1rem 1.25rem;
+      border: 1.5px solid var(--border); background: #fff;
+    }
+    .rm-kpi-card.is-ok  { background: var(--arr-light); border-color: var(--arr-border); }
+    .rm-kpi-card.is-bad { background: var(--red-light);  border-color: var(--red-border); }
+    .rm-kpi-label {
+      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+    }
+    .rm-kpi-value {
+      font-size: 3rem; font-weight: 900; line-height: 1.05;
+      color: var(--text); font-variant-numeric: tabular-nums;
+      letter-spacing: -.02em; margin: .1rem 0 .25rem;
+    }
+    .rm-kpi-avail {
+      font-size: .8rem; color: var(--muted); font-weight: 600;
+    }
+
+    /* ── Rows ── */
+    .rm-rows {
+      background: #fff; border-radius: 14px;
+      border: 1.5px solid var(--border); overflow: hidden;
+    }
+    .rm-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1.1rem; border-bottom: 1px solid #f1f5f9;
+      gap: .5rem;
+    }
+    .rm-row:last-child { border-bottom: none; }
+    .rm-row-label {
+      font-size: .8rem; color: var(--muted); font-weight: 600; flex: 1;
+    }
+    .rm-row-value {
+      font-size: .88rem; font-weight: 700; color: var(--text);
+      font-family: 'DM Mono', monospace; text-align: right;
+    }
+
+    /* ── Footer ── */
+    .rm-footer {
+      padding: .9rem 1.25rem calc(.9rem + env(safe-area-inset-bottom));
+      background: #fff; border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .rm-back-btn {
+      width: 100%; padding: .85rem; border-radius: 12px;
+      background: var(--navy); color: #fff; border: none;
+      font-size: .95rem; font-weight: 700; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; letter-spacing: .02em;
+      transition: opacity .15s;
+    }
+    .rm-back-btn:hover { opacity: .9; }
+
+    @media (min-width: 768px) {
+      .results-modal {
+        align-items: center; justify-content: center;
+        background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+        transform: none; opacity: 0; transition: opacity .25s;
+      }
+      .results-modal.is-open { opacity: 1; }
+      .rm-content {
+        width: min(480px, 90vw); max-height: 90vh;
+        border-radius: 20px; overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+      }
+      .rm-loading {
+        width: min(480px, 90vw); border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        min-height: 360px; flex: none;
+      }
+    }
     #printRaw { display: none; }
     .printWrap {
       color: #111;
@@ -1257,6 +1418,45 @@
   </div>
 
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
+
+<!-- ══════════ RESULTS MODAL ══════════ -->
+<div id="resultsModal" class="results-modal">
+
+  <!-- Loading -->
+  <div id="rmLoading" class="rm-loading">
+    <div class="rm-plane">✈</div>
+    <div class="rm-loading-title">Calculs en cours…</div>
+    <div class="rm-loading-sub" id="rmSub">Initialisation</div>
+    <div class="rm-progress-track">
+      <div class="rm-progress-fill" id="rmFill"></div>
+    </div>
+    <div class="rm-pct" id="rmPct">0 %</div>
+  </div>
+
+  <!-- Results -->
+  <div id="rmContent" class="rm-content" style="display:none">
+    <div class="rm-header is-neutral" id="rmHeader">
+      <button class="rm-close-btn" onclick="closeResultsModal()">✕</button>
+      <div class="rm-header-info">
+        <div class="rm-header-type" id="rmType"></div>
+        <div class="rm-header-verdict" id="rmVerdict"></div>
+      </div>
+      <div class="rm-verdict-badge" id="rmBadge">—</div>
+    </div>
+    <div class="rm-body">
+      <div class="rm-kpi-card" id="rmKpiCard">
+        <div class="rm-kpi-label">Requis (marge incluse)</div>
+        <div class="rm-kpi-value" id="rmKpiVal">—</div>
+        <div class="rm-kpi-avail" id="rmKpiAvail"></div>
+      </div>
+      <div class="rm-rows" id="rmRows"></div>
+    </div>
+    <div class="rm-footer">
+      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
+    </div>
+  </div>
+
+</div>
 <section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
 
 <script>
@@ -1862,8 +2062,148 @@ function computeArrPerf() {
     : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
 }
 
-document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
-document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
+/* ===================== RESULTS MODAL ===================== */
+const RM_STEPS = [
+  'Calcul de l\'altitude-densité…',
+  'Interpolation des tables du manuel…',
+  'Application des facteurs vent…',
+  'Vérification des marges de sécurité…',
+];
+
+function openResultsModal(side, computeFn) {
+  const modal   = document.getElementById('resultsModal');
+  const loading = document.getElementById('rmLoading');
+  const content = document.getElementById('rmContent');
+  const fill    = document.getElementById('rmFill');
+  const pct     = document.getElementById('rmPct');
+  const sub     = document.getElementById('rmSub');
+
+  // Reset
+  loading.style.display = 'flex';
+  content.style.display  = 'none';
+  fill.style.width = '0%';
+  pct.textContent  = '0 %';
+  sub.textContent  = RM_STEPS[0];
+
+  // Afficher le modal
+  modal.style.display = 'flex';
+  requestAnimationFrame(() => modal.classList.add('is-open'));
+  document.body.style.overflow = 'hidden';
+
+  // Lancer le calcul immédiatement (synchrone)
+  computeFn();
+
+  // Animation de progression sur 3 secondes
+  const TOTAL = 3000;
+  const start = performance.now();
+  let stepIdx = 0;
+
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / TOTAL, 1);
+    const pctVal   = Math.round(progress * 100);
+
+    fill.style.width   = pctVal + '%';
+    pct.textContent    = pctVal + ' %';
+
+    const newStep = Math.min(Math.floor(progress * RM_STEPS.length), RM_STEPS.length - 1);
+    if (newStep !== stepIdx) {
+      stepIdx = newStep;
+      sub.style.opacity = '0';
+      setTimeout(() => {
+        sub.textContent  = RM_STEPS[stepIdx];
+        sub.style.opacity = '1';
+      }, 150);
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      // Afficher les résultats
+      setTimeout(() => showResultsContent(side), 100);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function showResultsContent(side) {
+  const loading = document.getElementById('rmLoading');
+  const content = document.getElementById('rmContent');
+
+  const isDep  = side === 'dep';
+  const chip   = isDep ? document.getElementById('toChip')   : document.getElementById('ldgChip');
+  const kpiVal = isDep ? document.getElementById('toKpiVal') : document.getElementById('ldgKpiVal');
+  const avail  = isDep ? document.getElementById('todaMini') : document.getElementById('ldaMini');
+
+  const isOk  = chip.classList.contains('is-ok-chip');
+  const isBad = chip.classList.contains('is-bad-chip');
+
+  // Header
+  const header  = document.getElementById('rmHeader');
+  const rmType  = document.getElementById('rmType');
+  const rmVerdict = document.getElementById('rmVerdict');
+  const rmBadge = document.getElementById('rmBadge');
+  const rmKpiCard = document.getElementById('rmKpiCard');
+
+  header.className   = 'rm-header ' + (isOk ? 'is-ok' : isBad ? 'is-bad' : 'is-neutral');
+  rmType.textContent = isDep ? '✈ Décollage' : '🛬 Atterrissage';
+  rmKpiCard.className = 'rm-kpi-card ' + (isOk ? 'is-ok' : isBad ? 'is-bad' : '');
+
+  if (isOk) {
+    rmVerdict.textContent = 'Compatible avec la piste';
+    rmBadge.textContent   = '✓ OK';
+  } else if (isBad) {
+    rmVerdict.textContent = 'Distance insuffisante';
+    rmBadge.textContent   = '✗ NON';
+  } else {
+    rmVerdict.textContent = 'Résultat non vérifié';
+    rmBadge.textContent   = '—';
+  }
+
+  // KPI
+  document.getElementById('rmKpiVal').textContent  = kpiVal.textContent;
+  document.getElementById('rmKpiAvail').textContent = (isDep ? 'TODA dispo : ' : 'LDA dispo : ') + avail.textContent;
+
+  // Rows
+  const rows = isDep ? [
+    { l: 'Roulement (sans marge)',    v: document.getElementById('toBaseRoll').textContent },
+    { l: 'Passage 15 m (sans marge)', v: document.getElementById('toBasePass').textContent },
+    { l: 'Facteur vent',              v: document.getElementById('toWindF').textContent },
+    { l: 'Carénages',                 v: document.getElementById('toSpat').textContent },
+    { l: 'Facteur supplémentaire',    v: document.getElementById('toExtra').textContent },
+    { l: 'Résultat sans marge',       v: document.getElementById('toRes').textContent },
+  ] : [
+    { l: 'Roulement (sans marge)',    v: document.getElementById('ldgBaseRoll').textContent },
+    { l: 'Passage 15 m (sans marge)', v: document.getElementById('ldgBasePass').textContent },
+    { l: 'Facteur vent',              v: document.getElementById('ldgWindF').textContent },
+    { l: 'Facteur supplémentaire',    v: document.getElementById('ldgExtra').textContent },
+    { l: 'Résultat sans marge',       v: document.getElementById('ldgRes').textContent },
+  ];
+
+  document.getElementById('rmRows').innerHTML = rows.map(r => `
+    <div class="rm-row">
+      <span class="rm-row-label">${r.l}</span>
+      <span class="rm-row-value">${r.v}</span>
+    </div>`).join('');
+
+  // Transition
+  loading.style.display = 'none';
+  content.style.display  = 'flex';
+}
+
+function closeResultsModal() {
+  const modal = document.getElementById('resultsModal');
+  modal.classList.remove('is-open');
+  document.body.style.overflow = '';
+  setTimeout(() => {
+    modal.style.display = 'none';
+    document.getElementById('rmContent').style.display = 'none';
+    document.getElementById('rmLoading').style.display = 'flex';
+  }, 400);
+}
+
+document.getElementById('btnCalcDep').addEventListener('click', () => openResultsModal('dep', computeDepPerf));
+document.getElementById('btnCalcArr').addEventListener('click', () => openResultsModal('arr', computeArrPerf));
 
 /* ===================== METAR (AVWX) ===================== */
 const AVWX_TOKEN = 'GJ6qEqUaMvA3LtaeCjdhgYJTTT4TuvUXxv_I8WF0340';
