@@ -2427,12 +2427,8 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
 
 function fmtTafTime(period_time) {
-  // Utiliser repr (ex: "0909" = jour 09 à 09z, "1015" = jour 10 à 15z)
   const repr = period_time?.repr;
-  if (repr && repr.length >= 4) {
-    return repr.slice(0,2) + '/' + repr.slice(2,4) + 'z';
-  }
-  // Fallback sur dt
+  if (repr && repr.length >= 4) return repr.slice(0,2) + '/' + repr.slice(2,4) + 'z';
   const dtStr = period_time?.dt;
   if (!dtStr) return '—';
   const d = new Date(dtStr);
@@ -2441,29 +2437,222 @@ function fmtTafTime(period_time) {
 }
 
 function fmtTafWind(period) {
-  const dir  = period.wind_direction?.repr  || '—';
-  const spd  = period.wind_speed?.value     ?? '—';
-  const gust = period.wind_gust?.value;
+  const dir  = (period.wind_direction?.repr || period.wind?.dir || '—').toUpperCase();
+  const spd  = period.wind_speed?.value ?? period.wind?.speed ?? '—';
+  const gust = period.wind_gust?.value ?? period.wind?.gust ?? null;
   let s = dir + '/' + spd + 'kt';
   if (gust) s += ' G' + gust;
   return s;
 }
 
+function tafReprToDate(repr, refDate = new Date()) {
+  if (!repr || !/^\d{4}$/.test(repr)) return null;
+  const day  = parseInt(repr.slice(0,2), 10);
+  const hour = parseInt(repr.slice(2,4), 10);
+  const year = refDate.getUTCFullYear();
+  const month = refDate.getUTCMonth();
+  let dt = new Date(Date.UTC(year, month, day, hour, 0, 0));
+
+  if (Math.abs(dt.getTime() - refDate.getTime()) > 20 * 86400000) {
+    const prev = new Date(Date.UTC(year, month - 1, day, hour, 0, 0));
+    const next = new Date(Date.UTC(year, month + 1, day, hour, 0, 0));
+    dt = [dt, prev, next].sort((a, b) =>
+      Math.abs(a.getTime() - refDate.getTime()) - Math.abs(b.getTime() - refDate.getTime())
+    )[0];
+  }
+  return dt;
+}
+
+function parseTafValidity(raw, refDate = new Date()) {
+  const m = raw.match(/\b(\d{4})\/(\d{4})\b/);
+  if (!m) return null;
+  return {
+    start: { repr: m[1], dt: tafReprToDate(m[1], refDate)?.toISOString() || null },
+    end:   { repr: m[2], dt: tafReprToDate(m[2], refDate)?.toISOString() || null }
+  };
+}
+
+function parseTafWindToken(token) {
+  const m = token?.match(/^(VRB|\d{3})(\d{2,3})(?:G(\d{2,3}))?KT$/i);
+  if (!m) return null;
+  const dir = m[1].toUpperCase();
+  return {
+    dir,
+    dirValue: dir === 'VRB' ? null : parseInt(dir, 10),
+    speed: parseInt(m[2], 10),
+    gust: m[3] ? parseInt(m[3], 10) : 0
+  };
+}
+
+function summarizeTafExtra(tokens) {
+  const filtered = (tokens || []).filter(t => {
+    if (!t) return false;
+    if (/^(VRB|\d{3})\d{2,3}(?:G\d{2,3})?KT$/i.test(t)) return false;
+    if (/^\d{4}\/\d{4}$/.test(t)) return false;
+    if (/^(?:FM\d{6}|BECMG|TEMPO|PROB30|PROB40|PROB30TEMPO|PROB40TEMPO)$/i.test(t)) return false;
+    return true;
+  });
+  return filtered.join(' ');
+}
+
+function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
+  if (!raw) return [];
+  const tokens = raw.trim().split(/\s+/);
+  if (tokens.length < 4) return [];
+
+  const validity = parseTafValidity(raw, refDate);
+  if (!validity) return [];
+
+  const body = tokens.slice(3);
+  const periods = [];
+  let current = {
+    type: 'FROM',
+    start_time: validity.start,
+    end_time: null,
+    tokens: [],
+    raw_label: 'FROM'
+  };
+
+  function isoFromRepr(repr) {
+    return { repr, dt: tafReprToDate(repr, refDate)?.toISOString() || null };
+  }
+
+  function pushCurrentIfUseful(nextStart = null) {
+    if (!current) return;
+    if (!current.end_time && nextStart) current.end_time = nextStart;
+    if (!current.end_time) current.end_time = validity.end;
+    periods.push(current);
+  }
+
+  for (let i = 0; i < body.length; i++) {
+    const token = body[i];
+    const next = body[i + 1];
+    const third = body[i + 2];
+
+    if (/^FM\d{6}$/i.test(token)) {
+      const repr = token.slice(2, 6);
+      const nextStart = isoFromRepr(repr);
+      pushCurrentIfUseful(nextStart);
+      current = {
+        type: 'FROM',
+        start_time: nextStart,
+        end_time: null,
+        tokens: [],
+        raw_label: 'FROM'
+      };
+      continue;
+    }
+
+    if (token === 'BECMG' && /^\d{4}\/\d{4}$/.test(next || '')) {
+      const [s, e] = next.split('/');
+      const nextStart = isoFromRepr(s);
+      pushCurrentIfUseful(nextStart);
+      current = {
+        type: 'BECMG',
+        start_time: isoFromRepr(s),
+        end_time:   isoFromRepr(e),
+        tokens: [],
+        raw_label: 'BECMG'
+      };
+      i += 1;
+      continue;
+    }
+
+    if (token === 'TEMPO' && /^\d{4}\/\d{4}$/.test(next || '')) {
+      const [s, e] = next.split('/');
+      periods.push({
+        type: 'TEMPO',
+        start_time: isoFromRepr(s),
+        end_time:   isoFromRepr(e),
+        tokens: [],
+        raw_label: 'TEMPO'
+      });
+      i += 1;
+      continue;
+    }
+
+    if ((token === 'PROB30' || token === 'PROB40') && next === 'TEMPO' && /^\d{4}\/\d{4}$/.test(third || '')) {
+      const [s, e] = third.split('/');
+      periods.push({
+        type: token,
+        qualifier: 'TEMPO',
+        start_time: isoFromRepr(s),
+        end_time:   isoFromRepr(e),
+        tokens: [],
+        raw_label: token + ' TEMPO'
+      });
+      i += 2;
+      continue;
+    }
+
+    if (/^PROB(?:30|40)TEMPO$/i.test(token) && /^\d{4}\/\d{4}$/.test(next || '')) {
+      const prob = token.toUpperCase().replace('TEMPO', '');
+      const [s, e] = next.split('/');
+      periods.push({
+        type: prob,
+        qualifier: 'TEMPO',
+        start_time: isoFromRepr(s),
+        end_time:   isoFromRepr(e),
+        tokens: [],
+        raw_label: prob + ' TEMPO'
+      });
+      i += 1;
+      continue;
+    }
+
+    if ((token === 'PROB30' || token === 'PROB40') && /^\d{4}\/\d{4}$/.test(next || '')) {
+      const [s, e] = next.split('/');
+      periods.push({
+        type: token,
+        start_time: isoFromRepr(s),
+        end_time:   isoFromRepr(e),
+        tokens: [],
+        raw_label: token
+      });
+      i += 1;
+      continue;
+    }
+
+    current.tokens.push(token);
+  }
+
+  pushCurrentIfUseful(null);
+
+  let prevailingWind = null;
+  return periods
+    .map(p => {
+      const windToken = (p.tokens || []).find(t => !!parseTafWindToken(t));
+      const parsedWind = windToken ? parseTafWindToken(windToken) : null;
+      const effectiveWind = parsedWind || prevailingWind;
+
+      const period = {
+        ...p,
+        raw_tokens: [...(p.tokens || [])],
+        wind: effectiveWind ? { ...effectiveWind } : null,
+        wind_direction: effectiveWind ? {
+          repr: effectiveWind.dir,
+          value: effectiveWind.dirValue
+        } : null,
+        wind_speed: effectiveWind ? { value: effectiveWind.speed } : null,
+        wind_gust: effectiveWind && effectiveWind.gust ? { value: effectiveWind.gust } : null,
+        extra_summary: summarizeTafExtra(p.tokens || []),
+        type_label: p.raw_label || p.type || 'FROM'
+      };
+
+      if ((p.type === 'FROM' || p.type === 'BECMG') && parsedWind) prevailingWind = parsedWind;
+      return period;
+    })
+    .filter(p => p.start_time && p.end_time);
+}
+
 function periodContainsEta(period, etaUtcMin) {
-  // etaUtcMin = minutes depuis minuit UTC (0-1439)
   if (etaUtcMin == null) return false;
 
-  // On convertit start et end en minutes depuis minuit UTC du même jour
   const toMin = pt => {
     const dt = pt?.dt;
-    if (dt) {
-      const d = new Date(dt);
-      // Convertir en minutes totales depuis epoch pour comparaison cross-day
-      return d.getTime() / 60000; // minutes epoch
-    }
-    // Fallback repr
+    if (dt) return new Date(dt).getTime() / 60000;
     const r = pt?.repr;
-    if (r && r.length >= 4) return parseInt(r.slice(0,2))*1440 + parseInt(r.slice(2,4))*60;
+    if (r && r.length >= 4) return parseInt(r.slice(0,2), 10) * 1440 + parseInt(r.slice(2,4), 10) * 60;
     return null;
   };
 
@@ -2471,9 +2660,8 @@ function periodContainsEta(period, etaUtcMin) {
   const endMin   = toMin(period.end_time);
   if (startMin == null || endMin == null) return false;
 
-  // Calculer les minutes epoch de l'ETA d'aujourd'hui
-  const now     = new Date();
-  const todayBase = Math.floor(now.getTime() / 86400000) * 1440; // minutes epoch au début du jour UTC
+  const now = new Date();
+  const todayBase = Math.floor(now.getTime() / 86400000) * 1440;
   const etaEpoch  = todayBase + etaUtcMin;
 
   return etaEpoch >= startMin && etaEpoch < endMin;
@@ -2485,26 +2673,27 @@ function renderTafPicker(tafData) {
   const periodsEl = document.getElementById('arrTafPeriods');
   const etaInput  = document.getElementById('arrEta');
 
-  rawEl.textContent  = tafData.raw || '—';
+  rawEl.textContent   = tafData.raw || '—';
   rawEl.style.display = 'block';
 
-  const forecast = (tafData.forecast || []).filter(p =>
-    p.wind_direction && p.wind_speed && p.type !== 'PROB30' && p.type !== 'PROB40'
-  );
+  const rawForecast = buildTafPeriodsFromRaw(tafData.raw || '');
+  const fallbackForecast = (tafData.forecast || []).filter(p => p.wind_direction && p.wind_speed);
+  const forecast = rawForecast.length ? rawForecast : fallbackForecast;
 
   function render(etaMin) {
     periodsEl.innerHTML = forecast.map((p, i) => {
-      const type    = p.type || 'FM';
-      const isTempo = type === 'TEMPO';
+      const type    = p.type_label || p.type || 'FROM';
+      const isTempo = /TEMPO/i.test(type) || p.type === 'TEMPO';
       const isCur   = periodContainsEta(p, etaMin);
       const wind    = fmtTafWind(p);
       const t1      = fmtTafTime(p.start_time);
       const t2      = fmtTafTime(p.end_time);
+      const extra   = p.extra_summary ? `<div class="tp-extra">${p.extra_summary}</div>` : '';
       const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
       return `<div class="${cls}" onclick="applyTafPeriod(${i})">
         <span class="tp-type">${type}</span>
         <span class="tp-time">${t1}→${t2}</span>
-        <span class="tp-wind">${wind}</span>
+        <span class="tp-wind">${wind}${extra}</span>
         <span class="tp-apply">${isCur ? '✓ ETA' : '↙ appliquer'}</span>
       </div>`;
     }).join('');
@@ -2512,26 +2701,26 @@ function renderTafPicker(tafData) {
   }
 
   const etaVal = etaInput.value;
-  const etaMin = etaVal ? parseInt(etaVal.split(':')[0])*60 + parseInt(etaVal.split(':')[1]) : null;
+  const etaMin = etaVal ? parseInt(etaVal.split(':')[0], 10) * 60 + parseInt(etaVal.split(':')[1], 10) : null;
   render(etaMin);
   wrap.classList.add('visible');
 
-  etaInput.addEventListener('input', () => {
+  etaInput.oninput = () => {
     const v = etaInput.value;
-    const m = v ? parseInt(v.split(':')[0])*60 + parseInt(v.split(':')[1]) : null;
+    const m = v ? parseInt(v.split(':')[0], 10) * 60 + parseInt(v.split(':')[1], 10) : null;
     render(m);
-  });
+  };
 }
 
 function applyTafPeriod(idx) {
   const forecast = document.getElementById('arrTafPeriods')._forecast;
   const period   = forecast?.[idx];
-  if (!period) return;
+  if (!period || !period.wind) return;
 
-  const dirRepr = (period.wind_direction?.repr || '').toUpperCase();
-  const dirVal  = period.wind_direction?.value ?? null;
-  const spdVal  = Math.round(period.wind_speed?.value || 0);
-  const gustVal = Math.round(period.wind_gust?.value  || 0);
+  const dirRepr = (period.wind_direction?.repr || period.wind?.dir || '').toUpperCase();
+  const dirVal  = period.wind_direction?.value ?? period.wind?.dirValue ?? null;
+  const spdVal  = Math.round(period.wind_speed?.value ?? period.wind?.speed ?? 0);
+  const gustVal = Math.round(period.wind_gust?.value  ?? period.wind?.gust  ?? 0);
 
   const dirEl = document.getElementById('arrWindDir');
   if (dirRepr === 'VRB') dirEl.value = 'VRB';
