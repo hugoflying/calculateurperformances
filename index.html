@@ -451,6 +451,22 @@
     .taf-period .tp-apply { font-size: .65rem; font-weight: 700; color: var(--arr); white-space: nowrap; }
     .taf-period.is-tempo .tp-apply { color: #b45309; }
 
+    /* ── Encart METAR/TAF brut ── */
+    .metar-msg-box {
+      background: #f4f4f5;
+      border: 1px solid #d4d4d8;
+      border-radius: 8px;
+      padding: .45rem .7rem;
+      font-size: .68rem;
+      font-family: 'DM Mono', ui-monospace, monospace;
+      color: #3f3f46;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+      margin-bottom: .4rem;
+      margin-top: .3rem;
+    }
+
     /* ══════════════════ VENT ARRIÈRE HYPOTHÈSE ══════════════════ */
     .tw-assume-wrap { display: none; margin-top: .6rem; }
     .tw-assume-wrap.visible { display: block; }
@@ -853,7 +869,7 @@
               <button id="btnDepMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
             </div>
           </div>
-          <p id="depMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="depMetarMsg" class="metar-msg-box" style="display:none"></div>
           <div id="depRunwayPicker" class="runway-picker" style="display:none"></div>
 
           <!-- QFU + TODA + ASDA -->
@@ -1076,7 +1092,7 @@
               <button id="btnArrTaf"   class="button is-success is-outlined is-small" style="white-space:nowrap;font-weight:700">TAF</button>
             </div>
           </div>
-          <p id="arrMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="arrMetarMsg" class="metar-msg-box" style="display:none"></div>
           <div id="arrRunwayPicker" class="runway-picker" style="display:none"></div>
           <!-- TAF arrivée -->
           <div id="arrTafWrap" class="taf-wrap">
@@ -1334,8 +1350,16 @@
 
       <div class="readme-section">
         <h3>TAF arrivée</h3>
-        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Chaque période du TAF (FM, TEMPO, BECMG…) s'affiche avec son vent synthétique. En saisissant une <strong>heure ETA en UTC (Zulu)</strong>, la période correspondant à l'heure d'arrivée estimée est automatiquement surlignée. Un clic sur une période applique son vent aux champs arrivée pour le calcul de performances.</p>
-        <p>Les pistes et l'élévation sont également chargées automatiquement au clic TAF.</p>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX et l'analyse directement depuis le texte brut. Chaque période s'affiche en une ligne avec son type, ses horaires et son vent.</p>
+        <p><strong>Couleurs des périodes :</strong></p>
+        <ul>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert</span> — période active à l'heure ETA saisie</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires pouvant survenir sur la période. À prendre en compte si le vent est plus défavorable que la période FROM en cours</li>
+          <li>Fond blanc — période FROM ou BECMG standard</li>
+        </ul>
+        <p>En saisissant une <strong>heure ETA en UTC</strong>, la période couvrant cette heure est automatiquement surlignée en vert. Un clic sur une période applique son vent aux champs arrivée.</p>
+        <p>Les pistes et l'élévation sont chargées automatiquement au clic TAF.</p>
+        <p><strong>Note sur TEMPO :</strong> un TEMPO hérite du vent de la période FROM si le groupe TEMPO ne précise pas de vent propre. Il est conseillé de calculer les performances avec le vent du TEMPO si celui-ci est plus défavorable (plus de vent arrière ou de vent de travers).</p>
       </div>
 
       <div class="readme-section">
@@ -2379,11 +2403,17 @@ function applyRunway(side, idx) {
   updateWindDisplay(side);
 }
 
+function setMetarMsg(el, text) {
+  if (!text) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent  = text;
+  el.style.display = 'block';
+}
+
 async function loadMetarFor(side) {
   const icao   = (document.getElementById(side+'Icao').value||'').toUpperCase();
   const msgEl  = document.getElementById(side+'MetarMsg');
   const rwWrap = document.getElementById(side+'RunwayPicker');
-  msgEl.textContent = 'Chargement…';
+  setMetarMsg(msgEl, 'Chargement…');
   rwWrap.style.display = 'none';
   try {
     const station = await fetchStation(icao).catch(() => null);
@@ -2407,12 +2437,12 @@ async function loadMetarFor(side) {
       } else throw _e;
     }
     applyMetar(side, metar);
-    msgEl.textContent = isNearest
+    setMetarMsg(msgEl, isNearest
       ? 'METAR chargé (proche : ' + usedIcao + distTxt + ') : ' + (metar?.raw||'—')
-      : 'METAR chargé : ' + (metar?.raw||'—');
+      : 'METAR chargé : ' + (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
-    msgEl.textContent = 'METAR indisponible (' + (e?.message || 'erreur') + ')';
+    setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
   }
 }
 
@@ -2699,8 +2729,8 @@ function renderTafPicker(tafData) {
   const periodsEl = document.getElementById('arrTafPeriods');
   const etaInput  = document.getElementById('arrEta');
 
-  rawEl.textContent   = tafData.raw || '—';
-  rawEl.style.display = 'block';
+  // RAW TAF déjà affiché dans arrMetarMsg, ne pas le dupliquer ici
+  rawEl.style.display = 'none';
 
   const rawForecast = buildTafPeriodsFromRaw(tafData.raw || '');
   const fallbackForecast = (tafData.forecast || []).filter(p => p.wind_direction && p.wind_speed);
@@ -2775,9 +2805,9 @@ async function loadTafFor(side) {
   const icao   = (document.getElementById(side + 'Icao').value || '').toUpperCase();
   const msgEl  = document.getElementById(side + 'MetarMsg');
   const rwWrap = document.getElementById(side + 'RunwayPicker');
-  if (!icao || icao.length < 4) { msgEl.textContent = 'Saisir un ICAO avant de charger le TAF.'; return; }
+  if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Saisir un ICAO avant de charger le TAF.'); return; }
 
-  msgEl.textContent = 'Chargement TAF…';
+  setMetarMsg(msgEl, 'Chargement TAF…');
   rwWrap.style.display = 'none';
 
   try {
@@ -2793,10 +2823,10 @@ async function loadTafFor(side) {
         .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
     ]);
 
-    msgEl.textContent = 'TAF chargé : ' + (taf.raw || '—');
+    setMetarMsg(msgEl, 'TAF chargé : ' + (taf.raw || '—'));
     renderTafPicker(taf);
   } catch(e) {
-    msgEl.textContent = 'TAF indisponible (' + (e?.message || 'erreur') + ')';
+    setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
   }
 }
 
