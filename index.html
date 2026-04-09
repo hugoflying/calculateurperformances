@@ -1942,53 +1942,61 @@ function applyMetar(side, data) {
   updateWindDisplay(side);
 }
 
+async function fetchRunways(icao) {
+  // Appel via la Pages Function Cloudflare (proxy sans CORS, clé API côté serveur)
+  const r = await fetch(`/openaip?icao=${encodeURIComponent(icao)}`);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error || 'HTTP ' + r.status);
+  }
+  const airport = await r.json();
+
+  console.log('[OpenAIP] pistes pour', icao, ':',
+    (airport.runways||[]).map(rw => rw.designator + ' ' + rw.dimension?.length?.value + 'm').join(', '));
+
+  return (airport.runways || [])
+    .filter(rwy => rwy.dimension?.length?.value > 0)
+    .map(rwy => ({
+      ...rwy,
+      designator: String(rwy.designator || '??'),
+      qfu: parseInt(rwy.designator || '0', 10) * 10,
+      lengthM: Math.round(rwy.dimension.length.value),
+    }))
+    .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
+}
+
 async function loadMetarFor(side) {
-  const icao  = (document.getElementById(side+'Icao').value||'').toUpperCase();
-  const msgEl = document.getElementById(side+'MetarMsg');
-  const rwPicker = document.getElementById(side+'RunwayPicker');
+  const icao   = (document.getElementById(side+'Icao').value||'').toUpperCase();
+  const msgEl  = document.getElementById(side+'MetarMsg');
+  const rwWrap = document.getElementById(side+'RunwayPicker');
   msgEl.textContent = 'Chargement…';
-  rwPicker.style.display = 'none';
-
+  rwWrap.style.display = 'none';
   try {
-    // Lance METAR + OpenAIP en parallèle
-    const [stationResult, runwaysResult] = await Promise.allSettled([
-      fetchStation(icao),
+    const station = await fetchStation(icao).catch(() => null);
+    const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
+    if (elevFt > 0) document.getElementById(side+'Alt').value = String(Math.round(elevFt));
+    const lat = station?.latitude, lon = station?.longitude;
+    if (typeof lat === 'number' && typeof lon === 'number') {
       fetchRunways(icao)
-    ]);
-
-    // Élévation depuis AVWX station
-    if (stationResult.status === 'fulfilled') {
-      const station = stationResult.value;
-      const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
-      const altInput = document.getElementById(side+'Alt');
-      if (typeof elevFt === 'number' && elevFt > 0 && altInput) altInput.value = String(Math.round(elevFt));
+        .then(rws => renderRunwayPicker(side, rws))
+        .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message));
     }
-
-    // Pistes OpenAIP
-    if (runwaysResult.status === 'fulfilled') {
-      renderRunwayPicker(side, runwaysResult.value);
-    }
-
-    // METAR
     let metar, usedIcao = icao, isNearest = false, distTxt = '';
     try {
       metar = await fetchMetar(icao);
     } catch (_e) {
-      const station = stationResult.value;
-      if (typeof station?.latitude === 'number' && typeof station?.longitude === 'number') {
-        metar     = await fetchNearestMetar(station.latitude, station.longitude);
+      if (typeof lat === 'number' && typeof lon === 'number') {
+        metar     = await fetchNearestMetar(lat, lon);
         isNearest = true;
         usedIcao  = metar?.station || metar?.icao || usedIcao;
         const d   = metar?.meta?.distance, u = metar?.meta?.units;
         if (typeof d === 'number' && u) distTxt = ' (~' + d + ' ' + u + ')';
       } else throw _e;
     }
-
     applyMetar(side, metar);
-    const raw = metar?.raw || '—';
     msgEl.textContent = isNearest
-      ? 'METAR chargé (proche : ' + usedIcao + distTxt + ') : ' + raw
-      : 'METAR chargé : ' + raw;
+      ? 'METAR chargé (proche : ' + usedIcao + distTxt + ') : ' + (metar?.raw||'—')
+      : 'METAR chargé : ' + (metar?.raw||'—');
     updateWindDisplay(side);
   } catch (e) {
     msgEl.textContent = 'METAR indisponible (' + (e?.message || 'erreur') + ')';
@@ -2000,192 +2008,8 @@ document.getElementById('btnArrMetar').addEventListener('click', () => loadMetar
 document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFor('arr'));
 
 /* ===================== OpenAIP — PISTES ===================== */
-const OPENAIP_KEY = 'e55ddcaf7ce13248e809d4166640a7c3';
+// Clé API gérée côté serveur (Cloudflare Pages Function /openaip)
 
-async function fetchRunways(icao) {
-  // OpenAIP v2 — la clé peut être envoyée en header ET en query param
-  // Le filtre ICAO utilise le paramètre 'icaoCode' (pas 'icao')
-  const url = `https://api.core.openaip.net/api/airports?icaoCode=${icao.toUpperCase()}&limit=5&apiKey=${OPENAIP_KEY}`;
-  const r = await fetch(url, {
-    headers: { 'x-openaip-api-key': OPENAIP_KEY, 'Accept': 'application/json' }
-  });
-  if (!r.ok) throw new Error('OpenAIP HTTP ' + r.status);
-  const data = await r.json();
-
-  console.log('[OpenAIP] réponse brute pour', icao, ':', JSON.stringify(data).slice(0, 500));
-
-  // OpenAIP retourne { items: [...], totalCount: N }
-  const items = data.items || data.results || data.data || [];
-  
-  // Chercher l'airport dont l'ICAO correspond
-  const airport = items.find(a => {
-    const code = (a.icaoCode || a.icao || a.code || '').toUpperCase();
-    return code === icao.toUpperCase();
-  }) || items[0];
-
-  if (!airport) throw new Error('Aéroport non trouvé (réponse : ' + JSON.stringify(data).slice(0, 200) + ')');
-  console.log('[OpenAIP] airport trouvé :', airport.icaoCode || airport.icao, '— nb pistes :', (airport.runways||[]).length);
-
-  return (airport.runways || [])
-    .filter(rwy => rwy.dimension?.length?.value > 0)
-    .map(rwy => ({
-      ...rwy,
-      designator: rwy.designator || String(Math.round((rwy.trueHeading||0)/10)).padStart(2,'0'),
-      qfu: parseInt(rwy.designator||'0', 10) * 10 || rwy.trueHeading || 0,
-      lengthM: Math.round(rwy.dimension.length.value),
-    }))
-    .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
-}
-
-function renderRunwayPicker(side, runways) {
-  const wrap = document.getElementById(side + 'RunwayPicker');
-  if (!runways.length) { wrap.style.display = 'none'; return; }
-
-  const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
-  wrap.innerHTML = `
-    <div class="runway-picker-label">🛬 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
-    <div class="rwy-list">
-      ${runways.map((rwy, i) => `
-        <button class="rwy-btn" onclick="applyRunway('${side}', ${i})">
-          <span class="rwy-desig">${rwy.designator}</span>
-          <span class="rwy-len">${rwy.lengthM} m</span>
-          <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
-        </button>`).join('')}
-    </div>`;
-  wrap.style.display = 'block';
-  wrap._runways = runways;
-}
-
-function applyRunway(side, idx) {
-  const wrap = document.getElementById(side + 'RunwayPicker');
-  const rwy  = wrap._runways?.[idx];
-  if (!rwy) return;
-
-  document.getElementById(side + 'Qfu').value =
-    String(rwy.qfu === 0 ? 360 : rwy.qfu).padStart(3, '0');
-
-  const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
-  lenEl.value = String(rwy.lengthM);
-
-  wrap.querySelectorAll('.rwy-btn').forEach((b, i) =>
-    b.classList.toggle('active', i === idx));
-
-  updateWindDisplay(side);
-}
-
-/* ===================== AVWX TAF ===================== */
-const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
-
-function fmtTafTime(dtStr) {
-  if (!dtStr) return '—';
-  const d = new Date(dtStr);
-  const pad = n => String(n).padStart(2,'0');
-  return pad(d.getUTCDate()) + '/' + pad(d.getUTCHours()) + 'z';
-}
-
-function fmtTafWind(period) {
-  const dir  = period.wind_direction?.repr  || '—';
-  const spd  = period.wind_speed?.value     ?? '—';
-  const gust = period.wind_gust?.value;
-  let s = dir + '/' + spd + 'kt';
-  if (gust) s += ' G' + gust;
-  return s;
-}
-
-function periodContainsEta(period, etaMin) {
-  // etaMin = minutes since midnight UTC
-  if (etaMin == null) return false;
-  const toUtcMin = dtStr => {
-    const d = new Date(dtStr);
-    return d.getUTCHours() * 60 + d.getUTCMinutes();
-  };
-  const start = toUtcMin(period.start_time?.dt);
-  const end   = toUtcMin(period.end_time?.dt);
-  if (end > start) return etaMin >= start && etaMin < end;
-  // chevauchement minuit
-  return etaMin >= start || etaMin < end;
-}
-
-function renderTafPicker(tafData) {
-  const wrap       = document.getElementById('arrTafWrap');
-  const rawEl      = document.getElementById('arrTafRaw');
-  const periodsEl  = document.getElementById('arrTafPeriods');
-  const etaInput   = document.getElementById('arrEta');
-
-  rawEl.textContent = tafData.raw || '—';
-  rawEl.style.display = 'block';
-
-  const forecast = (tafData.forecast || []).filter(p =>
-    p.wind_direction && p.wind_speed && p.type !== 'PROB30' && p.type !== 'PROB40');
-
-  function render(etaMin) {
-    periodsEl.innerHTML = forecast.map((p, i) => {
-      const type    = p.type || 'FM';
-      const isTempo = type === 'TEMPO';
-      const isCur   = periodContainsEta(p, etaMin);
-      const wind    = fmtTafWind(p);
-      const t1      = fmtTafTime(p.start_time?.dt);
-      const t2      = fmtTafTime(p.end_time?.dt);
-      const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
-      return `<div class="${cls}" onclick="applyTafPeriod(${i})">
-        <span class="tp-type">${type}</span>
-        <span class="tp-time">${t1}→${t2}</span>
-        <span class="tp-wind">${wind}</span>
-        <span class="tp-apply">${isCur ? '✓ ETA' : '↙ appliquer'}</span>
-      </div>`;
-    }).join('');
-    // Stocker forecast
-    periodsEl._forecast = forecast;
-  }
-
-  // Render initial
-  const etaVal = etaInput.value;
-  const etaMin = etaVal ? parseInt(etaVal.split(':')[0])*60 + parseInt(etaVal.split(':')[1]) : null;
-  render(etaMin);
-  wrap.classList.add('visible');
-
-  // Re-render quand ETA change
-  etaInput.addEventListener('input', () => {
-    const v = etaInput.value;
-    const m = v ? parseInt(v.split(':')[0])*60 + parseInt(v.split(':')[1]) : null;
-    render(m);
-  });
-}
-
-function applyTafPeriod(idx) {
-  const forecast = document.getElementById('arrTafPeriods')._forecast;
-  const period   = forecast?.[idx];
-  if (!period) return;
-
-  const dirRepr = (period.wind_direction?.repr || '').toUpperCase();
-  const dirVal  = period.wind_direction?.value ?? null;
-  const spdVal  = Math.round(period.wind_speed?.value || 0);
-  const gustVal = Math.round(period.wind_gust?.value  || 0);
-
-  const dirEl = document.getElementById('arrWindDir');
-  if (dirRepr === 'VRB') dirEl.value = 'VRB';
-  else if (dirVal != null) dirEl.value = String(dirVal === 0 ? 360 : dirVal).padStart(3,'0');
-
-  document.getElementById('arrWindKt').value   = String(spdVal);
-  document.getElementById('arrWindGust').value = String(gustVal);
-
-  // Secteur variable si présent
-  const vd = period.variable_direction;
-  if (vd && typeof vd.from === 'number') {
-    document.getElementById('arrVrbFrom').value = String(vd.from).padStart(3,'0');
-    document.getElementById('arrVrbTo').value   = String(vd.to).padStart(3,'0');
-  } else {
-    document.getElementById('arrVrbFrom').value = '';
-    document.getElementById('arrVrbTo').value   = '';
-  }
-
-  updateWindDisplay('arr');
-
-  // Feedback visuel
-  document.querySelectorAll('.taf-period').forEach((el, i) => {
-    el.style.outline = i === idx ? '2px solid var(--arr)' : '';
-  });
-}
 
 async function loadTafFor(side) {
   const icao  = (document.getElementById(side + 'Icao').value || '').toUpperCase();
