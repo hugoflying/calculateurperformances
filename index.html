@@ -1160,24 +1160,21 @@
         <h3>Vent variable (secteur VRB)</h3>
         <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
         <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
-        <p>L'affichage dans la cellule "Vent de travers" indique :</p>
-        <ul>
-          <li>Le travers moyen (vent moyen, direction principale)</li>
-          <li>Le travers maximal sur l'ensemble du secteur, avec la direction qui le produit</li>
-        </ul>
+        <p>L'affichage dans la cellule "Vent de travers" indique le travers moyen et, si un secteur est actif, le travers maximal sur l'ensemble du secteur avec la direction qui le produit.</p>
       </div>
 
       <div class="readme-section">
-        <h3>METAR automatique</h3>
-        <p>Le bouton "Charger METAR" interroge l'API <strong>AVWX</strong> (avwx.rest) avec le code ICAO saisi. Les données suivantes sont extraites et appliquées automatiquement :</p>
-        <ul>
-          <li>Direction et vitesse du vent, rafales</li>
-          <li>Secteur variable (ex. 340V040 dans le METAR brut)</li>
-          <li>Température OAT</li>
-          <li>Élévation de la station (en pieds)</li>
-        </ul>
+        <h3>METAR et pistes automatiques</h3>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
         <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
-        <p><strong>TEMPO</strong> : si le METAR contient une évolution temporaire (groupe TEMPO) avec un vent plus défavorable que le vent moyen (plus de vent arrière ou de vent de travers), le TEMPO remplace automatiquement le vent principal pour les calculs.</p>
+        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée. Le QFU est calculé à partir du cap vrai OpenAIP corrigé de la déclinaison magnétique locale.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>TAF arrivée</h3>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Chaque période du TAF (FM, TEMPO, BECMG…) s'affiche avec son vent synthétique. En saisissant une <strong>heure ETA en UTC (Zulu)</strong>, la période correspondant à l'heure d'arrivée estimée est automatiquement surlignée. Un clic sur une période applique son vent aux champs arrivée pour le calcul de performances.</p>
+        <p>Les pistes et l'élévation sont également chargées automatiquement au clic TAF.</p>
       </div>
 
       <div class="readme-section">
@@ -1192,11 +1189,7 @@
 
       <div class="readme-section">
         <h3>Hypothèse 5 kt arrière</h3>
-        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt (c'est-à-dire quand le vent réel est de face ou nul). Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations :</p>
-        <ul>
-          <li>Si activée, la composante utilisée pour le facteur vent est forcée à −5 kt (vent arrière).</li>
-          <li>Si le vent réel (moyen, rafale, secteur VRB ou TEMPO) est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</li>
-        </ul>
+        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
       </div>
 
       <div class="readme-section">
@@ -1206,15 +1199,14 @@
 
       <div class="readme-section">
         <h3>Surface de piste</h3>
-        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe.</p>
-        <p>Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
+        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe. Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
       </div>
 
       <div class="readme-section">
         <h3>Marge de sécurité</h3>
         <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
         <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
-        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible. Le roulement est affiché à titre indicatif uniquement.</p>
+        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible.</p>
       </div>
 
       <div class="readme-section">
@@ -1223,8 +1215,8 @@
       </div>
 
       <div class="readme-section">
-        <h3>Impression</h3>
-        <p>Le bouton "Imprimer" génère une mise en page A4 optimisée (2 pages : départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et sur fond <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. La mise en page web est masquée à l'impression, seule la fiche A4 s'imprime.</p>
+        <h3>Export PDF</h3>
+        <p>Le bouton <strong>"Exporter PDF"</strong> génère une fiche A4 en 2 pages (départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. Conçu pour être utilisé directement depuis mobile.</p>
       </div>
 
     </div><!-- /readme-body -->
