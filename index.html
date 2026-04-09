@@ -387,7 +387,7 @@
     }
 
     /* ══════════════════ RUNWAY PICKER ══════════════════ */
-    .runway-picker { margin-bottom: .5rem; margin-top: .6rem; }
+    .runway-picker { margin-bottom: .6rem; margin-top: .6rem; }
     .runway-picker-label {
       font-size: .6rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: .08em; color: var(--muted); margin-bottom: .35rem;
@@ -2056,14 +2056,129 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 
 const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
 
+function fmtTafTime(dtStr) {
+  if (!dtStr) return '—';
+  const d = new Date(dtStr);
+  const pad = n => String(n).padStart(2,'0');
+  return pad(d.getUTCDate()) + '/' + pad(d.getUTCHours()) + 'z';
+}
+
+function fmtTafWind(period) {
+  const dir  = period.wind_direction?.repr  || '—';
+  const spd  = period.wind_speed?.value     ?? '—';
+  const gust = period.wind_gust?.value;
+  let s = dir + '/' + spd + 'kt';
+  if (gust) s += ' G' + gust;
+  return s;
+}
+
+function periodContainsEta(period, etaMin) {
+  if (etaMin == null) return false;
+  const toUtcMin = dtStr => {
+    const d = new Date(dtStr);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  };
+  const start = toUtcMin(period.start_time?.dt);
+  const end   = toUtcMin(period.end_time?.dt);
+  if (end > start) return etaMin >= start && etaMin < end;
+  return etaMin >= start || etaMin < end;
+}
+
+function renderTafPicker(tafData) {
+  const wrap      = document.getElementById('arrTafWrap');
+  const rawEl     = document.getElementById('arrTafRaw');
+  const periodsEl = document.getElementById('arrTafPeriods');
+  const etaInput  = document.getElementById('arrEta');
+
+  rawEl.textContent  = tafData.raw || '—';
+  rawEl.style.display = 'block';
+
+  const forecast = (tafData.forecast || []).filter(p =>
+    p.wind_direction && p.wind_speed && p.type !== 'PROB30' && p.type !== 'PROB40'
+  );
+
+  function render(etaMin) {
+    periodsEl.innerHTML = forecast.map((p, i) => {
+      const type    = p.type || 'FM';
+      const isTempo = type === 'TEMPO';
+      const isCur   = periodContainsEta(p, etaMin);
+      const wind    = fmtTafWind(p);
+      const t1      = fmtTafTime(p.start_time?.dt);
+      const t2      = fmtTafTime(p.end_time?.dt);
+      const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
+      return `<div class="${cls}" onclick="applyTafPeriod(${i})">
+        <span class="tp-type">${type}</span>
+        <span class="tp-time">${t1}→${t2}</span>
+        <span class="tp-wind">${wind}</span>
+        <span class="tp-apply">${isCur ? '✓ ETA' : '↙ appliquer'}</span>
+      </div>`;
+    }).join('');
+    periodsEl._forecast = forecast;
+  }
+
+  const etaVal = etaInput.value;
+  const etaMin = etaVal ? parseInt(etaVal.split(':')[0])*60 + parseInt(etaVal.split(':')[1]) : null;
+  render(etaMin);
+  wrap.classList.add('visible');
+
+  etaInput.addEventListener('input', () => {
+    const v = etaInput.value;
+    const m = v ? parseInt(v.split(':')[0])*60 + parseInt(v.split(':')[1]) : null;
+    render(m);
+  });
+}
+
+function applyTafPeriod(idx) {
+  const forecast = document.getElementById('arrTafPeriods')._forecast;
+  const period   = forecast?.[idx];
+  if (!period) return;
+
+  const dirRepr = (period.wind_direction?.repr || '').toUpperCase();
+  const dirVal  = period.wind_direction?.value ?? null;
+  const spdVal  = Math.round(period.wind_speed?.value || 0);
+  const gustVal = Math.round(period.wind_gust?.value  || 0);
+
+  const dirEl = document.getElementById('arrWindDir');
+  if (dirRepr === 'VRB') dirEl.value = 'VRB';
+  else if (dirVal != null) dirEl.value = String(dirVal === 0 ? 360 : dirVal).padStart(3,'0');
+
+  document.getElementById('arrWindKt').value   = String(spdVal);
+  document.getElementById('arrWindGust').value = String(gustVal);
+
+  const vd = period.variable_direction;
+  if (vd && typeof vd.from === 'number') {
+    document.getElementById('arrVrbFrom').value = String(vd.from).padStart(3,'0');
+    document.getElementById('arrVrbTo').value   = String(vd.to).padStart(3,'0');
+  } else {
+    document.getElementById('arrVrbFrom').value = '';
+    document.getElementById('arrVrbTo').value   = '';
+  }
+
+  updateWindDisplay('arr');
+
+  document.querySelectorAll('.taf-period').forEach((el, i) => {
+    el.style.outline = i === idx ? '2px solid var(--arr)' : '';
+  });
+}
+
 async function loadTafFor(side) {
-  const icao  = (document.getElementById(side + 'Icao').value || '').toUpperCase();
-  const msgEl = document.getElementById(side + 'MetarMsg');
+  const icao   = (document.getElementById(side + 'Icao').value || '').toUpperCase();
+  const msgEl  = document.getElementById(side + 'MetarMsg');
+  const rwWrap = document.getElementById(side + 'RunwayPicker');
   if (!icao || icao.length < 4) { msgEl.textContent = 'Saisir un ICAO avant de charger le TAF.'; return; }
 
   msgEl.textContent = 'Chargement TAF…';
+  rwWrap.style.display = 'none';
+
   try {
-    const taf = await fetchTaf(icao);
+    // TAF + pistes en parallèle
+    const [taf] = await Promise.all([
+      fetchTaf(icao),
+      fetchRunways(icao)
+        .then(rws => renderRunwayPicker(side, rws))
+        .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
+    ]);
+
     msgEl.textContent = 'TAF chargé : ' + (taf.raw || '—');
     renderTafPicker(taf);
   } catch(e) {
