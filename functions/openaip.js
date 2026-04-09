@@ -13,23 +13,36 @@ export async function onRequest({ request, env }) {
   );
 
   try {
-    // 1. Chercher l'aéroport par icaoCode (côté serveur = pas de CORS)
+    const headers = {
+      'x-openaip-api-key': env.OPENAIP_KEY,
+      'Accept': 'application/json',
+    };
+
+    // Filtre par icaoCode avec le header d'auth (pas de CORS côté serveur)
     const listRes = await fetch(
-      `https://api.core.openaip.net/api/airports?icaoCode=${icao}&limit=5&apiKey=${env.OPENAIP_KEY}`
+      `https://api.core.openaip.net/api/airports?icaoCode=${icao}&limit=5`,
+      { headers }
     );
     const listData = await listRes.json();
 
-    const match = (listData.items || []).find(a =>
-      (a.icaoCode || '').toUpperCase() === icao
-    );
-    if (!match) return new Response(
-      JSON.stringify({ error: icao + ' non trouvé', totalCount: listData.totalCount }),
+    // Debug : retourner le totalCount pour diagnostic
+    if (!listRes.ok || !listData.items?.length) return new Response(
+      JSON.stringify({ error: 'Liste vide', totalCount: listData.totalCount, status: listRes.status }),
       { status: 404, headers: corsHeaders }
     );
 
-    // 2. Détail complet avec pistes
+    const match = listData.items.find(a =>
+      (a.icaoCode || '').toUpperCase() === icao
+    );
+    if (!match) return new Response(
+      JSON.stringify({ error: icao + ' non trouvé', totalCount: listData.totalCount, firstItem: listData.items[0]?.icaoCode }),
+      { status: 404, headers: corsHeaders }
+    );
+
+    // Détail complet avec pistes
     const detailRes = await fetch(
-      `https://api.core.openaip.net/api/airports/${match._id}?apiKey=${env.OPENAIP_KEY}`
+      `https://api.core.openaip.net/api/airports/${match._id}`,
+      { headers }
     );
     const airport = await detailRes.json();
 
