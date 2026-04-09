@@ -596,8 +596,8 @@
       overflow: hidden;
     }
     .rm-header {
-      padding: 1rem 1.25rem .9rem;
-      display: flex; align-items: center; gap: .75rem;
+      padding: .8rem 1rem .75rem;
+      display: flex; align-items: center; gap: .6rem;
       flex-shrink: 0;
     }
     .rm-header.is-ok  { background: linear-gradient(135deg, #047857, var(--arr)); }
@@ -628,45 +628,45 @@
 
     /* ── KPI ── */
     .rm-body {
-      flex: 1; overflow-y: auto; padding: 1.1rem 1.25rem;
-      display: flex; flex-direction: column; gap: .75rem;
+      flex: 1; overflow-y: auto; padding: .85rem 1rem;
+      display: flex; flex-direction: column; gap: .6rem;
       -webkit-overflow-scrolling: touch;
     }
     .rm-kpi-card {
-      border-radius: 14px; padding: 1.1rem 1.25rem;
+      border-radius: 12px; padding: .85rem 1rem;
       border: 1.5px solid var(--border); background: #fff;
     }
     .rm-kpi-card.is-ok  { background: var(--arr-light); border-color: var(--arr-border); }
     .rm-kpi-card.is-bad { background: var(--red-light);  border-color: var(--red-border); }
     .rm-kpi-label {
-      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
       letter-spacing: .08em; color: var(--muted);
     }
     .rm-kpi-value {
-      font-size: 3rem; font-weight: 900; line-height: 1.05;
+      font-size: 2.4rem; font-weight: 900; line-height: 1.05;
       color: var(--text); font-variant-numeric: tabular-nums;
-      letter-spacing: -.02em; margin: .1rem 0 .25rem;
+      letter-spacing: -.02em; margin: .05rem 0 .15rem;
     }
     .rm-kpi-avail {
-      font-size: .8rem; color: var(--muted); font-weight: 600;
+      font-size: .75rem; color: var(--muted); font-weight: 600;
     }
 
     /* ── Rows ── */
     .rm-rows {
-      background: #fff; border-radius: 14px;
+      background: #fff; border-radius: 12px;
       border: 1.5px solid var(--border); overflow: hidden;
     }
     .rm-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: .75rem 1.1rem; border-bottom: 1px solid #f1f5f9;
+      padding: .6rem .9rem; border-bottom: 1px solid #f1f5f9;
       gap: .5rem;
     }
     .rm-row:last-child { border-bottom: none; }
     .rm-row-label {
-      font-size: .8rem; color: var(--muted); font-weight: 600; flex: 1;
+      font-size: .78rem; color: var(--muted); font-weight: 600; flex: 1;
     }
     .rm-row-value {
-      font-size: .88rem; font-weight: 700; color: var(--text);
+      font-size: .85rem; font-weight: 700; color: var(--text);
       font-family: 'DM Mono', monospace; text-align: right;
     }
 
@@ -945,7 +945,7 @@
           <!-- Assumption vent arrière 5kt — départ -->
           <div id="depTwAssumeWrap" class="tw-assume-wrap">
             <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
-              <span class="tw-check">☐</span>Calculer avec 5 kt arrière (hypothèse conservatrice)
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
             </button>
           </div>
 
@@ -1180,7 +1180,7 @@
           <!-- Assumption vent arrière 5kt — arrivée -->
           <div id="arrTwAssumeWrap" class="tw-assume-wrap">
             <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
-              <span class="tw-check">☐</span>Calculer avec 5 kt arrière (hypothèse conservatrice)
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
             </button>
           </div>
 
@@ -1489,6 +1489,22 @@ let profile     = 'DR400';
 let depSurface  = 'hard';
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
+let depComputed = false;
+let arrComputed = false;
+
+function updatePdfBtn() {
+  const btn = document.getElementById('btnPrint');
+  if (depComputed || arrComputed) {
+    btn.textContent = 'u2705 Exporter PDF';
+    btn.style.background = '#065f46';
+    btn.style.opacity = '1';
+  } else {
+    btn.textContent = 'ud83dudcc4 Exporter PDF';
+    btn.style.background = '';
+    btn.style.opacity = '.45';
+  }
+  btn.disabled = !(depComputed || arrComputed);
+}
 let depAssumeTA = false; // assumption 5kt arrière départ
 let arrAssumeTA = false; // assumption 5kt arrière arrivée
 
@@ -1949,17 +1965,33 @@ function interpGridDR300(surface, kind, altFt, oat, massKg) {
 /* ===================== VALIDATION AVANT CALCUL ===================== */
 function validateBeforeCompute(side) {
   const errors = [];
-  if (!validateVrb(side)) errors.push('Secteur VRB invalide (doivent être multiples de 10).');
+
+  if (!validateVrb(side)) errors.push('Secteur VRB invalide.');
 
   const qfu = normQFU(document.getElementById(side+'Qfu').value);
-  if (!qfu) errors.push('QFU manquant ou invalide.');
+  if (!qfu) errors.push('QFU manquant.');
 
   const lenVal = side === 'dep'
     ? parseInt(document.getElementById('depToda').value||'0',10)
     : parseInt(document.getElementById('arrLda').value||'0',10);
   if (!lenVal) errors.push(side === 'dep' ? 'TODA manquante.' : 'LDA manquante.');
 
-  if (errors.length) { showValidMsg(side, '⚠ ' + errors.join(' ')); return false; }
+  const dir = (document.getElementById(side+'WindDir').value||'').trim();
+  const kt  = parseInt(document.getElementById(side+'WindKt').value||'0',10);
+  if (!dir) errors.push('Direction vent manquante.');
+  // Vitesse requise seulement si pas VRB avec secteur défini
+  const fromEl = document.getElementById(side+'VrbFrom').value.trim();
+  const toEl   = document.getElementById(side+'VrbTo').value.trim();
+  if (!kt && !fromEl && !toEl) errors.push('Vitesse vent manquante (ou saisir un secteur VRB).');
+
+  const massId = side === 'dep' ? 'depTow' : 'arrLdw';
+  const masse  = parseFloat(document.getElementById(massId).value||'0');
+  if (!masse || masse <= 0) errors.push('Masse manquante.');
+
+  if (errors.length) {
+    showValidMsg(side, '⚠ ' + errors.join(' '));
+    return false;
+  }
   showValidMsg(side, '');
   return true;
 }
@@ -2016,6 +2048,8 @@ function computeDepPerf() {
   document.getElementById('toExplain').textContent = taActive
     ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
     : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  depComputed = true;
+  updatePdfBtn();
 }
 
 /* ===================== CALCUL ATTERRISSAGE ===================== */
@@ -2060,6 +2094,8 @@ function computeArrPerf() {
   document.getElementById('ldgExplain').textContent = taActive
     ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
     : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  arrComputed = true;
+  updatePdfBtn();
 }
 
 /* ===================== RESULTS MODAL ===================== */
@@ -2071,6 +2107,8 @@ const RM_STEPS = [
 ];
 
 function openResultsModal(side, computeFn) {
+  // Valider d'abord sans ouvrir le modal
+  if (!validateBeforeCompute(side)) return;
   const modal   = document.getElementById('resultsModal');
   const loading = document.getElementById('rmLoading');
   const content = document.getElementById('rmContent');
@@ -2388,7 +2426,14 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 
 const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
 
-function fmtTafTime(dtStr) {
+function fmtTafTime(period_time) {
+  // Utiliser repr (ex: "0909" = jour 09 à 09z, "1015" = jour 10 à 15z)
+  const repr = period_time?.repr;
+  if (repr && repr.length >= 4) {
+    return repr.slice(0,2) + '/' + repr.slice(2,4) + 'z';
+  }
+  // Fallback sur dt
+  const dtStr = period_time?.dt;
   if (!dtStr) return '—';
   const d = new Date(dtStr);
   const pad = n => String(n).padStart(2,'0');
@@ -2404,16 +2449,34 @@ function fmtTafWind(period) {
   return s;
 }
 
-function periodContainsEta(period, etaMin) {
-  if (etaMin == null) return false;
-  const toUtcMin = dtStr => {
-    const d = new Date(dtStr);
-    return d.getUTCHours() * 60 + d.getUTCMinutes();
+function periodContainsEta(period, etaUtcMin) {
+  // etaUtcMin = minutes depuis minuit UTC (0-1439)
+  if (etaUtcMin == null) return false;
+
+  // On convertit start et end en minutes depuis minuit UTC du même jour
+  const toMin = pt => {
+    const dt = pt?.dt;
+    if (dt) {
+      const d = new Date(dt);
+      // Convertir en minutes totales depuis epoch pour comparaison cross-day
+      return d.getTime() / 60000; // minutes epoch
+    }
+    // Fallback repr
+    const r = pt?.repr;
+    if (r && r.length >= 4) return parseInt(r.slice(0,2))*1440 + parseInt(r.slice(2,4))*60;
+    return null;
   };
-  const start = toUtcMin(period.start_time?.dt);
-  const end   = toUtcMin(period.end_time?.dt);
-  if (end > start) return etaMin >= start && etaMin < end;
-  return etaMin >= start || etaMin < end;
+
+  const startMin = toMin(period.start_time);
+  const endMin   = toMin(period.end_time);
+  if (startMin == null || endMin == null) return false;
+
+  // Calculer les minutes epoch de l'ETA d'aujourd'hui
+  const now     = new Date();
+  const todayBase = Math.floor(now.getTime() / 86400000) * 1440; // minutes epoch au début du jour UTC
+  const etaEpoch  = todayBase + etaUtcMin;
+
+  return etaEpoch >= startMin && etaEpoch < endMin;
 }
 
 function renderTafPicker(tafData) {
@@ -2435,8 +2498,8 @@ function renderTafPicker(tafData) {
       const isTempo = type === 'TEMPO';
       const isCur   = periodContainsEta(p, etaMin);
       const wind    = fmtTafWind(p);
-      const t1      = fmtTafTime(p.start_time?.dt);
-      const t2      = fmtTafTime(p.end_time?.dt);
+      const t1      = fmtTafTime(p.start_time);
+      const t2      = fmtTafTime(p.end_time);
       const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
       return `<div class="${cls}" onclick="applyTafPeriod(${i})">
         <span class="tp-type">${type}</span>
@@ -2633,60 +2696,60 @@ function sectionPerfHTML(title, side) {
 }
 
 function buildPrintHTML() {
-  const safety   = Math.max(0, +(document.getElementById('safety').value || 30));
-  const aircraft = document.getElementById('aircraftSel').value;
-  const prop     = document.getElementById('propeller').value;
-  const spats    = withSpats ? 'Avec carénages' : 'Sans carénages (+3% TO)';
-  const profileTxt = profile; // FIX: était "profileTxtupdateWindDisplay(side)" dans la version originale
+  const safety      = Math.max(0, +(document.getElementById('safety').value || 30));
+  const aircraft    = document.getElementById('aircraftSel').value;
+  const prop        = document.getElementById('propeller').value;
+  const spats       = withSpats ? 'Avec carénages' : 'Sans carénages (+3% TO)';
+  const profileTxt  = profile;
+  const compsDep    = buildCompsFor('dep');
+  const compsArr    = buildCompsFor('arr');
 
-  const compsDep = buildCompsFor('dep');
-  const compsArr = buildCompsFor('arr');
+  const headerSimple = (pageLabel) => `
+    <div class="print-header">
+      <div>
+        <div class="ph-title">Calculateur de Performances</div>
+        <div class="ph-club">Aéroclub de Beauvais-Tillé${pageLabel ? ' &nbsp;·&nbsp; ' + pageLabel : ''}</div>
+      </div>
+      <div class="ph-meta">${nowStamp()}</div>
+    </div>`;
 
-  const page1 = `
-    <div class="page">
-      <div class="print-header">
-        <div>
-          <div class="ph-title">Calculateur de Performances</div>
-          <div class="ph-club">Aéroclub de Beauvais-Tillé</div>
-        </div>
-        <div class="ph-meta">
-          ${nowStamp()}<br>
-          ${aircraft} &nbsp;·&nbsp; ${prop}
-        </div>
+  const paramsSection = `
+    <div class="psection">
+      <span class="ptitle">Paramètres généraux</span>
+      <div class="kv" style="margin-top:5px">
+        <div class="k">Avion</div><div class="v">${aircraft}</div>
+        <div class="k">Hélice</div><div class="v">${prop}</div>
+        <div class="k">Profil</div><div class="v">${profileTxt}</div>
+        <div class="k">Marge sécurité</div><div class="v">${safety} %</div>
+        <div class="k">Carénages</div><div class="v">${spats}</div>
       </div>
-      <div class="psection">
-        <span class="ptitle">Paramètres généraux</span>
-        <div class="kv" style="margin-top:5px">
-          <div class="k">Avion</div><div class="v">${aircraft}</div>
-          <div class="k">Hélice</div><div class="v">${prop}</div>
-          <div class="k">Profil</div><div class="v">${profileTxt}</div>
-          <div class="k">Marge sécurité</div><div class="v">${safety} %</div>
-          <div class="k">Carénages</div><div class="v">${spats}</div>
-        </div>
-      </div>
+    </div>`;
+
+  const pages = [];
+
+  if (depComputed) {
+    pages.push(`<div class="page">
+      ${headerSimple(arrComputed ? 'Page 1 / 2' : '')}
+      ${paramsSection}
       ${sectionTerrainHTML('Terrain de départ', 'dep', compsDep)}
       ${sectionPerfHTML('Décollage — Résultats', 'dep')}
-    </div>`;
+    </div>`);
+  }
 
-  const page2 = `
-    <div class="page">
-      <div class="print-header">
-        <div>
-          <div class="ph-title">Calculateur de Performances</div>
-          <div class="ph-club">Aéroclub de Beauvais-Tillé &nbsp;·&nbsp; Page 2 / 2</div>
-        </div>
-        <div class="ph-meta">
-          ${aircraft} &nbsp;·&nbsp; ${prop}
-        </div>
-      </div>
+  if (arrComputed) {
+    pages.push(`<div class="page">
+      ${headerSimple(depComputed ? 'Page 2 / 2' : '')}
+      ${depComputed ? '' : paramsSection}
       ${sectionTerrainHTML("Terrain d'arrivée", 'arr', compsArr)}
       ${sectionPerfHTML('Atterrissage — Résultats', 'arr')}
-    </div>`;
+    </div>`);
+  }
 
-  return page1 + page2;
+  return pages.join('');
 }
 
 document.getElementById('btnPrint').addEventListener('click', async () => {
+  if (!depComputed && !arrComputed) return;
   const btn = document.getElementById('btnPrint');
   btn.disabled = true;
   btn.textContent = '⏳ Génération…';
@@ -2777,6 +2840,7 @@ function switchTab(tab) {
   updateWindDisplay('dep');
   updateWindDisplay('arr');
   updateBranchRows();
+  updatePdfBtn();
 })();
 </script>
 </body>
