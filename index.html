@@ -2427,13 +2427,17 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
 
 function fmtTafTime(period_time) {
+  // Priorité au dt (ISO datetime exact) plutôt qu'au repr qui peut être ambigu
+  const dtStr = period_time?.dt;
+  if (dtStr) {
+    const d = new Date(dtStr);
+    const pad = n => String(n).padStart(2,'0');
+    return pad(d.getUTCDate()) + '/' + pad(d.getUTCHours()) + 'z';
+  }
+  // Fallback repr
   const repr = period_time?.repr;
   if (repr && repr.length >= 4) return repr.slice(0,2) + '/' + repr.slice(2,4) + 'z';
-  const dtStr = period_time?.dt;
-  if (!dtStr) return '—';
-  const d = new Date(dtStr);
-  const pad = n => String(n).padStart(2,'0');
-  return pad(d.getUTCDate()) + '/' + pad(d.getUTCHours()) + 'z';
+  return '—';
 }
 
 function fmtTafWind(period) {
@@ -2503,146 +2507,168 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
   const validity = parseTafValidity(raw, refDate);
   if (!validity) return [];
 
-  const body = tokens.slice(3);
-  const periods = [];
-  let current = {
-    type: 'FROM',
-    start_time: validity.start,
-    end_time: null,
-    tokens: [],
-    raw_label: 'FROM'
-  };
-
   function isoFromRepr(repr) {
     return { repr, dt: tafReprToDate(repr, refDate)?.toISOString() || null };
   }
 
-  function pushCurrentIfUseful(nextStart = null) {
-    if (!current) return;
-    if (!current.end_time && nextStart) current.end_time = nextStart;
-    if (!current.end_time) current.end_time = validity.end;
-    periods.push(current);
-  }
+  // Découper en segments : chaque segment commence par un marqueur de groupe
+  // Marqueurs : BECMG, TEMPO, PROB30, PROB40, PROB30TEMPO, PROB40TEMPO, FM######
+  const GROUP_MARKERS = /^(BECMG|TEMPO|PROB(?:30|40)TEMPO?|FM\d{6})$/i;
+
+  // Ignorer les 3 premiers tokens (station, time_issued, validity)
+  const body = tokens.slice(3);
+
+  // Segmenter le body
+  const segments = []; // { type, tokens[] }
+  let curSeg = { type: 'FROM', tokens: [] };
 
   for (let i = 0; i < body.length; i++) {
-    const token = body[i];
-    const next = body[i + 1];
-    const third = body[i + 2];
-
-    if (/^FM\d{6}$/i.test(token)) {
-      const repr = token.slice(2, 6);
-      const nextStart = isoFromRepr(repr);
-      pushCurrentIfUseful(nextStart);
-      current = {
-        type: 'FROM',
-        start_time: nextStart,
-        end_time: null,
-        tokens: [],
-        raw_label: 'FROM'
-      };
-      continue;
+    const tok = body[i];
+    if (GROUP_MARKERS.test(tok)) {
+      segments.push(curSeg);
+      curSeg = { type: tok.toUpperCase(), tokens: [] };
+    } else {
+      curSeg.tokens.push(tok);
     }
+  }
+  segments.push(curSeg);
 
-    if (token === 'BECMG' && /^\d{4}\/\d{4}$/.test(next || '')) {
-      const [s, e] = next.split('/');
-      const nextStart = isoFromRepr(s);
-      pushCurrentIfUseful(nextStart);
-      current = {
-        type: 'BECMG',
-        start_time: isoFromRepr(s),
-        end_time:   isoFromRepr(e),
-        tokens: [],
-        raw_label: 'BECMG'
-      };
-      i += 1;
-      continue;
-    }
+  // Construire les périodes à partir des segments
+  const periods = [];
+  let prevailingWind = null;
+  let lastFromEnd = validity.end; // end du TAF = end du dernier FM
 
-    if (token === 'TEMPO' && /^\d{4}\/\d{4}$/.test(next || '')) {
-      const [s, e] = next.split('/');
+  for (let si = 0; si < segments.length; si++) {
+    const seg   = segments[si];
+    const stype = seg.type.toUpperCase();
+    const stoks = seg.tokens;
+
+    // Chercher le vent dans les tokens du segment
+    const windToken  = stoks.find(t => !!parseTafWindToken(t));
+    const parsedWind = windToken ? parseTafWindToken(windToken) : null;
+
+    // FM######
+    if (/^FM\d{6}$/.test(stype)) {
+      const repr = stype.slice(2, 6); // DDHH (ignore secondes)
+      const start = isoFromRepr(repr);
+
+      // end = start du prochain FM, ou validity.end
+      let end = validity.end;
+      for (let j = si + 1; j < segments.length; j++) {
+        if (/^FM\d{6}$/.test(segments[j].type)) {
+          end = isoFromRepr(segments[j].type.slice(2, 6));
+          break;
+        }
+      }
+
+      const eff = parsedWind || prevailingWind;
+      if (parsedWind) prevailingWind = parsedWind;
+
       periods.push({
-        type: 'TEMPO',
-        start_time: isoFromRepr(s),
-        end_time:   isoFromRepr(e),
-        tokens: [],
-        raw_label: 'TEMPO'
+        type: 'FROM', type_label: 'FROM',
+        start_time: start, end_time: end,
+        wind: eff, extra_summary: summarizeTafExtra(stoks),
+        wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
+        wind_speed:     eff ? { value: eff.speed } : null,
+        wind_gust:      eff?.gust ? { value: eff.gust } : null,
       });
-      i += 1;
       continue;
     }
 
-    if ((token === 'PROB30' || token === 'PROB40') && next === 'TEMPO' && /^\d{4}\/\d{4}$/.test(third || '')) {
-      const [s, e] = third.split('/');
+    // Premier segment FROM (main period)
+    if (stype === 'FROM') {
+      // end = start du prochain FM ou BECMG qui n'est pas au même moment que start
+      // Si BECMG commence au même moment, le FROM court jusqu'à la fin du TAF
+      let end = validity.end;
+      for (let j = si + 1; j < segments.length; j++) {
+        const ns = segments[j].type.toUpperCase();
+        if (/^FM\d{6}$/.test(ns)) {
+          end = isoFromRepr(ns.slice(2, 6));
+          break;
+        }
+        if (ns === 'BECMG' && segments[j].tokens[0]) {
+          const [bStart] = segments[j].tokens[0].split('/');
+          const bStartDt = tafReprToDate(bStart, refDate)?.getTime();
+          const fromStartDt = tafReprToDate(validity.start.repr, refDate)?.getTime();
+          // Seulement si BECMG ne commence pas exactement au même moment
+          if (bStartDt && fromStartDt && bStartDt > fromStartDt) {
+            end = isoFromRepr(bStart);
+            break;
+          }
+        }
+      }
+
+      const eff = parsedWind || prevailingWind;
+      if (parsedWind) prevailingWind = parsedWind;
+
       periods.push({
-        type: token,
-        qualifier: 'TEMPO',
-        start_time: isoFromRepr(s),
-        end_time:   isoFromRepr(e),
-        tokens: [],
-        raw_label: token + ' TEMPO'
+        type: 'FROM', type_label: 'FROM',
+        start_time: validity.start, end_time: end,
+        wind: eff, extra_summary: summarizeTafExtra(stoks),
+        wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
+        wind_speed:     eff ? { value: eff.speed } : null,
+        wind_gust:      eff?.gust ? { value: eff.gust } : null,
       });
-      i += 2;
       continue;
     }
 
-    if (/^PROB(?:30|40)TEMPO$/i.test(token) && /^\d{4}\/\d{4}$/.test(next || '')) {
-      const prob = token.toUpperCase().replace('TEMPO', '');
-      const [s, e] = next.split('/');
+    // BECMG DDHH/DDHH ...
+    if (stype === 'BECMG') {
+      const validity_tok = stoks[0];
+      if (!validity_tok || !/^\d{4}\/\d{4}$/.test(validity_tok)) continue;
+      const [s, e] = validity_tok.split('/');
+      const eff = parsedWind || prevailingWind;
+      if (parsedWind) prevailingWind = parsedWind;
       periods.push({
-        type: prob,
-        qualifier: 'TEMPO',
-        start_time: isoFromRepr(s),
-        end_time:   isoFromRepr(e),
-        tokens: [],
-        raw_label: prob + ' TEMPO'
+        type: 'BECMG', type_label: 'BECMG',
+        start_time: isoFromRepr(s), end_time: isoFromRepr(e),
+        wind: eff, extra_summary: summarizeTafExtra(stoks.slice(1)),
+        wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
+        wind_speed:     eff ? { value: eff.speed } : null,
+        wind_gust:      eff?.gust ? { value: eff.gust } : null,
       });
-      i += 1;
       continue;
     }
 
-    if ((token === 'PROB30' || token === 'PROB40') && /^\d{4}\/\d{4}$/.test(next || '')) {
-      const [s, e] = next.split('/');
+    // TEMPO DDHH/DDHH ...
+    if (stype === 'TEMPO') {
+      const validity_tok = stoks[0];
+      if (!validity_tok || !/^\d{4}\/\d{4}$/.test(validity_tok)) continue;
+      const [s, e] = validity_tok.split('/');
+      // TEMPO hérite du vent ambiant si pas son propre vent
+      const eff = parsedWind || prevailingWind;
       periods.push({
-        type: token,
-        start_time: isoFromRepr(s),
-        end_time:   isoFromRepr(e),
-        tokens: [],
-        raw_label: token
+        type: 'TEMPO', type_label: 'TEMPO',
+        start_time: isoFromRepr(s), end_time: isoFromRepr(e),
+        wind: eff, extra_summary: summarizeTafExtra(stoks.slice(1)),
+        wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
+        wind_speed:     eff ? { value: eff.speed } : null,
+        wind_gust:      eff?.gust ? { value: eff.gust } : null,
       });
-      i += 1;
       continue;
     }
 
-    current.tokens.push(token);
+    // PROB30 / PROB40 / PROB30TEMPO / PROB40TEMPO
+    if (/^PROB(?:30|40)(?:TEMPO)?$/.test(stype)) {
+      const validity_tok = stoks[0];
+      if (!validity_tok || !/^\d{4}\/\d{4}$/.test(validity_tok)) continue;
+      const [s, e] = validity_tok.split('/');
+      const prob = stype.includes('30') ? 'PROB30' : 'PROB40';
+      const isTempo = stype.includes('TEMPO');
+      const label = prob + (isTempo ? ' TEMPO' : '');
+      const eff = parsedWind || prevailingWind;
+      periods.push({
+        type: prob, type_label: label,
+        start_time: isoFromRepr(s), end_time: isoFromRepr(e),
+        wind: eff, extra_summary: summarizeTafExtra(stoks.slice(1)),
+        wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
+        wind_speed:     eff ? { value: eff.speed } : null,
+        wind_gust:      eff?.gust ? { value: eff.gust } : null,
+      });
+    }
   }
 
-  pushCurrentIfUseful(null);
-
-  let prevailingWind = null;
-  return periods
-    .map(p => {
-      const windToken = (p.tokens || []).find(t => !!parseTafWindToken(t));
-      const parsedWind = windToken ? parseTafWindToken(windToken) : null;
-      const effectiveWind = parsedWind || prevailingWind;
-
-      const period = {
-        ...p,
-        raw_tokens: [...(p.tokens || [])],
-        wind: effectiveWind ? { ...effectiveWind } : null,
-        wind_direction: effectiveWind ? {
-          repr: effectiveWind.dir,
-          value: effectiveWind.dirValue
-        } : null,
-        wind_speed: effectiveWind ? { value: effectiveWind.speed } : null,
-        wind_gust: effectiveWind && effectiveWind.gust ? { value: effectiveWind.gust } : null,
-        extra_summary: summarizeTafExtra(p.tokens || []),
-        type_label: p.raw_label || p.type || 'FROM'
-      };
-
-      if ((p.type === 'FROM' || p.type === 'BECMG') && parsedWind) prevailingWind = parsedWind;
-      return period;
-    })
-    .filter(p => p.start_time && p.end_time);
+  return periods.filter(p => p.start_time?.dt && p.end_time?.dt);
 }
 
 function periodContainsEta(period, etaUtcMin) {
