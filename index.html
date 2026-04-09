@@ -564,10 +564,12 @@
       background: #f0f4f8;
       transform: translateY(100%);
       transition: transform .38s cubic-bezier(.32,0,.67,0);
+      pointer-events: none;
     }
     .results-modal.is-open {
       transform: translateY(0);
       transition: transform .38s cubic-bezier(.33,1,.68,1);
+      pointer-events: auto;
     }
 
     /* ── Loading ── */
@@ -1451,7 +1453,7 @@
   </footer>
 
   <!-- Modal disclaimer (affiché au chargement) -->
-  <div id="modalDisclaimer" class="modal is-active">
+  <div id="modalDisclaimer" class="modal is-active" style="z-index:10000">
     <div class="modal-background"></div>
     <div class="modal-card" style="max-width:480px;width:calc(100% - 2rem);border-radius:14px;overflow:hidden">
       <header class="modal-card-head" style="background:#0b3b86;border-bottom:none;padding:1.1rem 1.4rem">
@@ -2552,8 +2554,7 @@ async function loadMetarFor(side) {
     }
     applyMetar(side, metar);
     setMetarMsg(msgEl, isNearest
-      ? '⚠ METAR le plus proche : ' + usedIcao + distTxt + '
-' + (metar?.raw||'—')
+      ? '⚠ METAR le plus proche : ' + usedIcao + distTxt + ' — ' + (metar?.raw||'—')
       : (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
