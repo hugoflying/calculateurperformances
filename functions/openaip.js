@@ -7,28 +7,18 @@ export async function onRequest({ request, env }) {
     const headers = { 'x-openaip-api-key': env.OPENAIP_KEY, 'Accept': 'application/json' };
     const base    = 'https://api.core.openaip.net/api/airports';
 
-    // Tester tous les noms de paramètre possibles
-    const candidates = ['icaoCode', 'icao', 'code', 'ident', 'search', 'name', 'q'];
-    const results = {};
+    const listRes = await fetch(`${base}?search=${icao}&limit=10`, { headers });
+    const listData = await listRes.json();
 
-    for (const param of candidates) {
-      const r    = await fetch(`${base}?${param}=${icao}&limit=5`, { headers });
-      const data = await r.json();
-      results[param] = data.totalCount;
-      // Si filtré (totalCount petit), on a trouvé le bon param
-      if (data.totalCount < 50) {
-        const match = (data.items || []).find(a => (a.icaoCode||'').toUpperCase() === icao) || data.items?.[0];
-        if (match) {
-          const det  = await fetch(`${base}/${match._id}`, { headers });
-          const full = await det.json();
-          return new Response(JSON.stringify({ foundWithParam: param, airport: full }), { headers: cors });
-        }
-      }
-    }
+    const match = (listData.items || []).find(a =>
+      (a.icaoCode || '').toUpperCase() === icao
+    );
+    if (!match) throw new Error(icao + ' non trouvé');
 
-    // Aucun param n'a filtré — retourner le diagnostic
-    return new Response(JSON.stringify({ error: 'Aucun paramètre ne filtre', counts: results }), { status: 404, headers: cors });
+    const detailRes = await fetch(`${base}/${match._id}`, { headers });
+    const airport   = await detailRes.json();
 
+    return new Response(JSON.stringify(airport), { headers: cors });
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors });
   }
