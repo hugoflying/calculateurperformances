@@ -408,7 +408,7 @@
     .rwy-btn .rwy-hdg   { font-size: .58rem; color: #94a3b8; }
 
     /* ══════════════════ TAF PICKER ══════════════════ */
-    .taf-wrap { margin-top: .6rem; display: none; }
+    .taf-wrap { margin-top: .6rem; display: none; margin-bottom: .75rem; }
     .taf-wrap.visible { display: block; }
     .taf-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -2171,9 +2171,13 @@ async function loadTafFor(side) {
   rwWrap.style.display = 'none';
 
   try {
-    // TAF + pistes en parallèle
+    // TAF + pistes + élévation en parallèle
     const [taf] = await Promise.all([
       fetchTaf(icao),
+      fetchStation(icao).then(station => {
+        const elevFt = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
+        if (elevFt > 0) document.getElementById(side + 'Alt').value = String(Math.round(elevFt));
+      }).catch(() => {}),
       fetchRunways(icao)
         .then(rws => renderRunwayPicker(side, rws))
         .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
