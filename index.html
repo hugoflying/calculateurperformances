@@ -1943,7 +1943,6 @@ function applyMetar(side, data) {
 }
 
 async function fetchRunways(icao) {
-  // Appel via la Pages Function Cloudflare (proxy sans CORS, clé API côté serveur)
   const r = await fetch(`/openaip?icao=${encodeURIComponent(icao)}`);
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
@@ -1951,18 +1950,53 @@ async function fetchRunways(icao) {
   }
   const airport = await r.json();
 
-  console.log('[OpenAIP] pistes pour', icao, ':',
-    (airport.runways||[]).map(rw => rw.designator + ' ' + rw.dimension?.length?.value + 'm').join(', '));
-
   return (airport.runways || [])
     .filter(rwy => rwy.dimension?.length?.value > 0)
     .map(rwy => ({
-      ...rwy,
-      designator: String(rwy.designator || '??'),
-      qfu: parseInt(rwy.designator || '0', 10) * 10,
-      lengthM: Math.round(rwy.dimension.length.value),
+      designator : String(rwy.designator || '??'),
+      qfu        : parseInt(rwy.designator || '0', 10) * 10,
+      // Préférer TORA/LDA déclarée, sinon longueur physique
+      toraM      : Math.round(rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
+      ldaM       : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
+      lengthM    : Math.round(rwy.dimension.length.value),
     }))
     .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
+}
+
+function renderRunwayPicker(side, runways) {
+  const wrap = document.getElementById(side + 'RunwayPicker');
+  if (!runways.length) { wrap.style.display = 'none'; return; }
+
+  const lenLabel = side === 'dep' ? 'TORA' : 'LDA';
+  wrap.innerHTML = `
+    <div class="runway-picker-label">🛬 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
+    <div class="rwy-list">
+      ${runways.map((rwy, i) => `
+        <button class="rwy-btn" onclick="applyRunway('${side}', ${i})">
+          <span class="rwy-desig">${rwy.designator}</span>
+          <span class="rwy-len">${side === 'dep' ? rwy.toraM : rwy.ldaM} m</span>
+          <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
+        </button>`).join('')}
+    </div>`;
+  wrap.style.display = 'block';
+  wrap._runways = runways;
+}
+
+function applyRunway(side, idx) {
+  const wrap = document.getElementById(side + 'RunwayPicker');
+  const rwy  = wrap._runways?.[idx];
+  if (!rwy) return;
+
+  document.getElementById(side + 'Qfu').value =
+    String(rwy.qfu === 0 ? 360 : rwy.qfu).padStart(3, '0');
+
+  const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
+  lenEl.value = String(side === 'dep' ? rwy.toraM : rwy.ldaM);
+
+  wrap.querySelectorAll('.rwy-btn').forEach((b, i) =>
+    b.classList.toggle('active', i === idx));
+
+  updateWindDisplay(side);
 }
 
 async function loadMetarFor(side) {
@@ -1976,11 +2010,10 @@ async function loadMetarFor(side) {
     const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
     if (elevFt > 0) document.getElementById(side+'Alt').value = String(Math.round(elevFt));
     const lat = station?.latitude, lon = station?.longitude;
-    if (typeof lat === 'number' && typeof lon === 'number') {
-      fetchRunways(icao)
-        .then(rws => renderRunwayPicker(side, rws))
-        .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message));
-    }
+    // Pistes OpenAIP via proxy Cloudflare (pas besoin de coords)
+    fetchRunways(icao)
+      .then(rws => renderRunwayPicker(side, rws))
+      .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message));
     let metar, usedIcao = icao, isNearest = false, distTxt = '';
     try {
       metar = await fetchMetar(icao);
