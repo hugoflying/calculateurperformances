@@ -922,7 +922,7 @@
             <div class="taf-header">
               <span class="taf-header-label">📋 TAF — choisir une période</span>
               <div class="taf-eta-wrap">
-                <span class="taf-eta-label">ETA :</span>
+                <span class="taf-eta-label">ETA (UTC) :</span>
                 <input id="arrEta" type="time" class="input taf-eta-input" placeholder="--:--" />
               </div>
             </div>
@@ -2053,6 +2053,8 @@ document.getElementById('btnArrTaf').addEventListener('click',   () => loadTafFo
 /* ===================== OpenAIP — PISTES ===================== */
 // Clé API gérée côté serveur (Cloudflare Pages Function /openaip)
 
+
+const fetchTaf = icao => fetchJson('https://avwx.rest/api/taf/' + icao + '?options=summary');
 
 async function loadTafFor(side) {
   const icao  = (document.getElementById(side + 'Icao').value || '').toUpperCase();
