@@ -1515,8 +1515,7 @@
       <div class="rm-rows" id="rmRows"></div>
     </div>
     <div class="rm-footer">
-      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier</button>
-      <button class="rm-validate-btn" id="rmValidateBtn" onclick="closeResultsModal()">✓ Valider</button>
+      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
     </div>
   </div>
 
@@ -1553,6 +1552,8 @@ let profile     = 'DR400';
 let depSurface  = 'hard';
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
+let lastDepMetarTime = null; // Date d'émission du METAR départ (objet Date)
+let lastArrMetarTime = null; // Date d'émission du METAR arrivée
 let depComputed = false;
 let arrComputed = false;
 
@@ -2185,6 +2186,18 @@ function getInputSnapshot(side) {
   return JSON.stringify(snap);
 }
 
+function resetComputedState(side) {
+  if (side === 'dep') {
+    depComputed        = false;
+    lastSnapshot.dep   = null;
+  } else {
+    arrComputed        = false;
+    lastSnapshot.arr   = null;
+  }
+  updateCalcButton(side);
+  updatePdfBtn();
+}
+
 function updateCalcButton(side) {
   const btn    = document.getElementById(side === 'dep' ? 'btnCalcDep' : 'btnCalcArr');
   const isCalc = side === 'dep' ? depComputed : arrComputed;
@@ -2196,24 +2209,18 @@ function updateCalcButton(side) {
     btn.innerHTML = side === 'dep'
       ? '✅ Décollage calculé — voir résultats'
       : '✅ Atterrissage calculé — voir résultats';
-    btn.style.background = 'linear-gradient(135deg,#047857,var(--arr))';
-    btn.style.opacity    = '1';
-  } else if (isCalc && changed) {
-    btn.innerHTML = side === 'dep'
-      ? '🔄 Recalculer le décollage'
-      : '🔄 Recalculer l\'atterrissage';
-    btn.style.background = '';
-    btn.style.opacity    = '1';
+    btn.style.background = side === 'dep'
+      ? 'linear-gradient(135deg,var(--navy),var(--dep))'
+      : 'linear-gradient(135deg,#047857,var(--arr))';
   } else {
     btn.innerHTML = side === 'dep'
       ? 'Calculer les performances décollage'
       : 'Calculer les performances atterrissage';
     btn.style.background = '';
-    btn.style.opacity    = '1';
   }
 }
 
-// Surveiller les changements d'inputs pour mettre à jour les boutons
+// Surveiller les changements d'inputs pour réinitialiser l'état calculé
 ['dep','arr'].forEach(side => {
   const ids = side === 'dep'
     ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','depExtraTO','safety','spatsWith','spatsWithout','depSurfHard','depSurfGrass']
@@ -2221,9 +2228,9 @@ function updateCalcButton(side) {
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.addEventListener('input',  () => updateCalcButton(side));
-      el.addEventListener('change', () => updateCalcButton(side));
-      el.addEventListener('click',  () => setTimeout(() => updateCalcButton(side), 10));
+      el.addEventListener('input',  () => resetComputedState(side));
+      el.addEventListener('change', () => resetComputedState(side));
+      el.addEventListener('click',  () => setTimeout(() => resetComputedState(side), 10));
     }
   });
 });
@@ -2429,8 +2436,13 @@ function applyMetar(side, data) {
     document.getElementById(side+'VrbTo').value   = '';
   }
 
-  if (side === 'dep') lastDepMetarRaw = data?.raw || '—';
-  else                lastArrMetarRaw = data?.raw || '—';
+  if (side === 'dep') {
+    lastDepMetarRaw  = data?.raw || '—';
+    lastDepMetarTime = data?.time?.dt ? new Date(data.time.dt) : null;
+  } else {
+    lastArrMetarRaw  = data?.raw || '—';
+    lastArrMetarTime = data?.time?.dt ? new Date(data.time.dt) : null;
+  }
 
   // Prise en compte TEMPO : remplace si plus contraignant
   const qfu = normQFU(document.getElementById(side+'Qfu').value);
@@ -2531,6 +2543,14 @@ async function loadMetarFor(side) {
   const rwWrap = document.getElementById(side+'RunwayPicker');
   setMetarMsg(msgEl, 'Chargement…');
   rwWrap.style.display = 'none';
+
+  // Si on recharge le METAR côté arrivée, effacer le TAF
+  if (side === 'arr') {
+    const tafWrap = document.getElementById('arrTafWrap');
+    tafWrap.classList.remove('visible');
+    document.getElementById('arrTafPeriods').innerHTML = '';
+    document.getElementById('arrTafPeriods')._forecast = null;
+  }
   try {
     const station = await fetchStation(icao).catch(() => null);
     const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
@@ -2640,6 +2660,7 @@ function summarizeTafExtra(tokens) {
     if (/^(VRB|\d{3})\d{2,3}(?:G\d{2,3})?KT$/i.test(t)) return false;
     if (/^\d{4}\/\d{4}$/.test(t)) return false;
     if (/^(?:FM\d{6}|BECMG|TEMPO|PROB30|PROB40|PROB30TEMPO|PROB40TEMPO)$/i.test(t)) return false;
+    if (/^T[XN]\d{2}\/\d{4}Z?$/i.test(t)) return false; // TX et TN (températures prévues)
     return true;
   });
   return filtered.join(' ');
@@ -2840,6 +2861,7 @@ function renderTafPicker(tafData) {
   const rawEl     = document.getElementById('arrTafRaw');
   const periodsEl = document.getElementById('arrTafPeriods');
   const etaSelect = document.getElementById('arrEta');
+  const msgEl     = document.getElementById('arrMetarMsg');
 
   rawEl.style.display = 'none';
 
@@ -2847,7 +2869,64 @@ function renderTafPicker(tafData) {
   const fallbackForecast = (tafData.forecast || []).filter(p => p.wind_direction && p.wind_speed);
   const forecast         = rawForecast.length ? rawForecast : fallbackForecast;
 
+  // Garder le TAF data en mémoire pour comparaison METAR
+  wrap._tafData = tafData;
+
+  function getMetarWindStrength(qfu) {
+    // Renvoie la composante arrière + travers du METAR pour comparaison
+    const dir = document.getElementById('arrWindDir').value;
+    const kt  = parseInt(document.getElementById('arrWindKt').value||'0',10);
+    const gst = parseInt(document.getElementById('arrWindGust').value||'0',10);
+    if (!qfu || !kt) return null;
+    return compsFrom(qfu, dir === 'VRB' ? 0 : parseInt(dir,10), Math.max(kt, gst));
+  }
+
+  function checkMetarVsTaf(etaHour, curPeriod) {
+    if (etaHour === '' || etaHour == null || !lastArrMetarTime) return null;
+    const h = parseInt(etaHour, 10);
+    if (isNaN(h)) return null;
+
+    // ETA en heure epoch approximative
+    const now = new Date();
+    let etaDt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
+    if (etaDt < lastArrMetarTime) etaDt = new Date(etaDt.getTime() + 86400000);
+
+    // METAR valide 2h après émission
+    const metarExpiry = new Date(lastArrMetarTime.getTime() + 2 * 3600000);
+    if (etaDt > metarExpiry) return null; // ETA hors fenêtre METAR
+
+    // Comparer vent METAR vs vent TAF de la période ETA
+    const qfu = normQFU(document.getElementById('arrQfu').value);
+    if (!qfu || !curPeriod?.wind) return 'metar'; // pas assez d'info, garder METAR
+
+    const metarComps = getMetarWindStrength(qfu);
+    if (!metarComps) return 'metar';
+
+    const tafDir = curPeriod.wind.dirValue ?? 0;
+    const tafKt  = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
+    const tafComps = compsFrom(qfu, tafDir, tafKt);
+
+    if (!tafComps) return 'metar';
+
+    // Le plus restrictif = plus de vent arrière, ou plus de vent de travers
+    const metarScore = (metarComps.tail || 0) * 10 + Math.abs(metarComps.xw || 0);
+    const tafScore   = (tafComps.tail  || 0) * 10 + Math.abs(tafComps.xw  || 0);
+
+    return tafScore > metarScore ? 'taf' : 'metar';
+  }
+
   function render(etaHour) {
+    const curPeriod = forecast.find(p => periodContainsEta(p, etaHour) && !/TEMPO/i.test(p.type_label || p.type));
+    const metarVsTaf = checkMetarVsTaf(etaHour, curPeriod);
+
+    // Mettre à jour le message METAR/TAF
+    if (metarVsTaf && lastArrMetarRaw && lastArrMetarRaw !== '—') {
+      const suffix = metarVsTaf === 'metar'
+        ? '\n⚠ ETA dans fenêtre METAR (< 2h) — METAR utilisé (plus récent et valide)'
+        : '\n⚠ ETA dans fenêtre METAR (< 2h) — TAF plus restrictif, utiliser le TAF';
+      setMetarMsg(msgEl, lastArrMetarRaw + suffix);
+    }
+
     periodsEl.innerHTML = forecast.map((p, i) => {
       const type    = p.type_label || p.type || 'FROM';
       const isTempo = /TEMPO/i.test(type) || p.type === 'TEMPO';
