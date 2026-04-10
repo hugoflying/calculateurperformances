@@ -452,6 +452,9 @@
     }
     .taf-period:hover { border-color: var(--arr); background: var(--arr-light); }
     .taf-period.is-current { border-color: var(--arr); background: var(--arr-light); }
+    .taf-period.is-eta-other { border-color: #93c5fd; background: #eff6ff; }
+    .taf-period.is-eta-other .tp-type { color: var(--dep); }
+    .taf-period.is-eta-other .tp-apply { color: var(--dep); }
     .taf-period.is-tempo { border-style: dashed; border-color: var(--warn-border); background: var(--warn-bg); }
     .taf-period.is-tempo:hover { background: #fef3c7; }
     .taf-period .tp-type { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); min-width: 42px; }
@@ -1394,10 +1397,12 @@
         <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Comme pour le METAR, <strong>tous les champs du terrain sont réinitialisés</strong> avant le chargement. Les pistes et l'élévation sont chargées simultanément.</p>
         <p><strong>Couleurs des périodes :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert</span> — période active à l'heure ETA saisie</li>
-          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires. À prendre en compte si le vent est plus défavorable que le FROM en cours</li>
-          <li>Fond blanc — période FROM ou BECMG standard</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert ⚠ retenir</span> — période active à l'ETA <strong>et la plus restrictive</strong> (vent le plus défavorable). C'est celle-ci qu'il faut utiliser pour le calcul.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu ✓ ETA</span> — période également active à l'ETA mais moins restrictive que la verte. Affichée à titre d'information.</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires. Incluses dans la comparaison de restrictivité.</li>
+          <li>Fond blanc — période FROM ou BECMG non active à l'ETA</li>
         </ul>
+        <p><strong>Plusieurs périodes simultanées :</strong> quand l'ETA tombe dans plusieurs périodes (ex. un BECMG et un TEMPO en même temps), l'outil compare automatiquement tous les vents actifs et surligne en vert la période la plus restrictive avec la mention <em>"⚠ retenir (plus restrictif)"</em>. C'est toujours le cas le plus pénalisant qui doit être utilisé pour le calcul de performance.</p>
         <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare les vents METAR et TAF et indique lequel est le plus restrictif. Cette information est rappelée dans le popup des résultats de calcul ("Source météo : METAR / TAF").</p>
         <p><strong>Option "5 kt arrière" depuis le TAF :</strong> si la période ETA donne un vent favorable (moins de 5 kt arrière), un bouton apparaît pour appliquer l'hypothèse conservatrice de 5 kt de vent arrière. Activer ou désactiver cette option après un calcul réinitialise automatiquement les résultats, car l'impact sur les performances est significatif.</p>
         <p><strong>Note TEMPO :</strong> un TEMPO hérite du vent de la période FROM s'il ne précise pas de vent propre. Calculer avec le vent du TEMPO si celui-ci est plus défavorable.</p>
@@ -3117,12 +3122,37 @@ function renderTafPicker(tafData) {
     return tafScore > metarScore ? 'taf' : 'metar';
   }
 
+  function windScore(period, qfu) {
+    // Score de restrictivité = vent arrière × 10 + vent de travers
+    if (!period?.wind || !qfu) return 0;
+    const dir = period.wind.dirValue ?? 0;
+    const kt  = Math.max(period.wind.speed || 0, period.wind.gust || 0);
+    const c   = compsFrom(qfu, dir, kt);
+    if (!c) return 0;
+    return Math.max(0, -(c.hwSigned || 0)) * 10 + Math.abs(c.xw || 0);
+  }
+
   function render(etaHour) {
+    const qfu = normQFU(document.getElementById('arrQfu').value);
+
+    // Toutes les périodes actives à l'ETA
+    const activePeriods = forecast
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => periodContainsEta(p, etaHour));
+
+    // Parmi les actives, trouver la plus restrictive
+    let worstIdx = -1;
+    let worstScore = -1;
+    activePeriods.forEach(({ p, i }) => {
+      const s = windScore(p, qfu);
+      if (s > worstScore) { worstScore = s; worstIdx = i; }
+    });
+
+    // curPeriod = FROM/BECMG actif (hors TEMPO) pour comparaison METAR
     const curPeriod = forecast.find(p => periodContainsEta(p, etaHour) && !/TEMPO/i.test(p.type_label || p.type));
     const metarVsTaf = checkMetarVsTaf(etaHour, curPeriod);
-    lastMetarVsTafResult = metarVsTaf; // stocker pour le popup de calcul
+    lastMetarVsTafResult = metarVsTaf;
 
-    // Mettre à jour le message METAR/TAF
     if (metarVsTaf && lastArrMetarRaw && lastArrMetarRaw !== '—') {
       const suffix = metarVsTaf === 'metar'
         ? '\n⚠ ETA dans fenêtre METAR (< 2h) — METAR utilisé (plus récent et valide)'
@@ -3131,23 +3161,38 @@ function renderTafPicker(tafData) {
     }
 
     periodsEl.innerHTML = forecast.map((p, i) => {
-      const type    = p.type_label || p.type || 'FROM';
-      const isTempo = /TEMPO/i.test(type) || p.type === 'TEMPO';
-      const isCur   = periodContainsEta(p, etaHour);
-      const wind    = fmtTafWind(p);
-      const t1      = fmtTafTime(p.start_time);
-      const t2      = fmtTafTime(p.end_time);
-      const extra   = p.extra_summary ? `<div class="tp-extra">${p.extra_summary}</div>` : '';
-      const cls     = ['taf-period', isTempo ? 'is-tempo' : '', isCur ? 'is-current' : ''].join(' ');
+      const type     = p.type_label || p.type || 'FROM';
+      const isTempo  = /TEMPO/i.test(type) || p.type === 'TEMPO';
+      const isActive = activePeriods.some(a => a.i === i);
+      const isWorst  = i === worstIdx && activePeriods.length > 0;
+      const wind     = fmtTafWind(p);
+      const t1       = fmtTafTime(p.start_time);
+      const t2       = fmtTafTime(p.end_time);
+      const extra    = p.extra_summary ? `<div class="tp-extra">${p.extra_summary}</div>` : '';
+
+      let applyLabel = '↙ appliquer';
+      if (isWorst && activePeriods.length > 1) {
+        applyLabel = '⚠ retenir (plus restrictif)';
+      } else if (isWorst) {
+        applyLabel = '✓ ETA';
+      } else if (isActive) {
+        applyLabel = '✓ ETA';
+      }
+
+      const cls = ['taf-period',
+        isTempo  ? 'is-tempo'   : '',
+        isWorst  ? 'is-current' : '',
+        (isActive && !isWorst) ? 'is-eta-other' : ''
+      ].filter(Boolean).join(' ');
+
       return `<div class="${cls}" onclick="applyTafPeriod(${i})">
         <span class="tp-type">${type}</span>
         <span class="tp-time">${t1}→${t2}</span>
         <span class="tp-wind">${wind}${extra}</span>
-        <span class="tp-apply">${isCur ? '✓ ETA' : '↙ appliquer'}</span>
+        <span class="tp-apply">${applyLabel}</span>
       </div>`;
     }).join('');
     periodsEl._forecast = forecast;
-    // La suggestion 5kt arrière est gérée par updateWindDisplay via arrTafTwSuggest
     updateWindDisplay('arr');
   }
 
