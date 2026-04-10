@@ -455,6 +455,7 @@
     .taf-period.is-eta-other { border-color: #93c5fd; background: #eff6ff; }
     .taf-period.is-eta-other .tp-type { color: var(--dep); }
     .taf-period.is-eta-other .tp-apply { color: var(--dep); }
+    .taf-period.is-inactive { opacity: .38; filter: grayscale(.4); }
     .taf-period.is-tempo { border-style: dashed; border-color: var(--warn-border); background: var(--warn-bg); }
     .taf-period.is-tempo:hover { background: #fef3c7; }
     .taf-period .tp-type { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); min-width: 42px; }
@@ -1397,12 +1398,12 @@
         <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Comme pour le METAR, <strong>tous les champs du terrain sont réinitialisés</strong> avant le chargement. Les pistes et l'élévation sont chargées simultanément.</p>
         <p><strong>Couleurs des périodes :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert ⚠ retenir</span> — période active à l'ETA <strong>et la plus restrictive</strong> (vent le plus défavorable). C'est celle-ci qu'il faut utiliser pour le calcul.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu ✓ ETA</span> — période également active à l'ETA mais moins restrictive que la verte. Affichée à titre d'information.</li>
-          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires. Incluses dans la comparaison de restrictivité.</li>
-          <li>Fond blanc — période FROM ou BECMG non active à l'ETA</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert ⚠ retenir</span> — période active à l'ETA et la plus restrictive. La distance LDG calculée (avec le vent de cette période et les paramètres actuels) est indiquée directement.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu ✓ ETA</span> — période également active mais moins restrictive. Distance aussi affichée.</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : inclus dans la comparaison.</li>
+          <li style="opacity:.5">Grisé — période non concernée par l'ETA saisie.</li>
         </ul>
-        <p><strong>Plusieurs périodes simultanées :</strong> quand l'ETA tombe dans plusieurs périodes (ex. un BECMG et un TEMPO en même temps), l'outil compare automatiquement tous les vents actifs et surligne en vert la période la plus restrictive avec la mention <em>"⚠ retenir (plus restrictif)"</em>. C'est toujours le cas le plus pénalisant qui doit être utilisé pour le calcul de performance.</p>
+        <p><strong>Comparaison par vraie distance :</strong> quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chaque période en utilisant les paramètres actuels du formulaire (avion, altitude, OAT, masse, type de freinage). La période donnant la distance la plus longue est surlignée en vert — c'est toujours elle qu'il faut retenir.</p>
         <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare les vents METAR et TAF et indique lequel est le plus restrictif. Cette information est rappelée dans le popup des résultats de calcul ("Source météo : METAR / TAF").</p>
         <p><strong>Option "5 kt arrière" depuis le TAF :</strong> si la période ETA donne un vent favorable (moins de 5 kt arrière), un bouton apparaît pour appliquer l'hypothèse conservatrice de 5 kt de vent arrière. Activer ou désactiver cette option après un calcul réinitialise automatiquement les résultats, car l'impact sur les performances est significatif.</p>
         <p><strong>Note TEMPO :</strong> un TEMPO hérite du vent de la période FROM s'il ne précise pas de vent propre. Calculer avec le vent du TEMPO si celui-ci est plus défavorable.</p>
@@ -3122,14 +3123,31 @@ function renderTafPicker(tafData) {
     return tafScore > metarScore ? 'taf' : 'metar';
   }
 
-  function windScore(period, qfu) {
-    // Score de restrictivité = vent arrière × 10 + vent de travers
-    if (!period?.wind || !qfu) return 0;
+  function calcDistForPeriod(period) {
+    // Calcule la vraie distance LDG (sans marge) pour le vent d'une période TAF
+    // en utilisant les paramètres actuels du formulaire arrivée
+    if (!period?.wind) return null;
+    const qfu = normQFU(document.getElementById('arrQfu').value);
+    if (!qfu) return null;
+
+    const arrAlt  = +(document.getElementById('arrAlt').value  || 0);
+    const arrOat  = +(document.getElementById('arrOat').value  || 0);
+    const arrLdw  = +(document.getElementById('arrLdw').value  || 900);
+    const arrExtra = +(document.getElementById('arrExtraLDG').value || 1);
+
     const dir = period.wind.dirValue ?? 0;
     const kt  = Math.max(period.wind.speed || 0, period.wind.gust || 0);
     const c   = compsFrom(qfu, dir, kt);
-    if (!c) return 0;
-    return Math.max(0, -(c.hwSigned || 0)) * 10 + Math.abs(c.xw || 0);
+    if (!c) return null;
+
+    const hw = c.hwSigned ?? 0;
+    const wf = windDistanceFactor(hw);
+
+    const baseLDG = profile === 'DR300'
+      ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
+      : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+
+    return Math.round(baseLDG * wf * arrExtra);
   }
 
   function render(etaHour) {
@@ -3140,16 +3158,18 @@ function renderTafPicker(tafData) {
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => periodContainsEta(p, etaHour));
 
-    // Parmi les actives, trouver la plus restrictive
+    // Calculer la vraie distance pour chaque période active et trouver la pire
     let worstIdx = -1;
-    let worstScore = -1;
+    let worstDist = -1;
     activePeriods.forEach(({ p, i }) => {
-      const s = windScore(p, qfu);
-      if (s > worstScore) { worstScore = s; worstIdx = i; }
+      const d = calcDistForPeriod(p);
+      if (d !== null && d > worstDist) { worstDist = d; worstIdx = i; }
     });
 
     // curPeriod = FROM/BECMG actif (hors TEMPO) pour comparaison METAR
-    const curPeriod = forecast.find(p => periodContainsEta(p, etaHour) && !/TEMPO/i.test(p.type_label || p.type));
+    const curPeriod = forecast.find(p =>
+      periodContainsEta(p, etaHour) && !/TEMPO/i.test(p.type_label || p.type)
+    );
     const metarVsTaf = checkMetarVsTaf(etaHour, curPeriod);
     lastMetarVsTafResult = metarVsTaf;
 
@@ -3160,29 +3180,35 @@ function renderTafPicker(tafData) {
       setMetarMsg(msgEl, lastArrMetarRaw + suffix);
     }
 
+    const hasEta = etaHour !== '' && etaHour != null;
+
     periodsEl.innerHTML = forecast.map((p, i) => {
       const type     = p.type_label || p.type || 'FROM';
       const isTempo  = /TEMPO/i.test(type) || p.type === 'TEMPO';
       const isActive = activePeriods.some(a => a.i === i);
       const isWorst  = i === worstIdx && activePeriods.length > 0;
+      const isOther  = isActive && !isWorst;
+      const inactive = hasEta && !isActive;
       const wind     = fmtTafWind(p);
       const t1       = fmtTafTime(p.start_time);
       const t2       = fmtTafTime(p.end_time);
       const extra    = p.extra_summary ? `<div class="tp-extra">${p.extra_summary}</div>` : '';
 
-      let applyLabel = '↙ appliquer';
-      if (isWorst && activePeriods.length > 1) {
-        applyLabel = '⚠ retenir (plus restrictif)';
-      } else if (isWorst) {
-        applyLabel = '✓ ETA';
-      } else if (isActive) {
-        applyLabel = '✓ ETA';
-      }
+      // Distance calculée pour les périodes actives (si QFU renseigné)
+      const dist = isActive && qfu ? calcDistForPeriod(p) : null;
+      const distStr = dist !== null ? ` · ${dist} m` : '';
+
+      let applyLabel;
+      if (isWorst && activePeriods.length > 1) applyLabel = '⚠ retenir · ' + (dist ?? '—') + ' m';
+      else if (isWorst)                         applyLabel = '✓ ETA · ' + (dist ?? '—') + ' m';
+      else if (isOther)                         applyLabel = '✓ ETA · ' + (dist ?? '—') + ' m';
+      else                                      applyLabel = '↙ appliquer';
 
       const cls = ['taf-period',
-        isTempo  ? 'is-tempo'   : '',
-        isWorst  ? 'is-current' : '',
-        (isActive && !isWorst) ? 'is-eta-other' : ''
+        isTempo  ? 'is-tempo'    : '',
+        isWorst  ? 'is-current'  : '',
+        isOther  ? 'is-eta-other': '',
+        inactive ? 'is-inactive' : '',
       ].filter(Boolean).join(' ');
 
       return `<div class="${cls}" onclick="applyTafPeriod(${i})">
