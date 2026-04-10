@@ -1150,7 +1150,6 @@
             </div>
             <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
             <div id="arrTafPeriods" class="taf-periods"></div>
-            <div id="arrTafTwSuggest" style="display:none;margin-top:.5rem"></div>
           </div>
 
           <!-- QFU + LDA -->
@@ -1239,12 +1238,8 @@
             </div>
           </div>
 
-          <!-- Assumption vent arrière 5kt — arrivée -->
-          <div id="arrTwAssumeWrap" class="tw-assume-wrap">
-            <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
-              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
-            </button>
-          </div>
+          <!-- Suggestion 5kt arrière — arrivée (METAR ou TAF) -->
+          <div id="arrTafTwSuggest" style="display:none;margin-top:.5rem"></div>
 
           <!-- Toggle freinage -->
           <div class="has-text-centered mt-3">
@@ -1940,22 +1935,40 @@ function updateWindDisplay(side) {
   if (twAssumeWrap) {
     const actualTail = Math.max(0, -(w.headwindForFactor));
 
-    // Côté arrivée : si le TAF est visible et affiche déjà le bouton 5kt, masquer le bouton normal
-    const tafVisible = side === 'arr' && document.getElementById('arrTafWrap')?.classList.contains('visible');
-    const tafSuggestVisible = tafVisible && document.getElementById('arrTafTwSuggest')?.style.display !== 'none';
-
-    if (actualTail < 5 && !tafSuggestVisible) {
-      twAssumeWrap.classList.add('visible');
-    } else {
-      twAssumeWrap.classList.remove('visible');
-      if (!tafSuggestVisible) {
-        // Désactiver silencieusement seulement si vent ≥ 5kt arrière (pas si masqué à cause du TAF)
-        if (actualTail >= 5) {
-          if (side === 'dep') depAssumeTA = false;
-          else arrAssumeTA = false;
-          const btn = document.getElementById(side + 'TwAssumeBtn');
-          if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+    // Côté arrivée : toujours utiliser arrTafTwSuggest (unifié METAR+TAF)
+    if (side === 'arr') {
+      const suggestEl = document.getElementById('arrTafTwSuggest');
+      const tafVisible = document.getElementById('arrTafWrap')?.classList.contains('visible');
+      if (suggestEl) {
+        if (actualTail < 5) {
+          const isActive = arrAssumeTA;
+          const label = tafVisible
+            ? '⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent TAF)'
+            : '⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent METAR)';
+          suggestEl.style.display = 'block';
+          suggestEl.innerHTML = `<button class="taf-tw-suggest${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
+            <span>${isActive ? '☑' : '☐'}</span> ${label}
+          </button>`;
+        } else {
+          suggestEl.style.display = 'none';
+          if (arrAssumeTA) {
+            arrAssumeTA = false;
+            const btn = document.getElementById('arrTwAssumeBtn');
+            if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+          }
         }
+      }
+      // Toujours masquer arrTwAssumeWrap côté ARR
+      twAssumeWrap.classList.remove('visible');
+    } else {
+      // Côté départ : comportement normal
+      if (actualTail < 5) {
+        twAssumeWrap.classList.add('visible');
+      } else {
+        twAssumeWrap.classList.remove('visible');
+        depAssumeTA = false;
+        const btn = document.getElementById('depTwAssumeBtn');
+        if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
       }
     }
   }
@@ -3134,32 +3147,8 @@ function renderTafPicker(tafData) {
       </div>`;
     }).join('');
     periodsEl._forecast = forecast;
-
-    // Suggestion 5kt arrière si le vent de la période ETA est favorable (< 5kt arrière)
-    const suggestEl = document.getElementById('arrTafTwSuggest');
-    if (suggestEl && curPeriod?.wind) {
-      const qfu = normQFU(document.getElementById('arrQfu').value);
-      if (qfu) {
-        const tafDir = curPeriod.wind.dirValue ?? 0;
-        const tafKt  = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
-        const comps  = compsFrom(qfu, tafDir, tafKt);
-        const tail5  = compsFrom(qfu, (qfu + 180) % 360, 5); // 5kt arrière pur
-        const actualTail = comps ? Math.max(0, -(comps.hwSigned || 0)) : 0;
-        const isActive = arrAssumeTA;
-
-        if (comps && actualTail < 5) {
-          suggestEl.style.display = 'block';
-          suggestEl.innerHTML = `<button class="taf-tw-suggest${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
-            <span>${isActive ? '☑' : '☐'}</span>
-            ⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent TAF)
-          </button>`;
-        } else {
-          suggestEl.style.display = 'none';
-        }
-      } else {
-        suggestEl.style.display = 'none';
-      }
-    }
+    // La suggestion 5kt arrière est gérée par updateWindDisplay via arrTafTwSuggest
+    updateWindDisplay('arr');
   }
 
   render(etaSelect.value);
