@@ -1393,7 +1393,7 @@
 
       <div class="readme-section">
         <h3>METAR et pistes automatiques</h3>
-        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station. Charger un nouveau METAR efface automatiquement le TAF précédemment chargé.</p>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi. Avant d'appliquer les données, <strong>tous les champs du terrain sont réinitialisés</strong> (vent, QFU, TODA/LDA, OAT, masse, hypothèse 5 kt) pour éviter tout mélange avec une session précédente. Sont appliqués automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
         <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
         <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
         <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée.</p>
@@ -1401,7 +1401,7 @@
 
       <div class="readme-section">
         <h3>TAF arrivée</h3>
-        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX et l'analyse depuis le texte brut. Les pistes et l'élévation sont chargées simultanément.</p>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Comme pour le METAR, <strong>tous les champs du terrain sont réinitialisés</strong> avant le chargement. Les pistes et l'élévation sont chargées simultanément.</p>
         <p><strong>Couleurs des périodes :</strong></p>
         <ul>
           <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert</span> — période active à l'heure ETA saisie</li>
@@ -2557,20 +2557,64 @@ function setMetarMsg(el, text) {
   el.style.display = 'block';
 }
 
-async function loadMetarFor(side) {
-  const icao   = (document.getElementById(side+'Icao').value||'').toUpperCase();
-  const msgEl  = document.getElementById(side+'MetarMsg');
-  const rwWrap = document.getElementById(side+'RunwayPicker');
-  setMetarMsg(msgEl, 'Chargement…');
-  rwWrap.style.display = 'none';
+function resetSideFields(side) {
+  const isDep = side === 'dep';
 
-  // Si on recharge le METAR côté arrivée, effacer le TAF
-  if (side === 'arr') {
+  // Vent
+  document.getElementById(side+'WindDir').value  = '000';
+  document.getElementById(side+'WindKt').value   = '0';
+  document.getElementById(side+'WindGust').value = '0';
+  document.getElementById(side+'VrbFrom').value  = '';
+  document.getElementById(side+'VrbTo').value    = '';
+
+  // Terrain
+  document.getElementById(side+'Qfu').value = '';
+  document.getElementById(side+'Alt').value = '0';
+  document.getElementById(side+'Oat').value = '15';
+  if (isDep) {
+    document.getElementById('depToda').value = '';
+  } else {
+    document.getElementById('arrLda').value = '';
+  }
+
+  // Masse
+  const massId = isDep ? 'depTow' : 'arrLdw';
+  document.getElementById(massId).value = '900';
+
+  // Hypothèse 5kt — désactiver si active
+  if (isDep && depAssumeTA) toggleTwAssume('dep');
+  if (!isDep && arrAssumeTA) toggleTwAssume('arr');
+
+  // TAF côté arrivée
+  if (!isDep) {
     const tafWrap = document.getElementById('arrTafWrap');
     tafWrap.classList.remove('visible');
     document.getElementById('arrTafPeriods').innerHTML = '';
     document.getElementById('arrTafPeriods')._forecast = null;
+    const suggestEl = document.getElementById('arrTafTwSuggest');
+    if (suggestEl) suggestEl.style.display = 'none';
+    document.getElementById('arrEta').value = '';
+    lastArrMetarRaw  = '—';
+    lastArrMetarTime = null;
+  } else {
+    lastDepMetarRaw  = '—';
+    lastDepMetarTime = null;
   }
+
+  // Réinitialiser l'état calculé
+  resetComputedState(side);
+  updateWindDisplay(side);
+}
+
+async function loadMetarFor(side) {
+  const icao   = (document.getElementById(side+'Icao').value||'').toUpperCase();
+  const msgEl  = document.getElementById(side+'MetarMsg');
+  const rwWrap = document.getElementById(side+'RunwayPicker');
+
+  // Tout effacer avant de charger
+  resetSideFields(side);
+  setMetarMsg(msgEl, 'Chargement…');
+  rwWrap.style.display = 'none';
   try {
     const station = await fetchStation(icao).catch(() => null);
     const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
@@ -3044,6 +3088,8 @@ async function loadTafFor(side) {
   const rwWrap = document.getElementById(side + 'RunwayPicker');
   if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Saisir un ICAO avant de charger le TAF.'); return; }
 
+  // Tout effacer avant de charger
+  resetSideFields(side);
   setMetarMsg(msgEl, 'Chargement TAF…');
   rwWrap.style.display = 'none';
 
