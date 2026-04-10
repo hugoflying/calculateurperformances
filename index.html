@@ -2421,6 +2421,8 @@ const fetchMetar   = icao => fetchJson('https://avwx.rest/api/metar/' + icao);
 const fetchStation = icao => fetchJson('https://avwx.rest/api/station/' + icao);
 const fetchNearestMetar = (lat, lon) =>
   fetchJson('https://avwx.rest/api/metar/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true');
+const fetchNearestTaf = (lat, lon) =>
+  fetchJson('https://avwx.rest/api/taf/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&options=summary');
 
 function parseSectorFromRaw(raw) {
   const m = raw && raw.match(/(\d{3})V(\d{3})/);
@@ -3095,7 +3097,8 @@ async function loadTafFor(side) {
 
   try {
     // TAF + pistes + élévation en parallèle
-    const [taf] = await Promise.all([
+    let usedIcao = icao, isNearest = false, distTxt = '';
+    const [tafResult, , ] = await Promise.allSettled([
       fetchTaf(icao),
       fetchStation(icao).then(station => {
         const elevFt = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
@@ -3106,7 +3109,23 @@ async function loadTafFor(side) {
         .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
     ]);
 
-    setMetarMsg(msgEl, (taf.raw || '—'));
+    let taf;
+    if (tafResult.status === 'fulfilled') {
+      taf = tafResult.value;
+    } else {
+      // Pas de TAF pour cet ICAO → chercher le plus proche via coordonnées
+      const station = await fetchStation(icao).catch(() => null);
+      const lat = station?.latitude, lon = station?.longitude;
+      if (typeof lat !== 'number' || typeof lon !== 'number') throw new Error('TAF indisponible et coordonnées introuvables');
+      taf = await fetchNearestTaf(lat, lon);
+      isNearest = true;
+      usedIcao  = taf?.station || taf?.icao || icao;
+      const d   = taf?.meta?.distance, u = taf?.meta?.units;
+      if (typeof d === 'number' && u) distTxt = ' (~' + d + ' ' + u + ')';
+    }
+
+    const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
+    setMetarMsg(msgEl, prefix + (taf.raw || '—'));
     renderTafPicker(taf);
   } catch(e) {
     setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
