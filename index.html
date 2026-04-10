@@ -1341,116 +1341,111 @@
 
       <div class="readme-section">
         <h3>Vue d'ensemble</h3>
-        <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes et ne sont jamais modifiées — seule l'interpolation entre les points du tableau varie selon les paramètres saisis.</p>
+        <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes — seule l'interpolation varie selon les paramètres saisis.</p>
         <p style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:.65rem .9rem;color:#7f1d1d;font-weight:600">
-          ⚠ Cet outil est une aide à la préparation du vol. La <strong>source officielle reste le manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.<br><br>
+          ⚠ Cet outil est une <strong>aide à la préparation du vol</strong>. La source officielle reste le <strong>manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.<br><br>
           Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
         </p>
       </div>
 
       <div class="readme-section">
         <h3>Profils avion</h3>
-        <p><strong>DR400</strong> (F-GCAL, F-BXEK) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
-        <p><strong>DR300</strong> (F-BTBS, F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
-        <p>L'hélice associée à chaque avion est renseignée automatiquement à titre informatif.</p>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK) — tables à 3 altitudes-densité (0 / 4 000 / 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage en dur ou en herbe.</p>
+        <p><strong>DR300</strong> (F-BTBS, F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est intégrée via un facteur d'échelle linéaire (masse / 1 000, plafonné à 1).</p>
+        <p>Changer d'avion réinitialise automatiquement les calculs précédents.</p>
       </div>
 
       <div class="readme-section">
         <h3>Interpolation des performances</h3>
         <p>Les performances sont calculées par <strong>interpolation linéaire triple</strong> : altitude-densité × température × masse.</p>
         <ol>
-          <li><strong>Température</strong> : interpolation entre les 3 colonnes du manuel (ISA−20, ISA, ISA+20) selon l'OAT saisie.</li>
-          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes (ex. 2 000 ft → interpolation entre 0 et 4 000 ft).</li>
-          <li><strong>Masse</strong> : interpolation linéaire entre 700 kg et 900 kg. Si la masse est hors de cette plage, les valeurs limites du manuel sont utilisées (comportement conservateur). Un avertissement s'affiche dans ce cas.</li>
+          <li><strong>Température</strong> : interpolation entre les colonnes du manuel (ISA−20, ISA, ISA+20).</li>
+          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes.</li>
+          <li><strong>Masse</strong> : interpolation linéaire. Si hors plage, valeurs limites utilisées (conservateur) avec avertissement.</li>
         </ol>
-        <p>La distance de référence utilisée pour le calcul est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), pas le simple roulement. Le roulement est affiché à titre indicatif.</p>
+        <p>La distance de référence est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance). Le roulement est affiché à titre indicatif.</p>
       </div>
 
       <div class="readme-section">
         <h3>Composantes vent</h3>
-        <p>Pour un QFU donné et une direction de vent, les composantes sont calculées trigonométriquement :</p>
+        <p>Calculées trigonométriquement pour un QFU donné :</p>
         <ul>
-          <li><strong>Vent de face</strong> = V × cos(angle) — positif si face, négatif si arrière</li>
+          <li><strong>Vent de face</strong> = V × cos(angle)</li>
           <li><strong>Vent de travers</strong> = |V × sin(angle)|</li>
           <li><strong>Vent arrière</strong> = max(0, −vent de face)</li>
         </ul>
-        <p>où <em>angle</em> est la différence entre la direction du vent et le cap de la piste (QFU), ramenée à [0°, 180°].</p>
-        <p>Une alerte <span style="color:#b45309;font-weight:700">orange</span> s'affiche si le vent de travers atteint 18 kt, et <span style="color:#dc2626;font-weight:700">rouge</span> à partir de 22 kt.</p>
+        <p>Alerte <span style="color:#b45309;font-weight:700">orange</span> si travers ≥ 18 kt, <span style="color:#dc2626;font-weight:700">rouge</span> si ≥ 22 kt. Au-delà de 22 kt, le calcul est bloqué (hors limites avion).</p>
       </div>
 
       <div class="readme-section">
         <h3>Vent variable (secteur VRB)</h3>
-        <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
-        <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
-        <p><strong>VRB sans secteur défini</strong> : si la direction est VRB sans secteur (ex. VRB03KT), le calcul est effectué avec la vitesse indiquée en <strong>vent arrière pur</strong> (direction opposée au QFU) — hypothèse conservatrice. L'utilisateur en est informé dans les résultats.</p>
+        <p>Avec un secteur renseigné (ex. 340V040) : balayage degré par degré dans l'arc court, vitesse moyenne ET rafales, composante la plus défavorable retenue.</p>
+        <p><strong>VRB sans secteur</strong> (ex. VRB03KT) : direction inconnue → calcul en vent arrière pur à la vitesse indiquée, hypothèse conservatrice signalée dans les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>METAR et pistes automatiques</h3>
-        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi. Avant d'appliquer les données, <strong>tous les champs du terrain sont réinitialisés</strong> pour éviter tout mélange avec une session précédente. Sont appliqués automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
-        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche.</p>
-        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable, le TEMPO remplace automatiquement le vent principal.</p>
-        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA/LDA déclarée.</p>
+        <p>Le bouton <strong>"Charger METAR"</strong> réinitialise tous les champs du terrain puis applique automatiquement : vent (direction, vitesse, rafales, secteur VRB), OAT et élévation. Si le METAR de la station est indisponible, la station la plus proche est utilisée.</p>
+        <p><strong>TEMPO</strong> dans le METAR : si le vent temporaire est plus défavorable (plus de vent arrière ou de travers), il remplace automatiquement le vent principal.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via OpenAIP (QFU exact + TODA ou LDA déclarée). Un clic sur une piste remplit automatiquement les champs correspondants.</p>
       </div>
 
       <div class="readme-section">
         <h3>TAF arrivée</h3>
-        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Comme pour le METAR, <strong>tous les champs du terrain sont réinitialisés</strong> avant le chargement. Les pistes et l'élévation sont chargées simultanément.</p>
-        <p><strong>Couleurs des périodes :</strong></p>
+        <p>Le bouton <strong>"TAF"</strong> réinitialise tous les champs puis charge le TAF via AVWX, les pistes et l'élévation simultanément. Si la station n'a pas de TAF, celui de la station la plus proche est utilisé.</p>
+        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la <strong>vraie distance LDG</strong> pour chacune (avec les paramètres actuels du formulaire) et identifie automatiquement la plus restrictive.</p>
+        <p><strong>Code couleur :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert ⚠ retenir</span> — période active à l'ETA et la plus restrictive. La distance LDG calculée (avec le vent de cette période et les paramètres actuels) est indiquée directement.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu ✓ ETA</span> — période également active mais moins restrictive. Distance aussi affichée.</li>
-          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : inclus dans la comparaison.</li>
-          <li style="opacity:.5">Grisé — période non concernée par l'ETA saisie.</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période active à l'ETA donnant la distance LDG la plus longue. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive. Affichée avec sa distance pour information.</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison de restrictivité.</li>
+          <li>Grisé : période non active à l'heure ETA saisie.</li>
         </ul>
-        <p><strong>Comparaison par vraie distance :</strong> quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chaque période en utilisant les paramètres actuels du formulaire (avion, altitude, OAT, masse, type de freinage). La période donnant la distance la plus longue est surlignée en vert — c'est toujours elle qu'il faut retenir.</p>
-        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare les vents METAR et TAF et indique lequel est le plus restrictif. Cette information est rappelée dans le popup des résultats de calcul ("Source météo : METAR / TAF").</p>
-        <p><strong>Option "5 kt arrière" depuis le TAF :</strong> si la période ETA donne un vent favorable (moins de 5 kt arrière), un bouton apparaît pour appliquer l'hypothèse conservatrice de 5 kt de vent arrière. Activer ou désactiver cette option après un calcul réinitialise automatiquement les résultats, car l'impact sur les performances est significatif.</p>
-        <p><strong>Note TEMPO :</strong> un TEMPO hérite du vent de la période FROM s'il ne précise pas de vent propre. Calculer avec le vent du TEMPO si celui-ci est plus défavorable.</p>
+        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), les deux sources sont comparées et la plus restrictive est indiquée, à la fois dans le sélecteur de périodes et dans le popup de résultats.</p>
+        <p><strong>Option 5 kt arrière :</strong> si le vent de la période ETA est favorable (moins de 5 kt arrière), un bouton propose d'appliquer cette hypothèse conservatrice. Le libellé indique si c'est par rapport au METAR ou au TAF. Changer cette option après un calcul réinitialise les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>Facteur vent</h3>
-        <p>Le vent de face réduit la distance requise ; le vent arrière l'augmente. Le facteur est calculé à partir d'une table issue du manuel :</p>
+        <p>Le vent de face réduit la distance, le vent arrière l'augmente :</p>
         <ul>
-          <li><strong>Vent de face</strong> : interpolation linéaire entre les points (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
+          <li><strong>Vent de face</strong> : interpolation linéaire (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
           <li><strong>Vent arrière</strong> : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
         </ul>
-        <p>Le facteur vent est appliqué à la distance de passage des 15 m avant l'application de la marge de sécurité.</p>
+        <p>Appliqué à la distance de passage des 15 m, avant la marge de sécurité.</p>
       </div>
 
       <div class="readme-section">
         <h3>⚠ Appliquer 5 kt de vent arrière</h3>
-        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet d'appliquer une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
-        <p>La même option est accessible directement depuis le sélecteur de période TAF (côté arrivée) si la période ETA donne un vent favorable. <strong>Modifier cette option après un calcul réinitialise les résultats</strong> pour forcer un nouveau calcul avec les bonnes hypothèses.</p>
+        <p>S'affiche quand le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Hypothèse conservatrice fréquemment utilisée en opérations. Disparaît si le vent réel est déjà ≥ 5 kt arrière. Changer cette option après un calcul réinitialise les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>Carénages de roues</h3>
-        <p>Sans carénages, un coefficient de <strong>+3 %</strong> est appliqué à la distance de décollage (passage des 15 m). Ce facteur n'est appliqué qu'au décollage, pas à l'atterrissage.</p>
+        <p>Sans carénages : +3 % sur la distance de décollage. Non applicable à l'atterrissage.</p>
       </div>
 
       <div class="readme-section">
         <h3>Surface de piste</h3>
-        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe. Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
+        <p>Piste dure ou herbe au décollage (tables distinctes, herbe généralement +20 à 40 %). À l'atterrissage : freinage modéré (dur/herbe) ou sans frein sur herbe.</p>
       </div>
 
       <div class="readme-section">
         <h3>Marge de sécurité</h3>
-        <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
+        <p>Appliquée en multiplicateur final (30 % par défaut) :</p>
         <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
-        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible.</p>
-        <p>Modifier la marge <strong>réinitialise automatiquement les calculs départ et arrivée</strong>, car la marge s'applique aux deux. Un nouveau calcul est requis après tout changement.</p>
+        <p>C'est la valeur "Requis, marge incluse" qu'il faut comparer avec la TODA ou LDA disponible. Modifier la marge réinitialise les deux calculs (départ et arrivée).</p>
       </div>
 
       <div class="readme-section">
         <h3>Facteur supplémentaire</h3>
-        <p>Ce multiplicateur (1,00 par défaut) est appliqué avant la marge de sécurité. Il permet d'intégrer tout coefficient non couvert par les autres paramètres : piste contaminée, pilote en formation, procédure d'exploitation particulière, etc.</p>
+        <p>Multiplicateur libre (1,00 par défaut) appliqué avant la marge. Permet d'intégrer tout coefficient non couvert : piste contaminée, pilote en formation, procédure particulière, etc.</p>
       </div>
 
       <div class="readme-section">
-        <h3>Export PDF</h3>
-        <p>Le bouton <strong>"Exporter PDF"</strong> génère une fiche A4 en 2 pages (départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. Conçu pour être utilisé directement depuis mobile.</p>
+        <h3>Résultats et export PDF</h3>
+        <p>Après calcul, le bouton principal indique <strong>"✅ Calculé — voir résultats"</strong>. Un reclic affiche directement les résultats sans recalcul si aucun paramètre n'a changé. Toute modification d'un champ réinitialise l'état et force un nouveau calcul.</p>
+        <p>Le bouton <strong>"📄 Exporter PDF"</strong> (actif uniquement après au moins un calcul) génère une fiche A4 avec paramètres, METAR brut et résultats. Ne génère que les pages calculées (départ seul, arrivée seule, ou les deux). La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si compatible, <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon.</p>
       </div>
 
     </div><!-- /readme-body -->
