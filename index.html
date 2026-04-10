@@ -1397,7 +1397,7 @@
         <p><strong>Code couleur :</strong></p>
         <ul>
           <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période active à l'ETA donnant la distance LDG la plus longue. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive. Affichée avec sa distance pour information.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive.</li>
           <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison de restrictivité.</li>
           <li>Grisé : période non active à l'heure ETA saisie.</li>
         </ul>
@@ -3194,9 +3194,9 @@ function renderTafPicker(tafData) {
       const distStr = dist !== null ? ` · ${dist} m` : '';
 
       let applyLabel;
-      if (isWorst && activePeriods.length > 1) applyLabel = '⚠ retenir · ' + (dist ?? '—') + ' m';
-      else if (isWorst)                         applyLabel = '✓ ETA · ' + (dist ?? '—') + ' m';
-      else if (isOther)                         applyLabel = '✓ ETA · ' + (dist ?? '—') + ' m';
+      if (isWorst && activePeriods.length > 1) applyLabel = '⚠ retenir';
+      else if (isWorst)                         applyLabel = '✓ ETA';
+      else if (isOther)                         applyLabel = '✓ ETA';
       else                                      applyLabel = '↙ appliquer';
 
       const cls = ['taf-period',
