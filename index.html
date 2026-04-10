@@ -1444,6 +1444,7 @@
         <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
         <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
         <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible.</p>
+        <p>Modifier la marge <strong>réinitialise automatiquement les calculs départ et arrivée</strong>, car la marge s'applique aux deux. Un nouveau calcul est requis après tout changement.</p>
       </div>
 
       <div class="readme-section">
@@ -1671,6 +1672,9 @@ $('#arrNoBrake').onclick   = () => { landingMode = 'nobrake_grass'; setToggleGra
 $('#safety').addEventListener('input', () => {
   const v = Math.max(0, parseFloat($('#safety').value) || 0);
   $('#safety').value = String(v);
+  // La marge impacte les deux calculs → tout réinitialiser
+  resetComputedState('dep');
+  resetComputedState('arr');
 });
 
 /* ===================== ICAO sanitize ===================== */
