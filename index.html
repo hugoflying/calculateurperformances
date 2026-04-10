@@ -1393,11 +1393,11 @@
       <div class="readme-section">
         <h3>TAF arrivée</h3>
         <p>Le bouton <strong>"TAF"</strong> réinitialise tous les champs puis charge le TAF via AVWX, les pistes et l'élévation simultanément. Si la station n'a pas de TAF, celui de la station la plus proche est utilisé.</p>
-        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la <strong>vraie distance LDG</strong> pour chacune (avec les paramètres actuels du formulaire) et identifie automatiquement la plus restrictive.</p>
+        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chacune et les classe : <strong>① retenir</strong> (la plus restrictive, fond vert), <strong>② ③ ETA</strong> (les autres, fond bleu). Si le QFU n'est pas encore renseigné, le classement s'appuie sur le type de période : TEMPO > BECMG > FROM.</p>
         <p><strong>Code couleur :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période active à l'ETA donnant la distance LDG la plus longue. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive.</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ① retenir</span> : période active à l'ETA la plus restrictive. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ② ③ ETA</span> : périodes également actives mais moins restrictives, classées par ordre décroissant de restrictivité.</li>
           <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison de restrictivité.</li>
           <li>Grisé : période non active à l'heure ETA saisie.</li>
         </ul>
@@ -3160,13 +3160,43 @@ function renderTafPicker(tafData) {
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => periodContainsEta(p, etaHour));
 
-    // Calculer la vraie distance pour chaque période active et trouver la pire
+    // Calculer la vraie distance pour chaque période active (si QFU dispo)
     let worstIdx = -1;
     let worstDist = -1;
+    const distByIdx = {};
+
     activePeriods.forEach(({ p, i }) => {
       const d = calcDistForPeriod(p);
+      distByIdx[i] = d;
       if (d !== null && d > worstDist) { worstDist = d; worstIdx = i; }
     });
+
+    // Fallback si QFU manquant : priorité par type (TEMPO > BECMG > FROM)
+    if (worstIdx === -1 && activePeriods.length > 1) {
+      const typePrio = p => {
+        const t = (p.type_label || p.type || '').toUpperCase();
+        if (/TEMPO/.test(t)) return 3;
+        if (/BECMG/.test(t)) return 2;
+        return 1;
+      };
+      let best = -1;
+      activePeriods.forEach(({ p, i }) => {
+        const pr = typePrio(p);
+        if (pr > best) { best = pr; worstIdx = i; }
+      });
+    }
+
+    // Classer les périodes actives par distance décroissante (ou par type si pas de distance)
+    const sortedActive = [...activePeriods].sort((a, b) => {
+      const da = distByIdx[a.i] ?? -1;
+      const db = distByIdx[b.i] ?? -1;
+      if (da !== db) return db - da; // plus grande distance en premier
+      // Égalité : TEMPO avant BECMG avant FROM
+      const typePrio = p => { const t = (p.type_label || p.type || '').toUpperCase(); return /TEMPO/.test(t) ? 3 : /BECMG/.test(t) ? 2 : 1; };
+      return typePrio(b.p) - typePrio(a.p);
+    });
+    const rankByIdx = {};
+    sortedActive.forEach(({ i }, rank) => { rankByIdx[i] = rank + 1; });
 
     // curPeriod = FROM/BECMG actif (hors TEMPO) pour comparaison METAR
     const curPeriod = forecast.find(p =>
@@ -3188,8 +3218,9 @@ function renderTafPicker(tafData) {
       const type     = p.type_label || p.type || 'FROM';
       const isTempo  = /TEMPO/i.test(type) || p.type === 'TEMPO';
       const isActive = activePeriods.some(a => a.i === i);
-      const isWorst  = i === worstIdx && activePeriods.length > 0;
-      const isOther  = isActive && !isWorst;
+      const rank     = isActive ? (activePeriods.length > 1 ? (rankByIdx[i] ?? 99) : 1) : 99;
+      const isWorst  = isActive && rank === 1 && activePeriods.length > 0;
+      const isOther  = isActive && rank > 1;
       const inactive = hasEta && !isActive;
       const wind     = fmtTafWind(p);
       const t1       = fmtTafTime(p.start_time);
@@ -3200,11 +3231,17 @@ function renderTafPicker(tafData) {
       const dist = isActive && qfu ? calcDistForPeriod(p) : null;
       const distStr = dist !== null ? ` · ${dist} m` : '';
 
+      const numeral = ['①','②','③','④','⑤'];
       let applyLabel;
-      if (isWorst && activePeriods.length > 1) applyLabel = '⚠ retenir';
-      else if (isWorst)                         applyLabel = '✓ ETA';
-      else if (isOther)                         applyLabel = '✓ ETA';
-      else                                      applyLabel = '↙ appliquer';
+      if (!isActive) {
+        applyLabel = '↙ appliquer';
+      } else if (activePeriods.length === 1) {
+        applyLabel = '✓ ETA';
+      } else {
+        const rank = rankByIdx[i] ?? activePeriods.length;
+        const num  = numeral[rank - 1] || String(rank);
+        applyLabel = rank === 1 ? `${num} retenir` : `${num} ETA`;
+      }
 
       const cls = ['taf-period',
         isTempo  ? 'is-tempo'    : '',
