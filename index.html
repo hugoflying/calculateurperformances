@@ -2059,7 +2059,6 @@ function validateBeforeCompute(side) {
   const dir = (document.getElementById(side+'WindDir').value||'').trim();
   const kt  = parseInt(document.getElementById(side+'WindKt').value||'0',10);
   if (!dir) errors.push('Direction vent manquante.');
-  // Vitesse requise seulement si pas VRB avec secteur défini
   const fromEl = document.getElementById(side+'VrbFrom').value.trim();
   const toEl   = document.getElementById(side+'VrbTo').value.trim();
   if (!kt && !fromEl && !toEl) errors.push('Vitesse vent manquante (ou saisir un secteur VRB).');
@@ -2067,6 +2066,12 @@ function validateBeforeCompute(side) {
   const massId = side === 'dep' ? 'depTow' : 'arrLdw';
   const masse  = parseFloat(document.getElementById(massId).value||'0');
   if (!masse || masse <= 0) errors.push('Masse manquante.');
+
+  // Bloquer si le vent de travers est rouge (≥ 22 kt = hors limites avion)
+  const xwCard = document.getElementById(side+'XwCard');
+  if (xwCard && xwCard.classList.contains('warn-red')) {
+    errors.push('Vent de travers hors limites (≥ 22 kt) — calcul non autorisé.');
+  }
 
   if (errors.length) {
     showValidMsg(side, '⚠ ' + errors.join(' '));
