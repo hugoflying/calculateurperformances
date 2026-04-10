@@ -843,7 +843,7 @@
           </div>
         </div>
         <div class="column is-half-mobile is-one-quarter-desktop is-flex is-align-items-flex-end">
-          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700">📄 Exporter PDF</button>
+          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700;opacity:.45" disabled>📄 Exporter PDF</button>
         </div>
       </div>
     </div>
@@ -1353,7 +1353,7 @@
         <h3>Profils avion</h3>
         <p><strong>DR400</strong> (F-GCAL, F-BXEK) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
         <p><strong>DR300</strong> (F-BTBS, F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
-        <p>Les données de performances sont chargées depuis des fichiers JSON individuels (<code>/aircraft/F-GCAL.json</code>, etc.). Pour <strong>ajouter un avion</strong>, il suffit de créer un fichier JSON dans ce dossier et d'ajouter son immatriculation dans la liste <code>AIRCRAFT_LIST</code> du HTML — sans toucher au code de calcul.</p>
+        <p>L'hélice associée à chaque avion est renseignée automatiquement à titre informatif.</p>
       </div>
 
       <div class="readme-section">
@@ -1383,15 +1383,15 @@
         <h3>Vent variable (secteur VRB)</h3>
         <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
         <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
-        <p>L'affichage dans la cellule "Vent de travers" indique le travers moyen et, si un secteur est actif, le travers maximal sur l'ensemble du secteur avec la direction qui le produit.</p>
+        <p><strong>VRB sans secteur défini</strong> : si la direction est VRB sans secteur (ex. VRB03KT), le calcul est effectué avec la vitesse indiquée en <strong>vent arrière pur</strong> (direction opposée au QFU) — hypothèse conservatrice. L'utilisateur en est informé dans les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>METAR et pistes automatiques</h3>
-        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi. Avant d'appliquer les données, <strong>tous les champs du terrain sont réinitialisés</strong> (vent, QFU, TODA/LDA, OAT, masse, hypothèse 5 kt) pour éviter tout mélange avec une session précédente. Sont appliqués automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
-        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
-        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
-        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée.</p>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi. Avant d'appliquer les données, <strong>tous les champs du terrain sont réinitialisés</strong> pour éviter tout mélange avec une session précédente. Sont appliqués automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
+        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche.</p>
+        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable, le TEMPO remplace automatiquement le vent principal.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA/LDA déclarée.</p>
       </div>
 
       <div class="readme-section">
@@ -1403,7 +1403,7 @@
           <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires. À prendre en compte si le vent est plus défavorable que le FROM en cours</li>
           <li>Fond blanc — période FROM ou BECMG standard</li>
         </ul>
-        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare automatiquement les vents METAR et TAF et indique lequel est le plus restrictif à utiliser pour le calcul.</p>
+        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare les vents METAR et TAF et indique lequel est le plus restrictif. Cette information est rappelée dans le popup des résultats de calcul ("Source météo : METAR / TAF").</p>
         <p><strong>Option "5 kt arrière" depuis le TAF :</strong> si la période ETA donne un vent favorable (moins de 5 kt arrière), un bouton apparaît pour appliquer l'hypothèse conservatrice de 5 kt de vent arrière. Activer ou désactiver cette option après un calcul réinitialise automatiquement les résultats, car l'impact sur les performances est significatif.</p>
         <p><strong>Note TEMPO :</strong> un TEMPO hérite du vent de la période FROM s'il ne précise pas de vent propre. Calculer avec le vent du TEMPO si celui-ci est plus défavorable.</p>
       </div>
@@ -1508,7 +1508,6 @@
   <!-- Results -->
   <div id="rmContent" class="rm-content" style="display:none">
     <div class="rm-header is-neutral" id="rmHeader">
-      <button class="rm-close-btn" onclick="closeResultsModal()">✕</button>
       <div class="rm-header-info">
         <div class="rm-header-type" id="rmType"></div>
         <div class="rm-header-verdict" id="rmVerdict"></div>
@@ -1524,7 +1523,7 @@
       <div class="rm-rows" id="rmRows"></div>
     </div>
     <div class="rm-footer">
-      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
+      <button class="rm-back-btn" id="rmFooterBtn" onclick="closeResultsModal()">← Modifier les paramètres</button>
     </div>
   </div>
 
@@ -1602,6 +1601,7 @@ let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
 let lastDepMetarTime = null; // Date d'émission du METAR départ (objet Date)
 let lastArrMetarTime = null; // Date d'émission du METAR arrivée
+let lastMetarVsTafResult = null; // 'metar' | 'taf' | null
 let depComputed = false;
 let arrComputed = false;
 
@@ -2144,6 +2144,36 @@ function validateBeforeCompute(side) {
   return true;
 }
 
+/* ===================== RÉSOLUTION DU VENT POUR CALCUL ===================== */
+// Retourne { w, taActive, note } avec le vent résolu et une note éventuelle
+function resolveWindForCalc(side, qfu, assumeTA) {
+  const meanDir = document.getElementById(side+'WindDir').value;
+  const kt      = +(document.getElementById(side+'WindKt').value  || 0);
+  const gust    = +(document.getElementById(side+'WindGust').value|| 0);
+  const sf      = parseInt(document.getElementById(side+'VrbFrom').value||'0',10);
+  const st      = parseInt(document.getElementById(side+'VrbTo').value||'0',10);
+  const isVRB   = meanDir.trim().toUpperCase() === 'VRB';
+  const hasSector = sf > 0 || st > 0;
+
+  let w, note = '';
+
+  if (isVRB && !hasSector) {
+    // VRB sans secteur → vent arrière pur de la vitesse indiquée
+    const speed = Math.max(kt, gust);
+    const tailDir = ((qfu + 180 - 1) % 360) + 1; // direction opposée au QFU
+    w = worstBetweenMeanAndSector(qfu, String(tailDir).padStart(3,'0'), speed, speed, 0, 0);
+    note = '⚠ VRB sans secteur : calcul avec ' + speed + ' kt vent arrière (hypothèse conservatrice)';
+  } else {
+    w = worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+  }
+
+  const headwindForCalc = (assumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
+  const taActive = assumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
+  if (taActive) note = (note ? note + '\n' : '') + '⚠ 5 kt de vent arrière appliqués (hypothèse conservatrice)';
+
+  return { w, headwindForCalc, taActive, note };
+}
+
 /* ===================== CALCUL DÉCOLLAGE ===================== */
 function computeDepPerf() {
   if (!validateBeforeCompute('dep')) return;
@@ -2161,10 +2191,7 @@ function computeDepPerf() {
   const gust    = +(document.getElementById('depWindGust').value|| 0);
   const sf      = parseInt(document.getElementById('depVrbFrom').value||'0',10);
   const st      = parseInt(document.getElementById('depVrbTo').value||'0',10);
-  const w       = worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
-  // Assumption 5kt arrière : si activée ET vent réel moins défavorable, forcer -5kt
-  const headwindForCalc = (depAssumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
-  const taActive = depAssumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
+  const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('dep', qfu, depAssumeTA);
 
   let baseTO_pass, baseTO_roll;
   if (profile === 'DR300') {
@@ -2193,9 +2220,8 @@ function computeDepPerf() {
   setChip(document.getElementById('toChip'), st2);
   const kpi = document.getElementById('toKpi');
   kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
-  document.getElementById('toExplain').textContent = taActive
-    ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
-    : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  document.getElementById('toExplain').textContent = windNote ||
+    'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   depComputed = true;
   updatePdfBtn();
 }
@@ -2217,9 +2243,7 @@ function computeArrPerf() {
   const gust    = +(document.getElementById('arrWindGust').value|| 0);
   const sf      = parseInt(document.getElementById('arrVrbFrom').value||'0',10);
   const st      = parseInt(document.getElementById('arrVrbTo').value||'0',10);
-  const w       = worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
-  const headwindForCalc = (arrAssumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
-  const taActive = arrAssumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
+  const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('arr', qfu, arrAssumeTA);
 
   const baseLDG_pass = profile === 'DR300'
     ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
@@ -2243,9 +2267,8 @@ function computeArrPerf() {
   setChip(document.getElementById('ldgChip'), st2);
   const kpi = document.getElementById('ldgKpi');
   kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
-  document.getElementById('ldgExplain').textContent = taActive
-    ? 'Hypothèse conservatrice : 5 kt arrière assumés (vent réel plus favorable).'
-    : 'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
+  document.getElementById('ldgExplain').textContent = windNote ||
+    'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   arrComputed = true;
   updatePdfBtn();
 }
@@ -2358,6 +2381,9 @@ function openResultsModal(side, computeFn) {
   const sub  = document.getElementById('rmSub');
 
   loading.style.display = 'flex';
+  loading.style.background = side === 'arr'
+    ? 'linear-gradient(135deg,#047857,var(--arr))'
+    : 'var(--navy)';
   content.style.display = 'none';
   fill.style.width = '0%';
   pct.textContent  = '0 %';
@@ -2450,6 +2476,10 @@ function showResultsContent(side) {
     { l: 'Facteur vent',              v: document.getElementById('ldgWindF').textContent },
     { l: 'Facteur supplémentaire',    v: document.getElementById('ldgExtra').textContent },
     { l: 'Résultat sans marge',       v: document.getElementById('ldgRes').textContent },
+    ...(lastMetarVsTafResult ? [{
+      l: 'Source météo (ETA < 2h)',
+      v: lastMetarVsTafResult === 'metar' ? '⚠ METAR (plus restrictif)' : '📋 TAF (plus restrictif)'
+    }] : []),
   ];
 
   document.getElementById('rmRows').innerHTML = rows.map(r => `
@@ -2457,6 +2487,20 @@ function showResultsContent(side) {
       <span class="rm-row-label">${r.l}</span>
       <span class="rm-row-value">${r.v}</span>
     </div>`).join('');
+
+  // Bouton footer : Valider si OK, Modifier si NON
+  const footerBtn = document.getElementById('rmFooterBtn');
+  if (isOk) {
+    footerBtn.textContent = '✓ Valider';
+    footerBtn.style.background = 'linear-gradient(135deg,#047857,var(--arr))';
+    footerBtn.style.color = '#fff';
+    footerBtn.style.border = 'none';
+  } else {
+    footerBtn.textContent = '← Modifier les paramètres';
+    footerBtn.style.background = '';
+    footerBtn.style.color = '';
+    footerBtn.style.border = '';
+  }
 
   // Transition
   loading.style.display = 'none';
@@ -3054,6 +3098,7 @@ function renderTafPicker(tafData) {
   function render(etaHour) {
     const curPeriod = forecast.find(p => periodContainsEta(p, etaHour) && !/TEMPO/i.test(p.type_label || p.type));
     const metarVsTaf = checkMetarVsTaf(etaHour, curPeriod);
+    lastMetarVsTafResult = metarVsTaf; // stocker pour le popup de calcul
 
     // Mettre à jour le message METAR/TAF
     if (metarVsTaf && lastArrMetarRaw && lastArrMetarRaw !== '—') {
