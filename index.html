@@ -431,6 +431,17 @@
       color: #3f3f46; white-space: pre-wrap; word-break: break-all;
       margin-bottom: .5rem; line-height: 1.5;
     }
+    .taf-tw-suggest {
+      display: flex; align-items: center; gap: .6rem;
+      background: var(--warn-bg); border: 1.5px dashed var(--warn-border);
+      border-radius: 10px; padding: .5rem .8rem;
+      font-size: .78rem; font-weight: 700; color: #92400e;
+      cursor: pointer; transition: background .15s; width: 100%;
+      font-family: 'DM Sans', sans-serif; text-align: left;
+    }
+    .taf-tw-suggest:hover { background: #fef3c7; }
+    .taf-tw-suggest.active { background: #fef3c7; border-style: solid; border-color: #b45309; }
+
     .taf-periods { display: flex; flex-direction: column; gap: .3rem; }
     .taf-period {
       display: flex; align-items: center; justify-content: space-between;
@@ -1144,6 +1155,7 @@
             </div>
             <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
             <div id="arrTafPeriods" class="taf-periods"></div>
+            <div id="arrTafTwSuggest" style="display:none;margin-top:.5rem"></div>
           </div>
 
           <!-- QFU + LDA -->
@@ -1381,24 +1393,24 @@
 
       <div class="readme-section">
         <h3>METAR et pistes automatiques</h3>
-        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station. Charger un nouveau METAR efface automatiquement le TAF précédemment chargé.</p>
         <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
         <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
-        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée. Le QFU est calculé à partir du cap vrai OpenAIP corrigé de la déclinaison magnétique locale.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée.</p>
       </div>
 
       <div class="readme-section">
         <h3>TAF arrivée</h3>
-        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX et l'analyse directement depuis le texte brut. Chaque période s'affiche en une ligne avec son type, ses horaires et son vent.</p>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX et l'analyse depuis le texte brut. Les pistes et l'élévation sont chargées simultanément.</p>
         <p><strong>Couleurs des périodes :</strong></p>
         <ul>
           <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert</span> — période active à l'heure ETA saisie</li>
-          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires pouvant survenir sur la période. À prendre en compte si le vent est plus défavorable que la période FROM en cours</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> — TEMPO ou PROB TEMPO : conditions temporaires. À prendre en compte si le vent est plus défavorable que le FROM en cours</li>
           <li>Fond blanc — période FROM ou BECMG standard</li>
         </ul>
-        <p>En saisissant une <strong>heure ETA en UTC</strong>, la période couvrant cette heure est automatiquement surlignée en vert. Un clic sur une période applique son vent aux champs arrivée.</p>
-        <p>Les pistes et l'élévation sont chargées automatiquement au clic TAF.</p>
-        <p><strong>Note sur TEMPO :</strong> un TEMPO hérite du vent de la période FROM si le groupe TEMPO ne précise pas de vent propre. Il est conseillé de calculer les performances avec le vent du TEMPO si celui-ci est plus défavorable (plus de vent arrière ou de vent de travers).</p>
+        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), l'outil compare automatiquement les vents METAR et TAF et indique lequel est le plus restrictif à utiliser pour le calcul.</p>
+        <p><strong>Option "5 kt arrière" depuis le TAF :</strong> si la période ETA donne un vent favorable (moins de 5 kt arrière), un bouton apparaît pour appliquer l'hypothèse conservatrice de 5 kt de vent arrière. Activer ou désactiver cette option après un calcul réinitialise automatiquement les résultats, car l'impact sur les performances est significatif.</p>
+        <p><strong>Note TEMPO :</strong> un TEMPO hérite du vent de la période FROM s'il ne précise pas de vent propre. Calculer avec le vent du TEMPO si celui-ci est plus défavorable.</p>
       </div>
 
       <div class="readme-section">
@@ -1412,8 +1424,9 @@
       </div>
 
       <div class="readme-section">
-        <h3>Hypothèse 5 kt arrière</h3>
-        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
+        <h3>⚠ Appliquer 5 kt de vent arrière</h3>
+        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet d'appliquer une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
+        <p>La même option est accessible directement depuis le sélecteur de période TAF (côté arrivée) si la période ETA donne un vent favorable. <strong>Modifier cette option après un calcul réinitialise les résultats</strong> pour forcer un nouveau calcul avec les bonnes hypothèses.</p>
       </div>
 
       <div class="readme-section">
@@ -1560,11 +1573,11 @@ let arrComputed = false;
 function updatePdfBtn() {
   const btn = document.getElementById('btnPrint');
   if (depComputed || arrComputed) {
-    btn.textContent = 'u2705 Exporter PDF';
+    btn.textContent = '✅ Exporter PDF';
     btn.style.background = '#065f46';
     btn.style.opacity = '1';
   } else {
-    btn.textContent = 'ud83dudcc4 Exporter PDF';
+    btn.textContent = '📄 Exporter PDF';
     btn.style.background = '';
     btn.style.opacity = '.45';
   }
@@ -1625,6 +1638,8 @@ function toggleTwAssume(side) {
     btn.classList.remove('active');
     check.textContent = '☐';
   }
+  // Si un calcul a déjà été fait, le réinitialiser car c'est un changement significatif
+  resetComputedState(side);
 }
 
 function showValidMsg(side, msg) {
@@ -2944,11 +2959,45 @@ function renderTafPicker(tafData) {
       </div>`;
     }).join('');
     periodsEl._forecast = forecast;
+
+    // Suggestion 5kt arrière si le vent de la période ETA est favorable (< 5kt arrière)
+    const suggestEl = document.getElementById('arrTafTwSuggest');
+    if (suggestEl && curPeriod?.wind) {
+      const qfu = normQFU(document.getElementById('arrQfu').value);
+      if (qfu) {
+        const tafDir = curPeriod.wind.dirValue ?? 0;
+        const tafKt  = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
+        const comps  = compsFrom(qfu, tafDir, tafKt);
+        const tail5  = compsFrom(qfu, (qfu + 180) % 360, 5); // 5kt arrière pur
+        const actualTail = comps ? Math.max(0, -(comps.hwSigned || 0)) : 0;
+        const isActive = arrAssumeTA;
+
+        if (comps && actualTail < 5) {
+          suggestEl.style.display = 'block';
+          suggestEl.innerHTML = `<button class="taf-tw-suggest${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
+            <span>${isActive ? '☑' : '☐'}</span>
+            ⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent TAF)
+          </button>`;
+        } else {
+          suggestEl.style.display = 'none';
+        }
+      } else {
+        suggestEl.style.display = 'none';
+      }
+    }
   }
 
   render(etaSelect.value);
   wrap.classList.add('visible');
   etaSelect.onchange = () => render(etaSelect.value);
+}
+
+function tafToggleTw5() {
+  // Toggle l'hypothèse 5kt arrière côté arrivée depuis le TAF picker
+  toggleTwAssume('arr');
+  // Re-render le suggéreur pour mettre à jour l'état visuel
+  const etaSelect = document.getElementById('arrEta');
+  etaSelect.dispatchEvent(new Event('change'));
 }
 
 function applyTafPeriod(idx) {
