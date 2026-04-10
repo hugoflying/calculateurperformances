@@ -2507,10 +2507,8 @@ async function fetchRunways(icao) {
       // Le designator × 10 donne exactement le QFU affiché sur leur site
       const designator = String(rwy.designator || '??');
       const desigNum   = parseInt(designator, 10);
-      // QFU = désignateur × 10 si valide, sinon trueHeading tel quel
-      const qfu = (!isNaN(desigNum) && desigNum >= 1 && desigNum <= 36)
-        ? desigNum * 10
-        : Math.round(rwy.trueHeading || 0);
+      // QFU = trueHeading exact d'OpenAIP (déjà en magnétique dans leur base)
+      const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
       return {
         designator,
         qfu,
