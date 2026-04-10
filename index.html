@@ -1939,15 +1939,24 @@ function updateWindDisplay(side) {
   const twAssumeWrap = document.getElementById(side + 'TwAssumeWrap');
   if (twAssumeWrap) {
     const actualTail = Math.max(0, -(w.headwindForFactor));
-    if (actualTail < 5) {
+
+    // Côté arrivée : si le TAF est visible et affiche déjà le bouton 5kt, masquer le bouton normal
+    const tafVisible = side === 'arr' && document.getElementById('arrTafWrap')?.classList.contains('visible');
+    const tafSuggestVisible = tafVisible && document.getElementById('arrTafTwSuggest')?.style.display !== 'none';
+
+    if (actualTail < 5 && !tafSuggestVisible) {
       twAssumeWrap.classList.add('visible');
     } else {
-      // Vent réel déjà ≥ 5kt arrière → masquer et désactiver silencieusement
       twAssumeWrap.classList.remove('visible');
-      if (side === 'dep') depAssumeTA = false;
-      else arrAssumeTA = false;
-      const btn = document.getElementById(side + 'TwAssumeBtn');
-      if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+      if (!tafSuggestVisible) {
+        // Désactiver silencieusement seulement si vent ≥ 5kt arrière (pas si masqué à cause du TAF)
+        if (actualTail >= 5) {
+          if (side === 'dep') depAssumeTA = false;
+          else arrAssumeTA = false;
+          const btn = document.getElementById(side + 'TwAssumeBtn');
+          if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+        }
+      }
     }
   }
 }
