@@ -2321,13 +2321,20 @@ function getInputSnapshot(side) {
 
 function resetComputedState(side) {
   if (side === 'dep') {
-    depComputed        = false;
-    lastSnapshot.dep   = null;
+    depComputed      = false;
+    lastSnapshot.dep = null;
   } else {
-    arrComputed        = false;
-    lastSnapshot.arr   = null;
+    arrComputed      = false;
+    lastSnapshot.arr = null;
   }
-  updateCalcButton(side);
+  // Forcer directement le bouton en état neutre (sans vérification snapshot)
+  const btn = document.getElementById(side === 'dep' ? 'btnCalcDep' : 'btnCalcArr');
+  if (btn) {
+    btn.innerHTML = side === 'dep'
+      ? 'Calculer les performances décollage'
+      : 'Calculer les performances atterrissage';
+    btn.style.background = '';
+  }
   updatePdfBtn();
 }
 
