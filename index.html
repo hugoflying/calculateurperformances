@@ -820,12 +820,7 @@
             <div class="control">
               <div class="select is-fullwidth">
                 <select id="aircraftSel">
-                  <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
-                  <option value="F-BXEK (120cv)">F-BXEK (120cv)</option>
-                  <option value="F-BTKG (120cv)">F-BTKG (120cv)</option>
-                  <option value="F-BTXS (120cv)">F-BTXS (120cv)</option>
-                  <option value="F-BTBS (120cv)">F-BTBS (120cv)</option>
-                  <option value="F-BTBJ (108cv)">F-BTBJ (108cv)</option>
+                  <option value="">Chargement…</option>
                 </select>
               </div>
             </div>
@@ -1356,9 +1351,9 @@
 
       <div class="readme-section">
         <h3>Profils avion</h3>
-        <p><strong>DR400</strong> (F-GCAL, F-BXEK, F-BTBS, F-BTBJ) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK, F-BTBS) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
         <p><strong>DR300</strong> (F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
-        <p>L'hélice associée à chaque avion (Sensenich ou Mac Cauley) est renseignée automatiquement à titre informatif.</p>
+        <p>Les données de performances sont chargées depuis des fichiers JSON individuels (<code>/aircraft/F-GCAL.json</code>, etc.). Pour <strong>ajouter un avion</strong>, il suffit de créer un fichier JSON dans ce dossier et d'ajouter son immatriculation dans la liste <code>AIRCRAFT_LIST</code> du HTML — sans toucher au code de calcul.</p>
       </div>
 
       <div class="readme-section">
@@ -1540,24 +1535,63 @@
 'use strict';
 
 /* ===================== DONNÉES (tables manuels de vol — ne pas modifier) ===================== */
-const TO_DR400 = {
-  0:    { temps:{minus20:-5, isa:15, plus20:35}, hard:{kg700:{roll:[130,145,165],pass:[285,315,345]}, kg900:{roll:[225,235,285],pass:[480,535,590]}}, grass:{kg700:{roll:[165,185,215],pass:[320,355,395]}, kg900:{roll:[315,360,410],pass:[570,640,715]}} },
-  4000: { temps:{minus20:-13,isa:7,  plus20:27}, hard:{kg700:{roll:[175,195,220],pass:[375,415,460]}, kg900:{roll:[305,345,390],pass:[645,720,800]}}, grass:{kg700:{roll:[230,265,300],pass:[430,485,540]}, kg900:{roll:[460,530,615],pass:[800,905,1025]}} },
-  8000: { temps:{minus20:-21,isa:-1, plus20:19}, hard:{kg700:{roll:[235,265,300],pass:[500,560,620]}, kg900:{roll:[425,475,535],pass:[890,1000,1125]}}, grass:{kg700:{roll:[330,380,440],pass:[595,675,760]}, kg900:{roll:[700,820,960],pass:[1165,1350,1550]}} }
-};
+/* ===================== DONNÉES AVIONS (chargées depuis /aircraft/*.json) ===================== */
 
-const LDG_DR400 = {
-  0:    { temps:{minus20:-5, isa:15, plus20:35}, moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]}, kg900:{roll:[185,200,210],pass:[435,460,485]}}, nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]}, kg900:{roll:[280,300,325],pass:[530,560,590]}} },
-  4000: { temps:{minus20:-13,isa:7,  plus20:27}, moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]}, kg900:{roll:[205,225,240],pass:[475,505,535]}}, nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]}, kg900:{roll:[310,335,360],pass:[580,615,655]}} },
-  8000: { temps:{minus20:-21,isa:-1, plus20:19}, moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]}, kg900:{roll:[235,250,270],pass:[525,555,590]}}, nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]}, kg900:{roll:[350,375,405],pass:[640,680,725]}} }
-};
+// Liste des immatriculations à charger (ordre d'affichage)
+const AIRCRAFT_LIST = ['F-GCAL', 'F-BXEK', 'F-BTBS', 'F-BTXS', 'F-BTKG'];
 
-const DR300_TEMPS = [0, 15, 30, 45];
-const TO_DR300 = {
-  hard:  { alts:[0,1500,3000,4500], roll:[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]], pass:[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]] },
-  grass: { alts:[0,1500,3000,4600], roll:[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]], pass:[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]] },
-  massScale: m => Math.min(1, m / 1000)
-};
+// Stockage des données chargées : { 'F-GCAL': { ...json... }, ... }
+const aircraftData = {};
+
+// Tables DR400 et DR300 extraites de l'avion sélectionné
+let TO_DR400  = null;
+let LDG_DR400 = null;
+let TO_DR300  = null;
+const DR300_TEMPS = [0, 15, 30, 45]; // Températures de référence DR300
+
+async function loadAllAircraft() {
+  const sel = document.getElementById('aircraftSel');
+  const results = await Promise.allSettled(
+    AIRCRAFT_LIST.map(immat =>
+      fetch('/aircraft/' + immat + '.json').then(r => r.json()).then(d => ({ immat, d }))
+    )
+  );
+
+  sel.innerHTML = '';
+  results.forEach(res => {
+    if (res.status !== 'fulfilled') return;
+    const { immat, d } = res.value;
+    aircraftData[immat] = d;
+    const label = immat + ' (' + d.puissance + ')';
+    sel.innerHTML += `<option value="${immat}">${label}</option>`;
+  });
+
+  // Charger le premier avion par défaut
+  if (sel.options.length > 0) applyAircraftData(sel.value);
+}
+
+function applyAircraftData(immat) {
+  const d = aircraftData[immat];
+  if (!d) return;
+
+  document.getElementById('propeller').value = d.helice || '';
+  profile = d.profil || 'DR400';
+
+  if (d.profil === 'DR400') {
+    TO_DR400  = d.to;
+    LDG_DR400 = d.ldg;
+    TO_DR300  = null;
+    LDG_DR300 = null;
+  } else {
+    TO_DR300  = d.to;
+    LDG_DR300 = d.ldg;
+    TO_DR400  = null;
+    LDG_DR400 = null;
+  }
+}
+
+// Tables statiques retirées — données venant des fichiers JSON
+let LDG_DR300 = null;
 
 /* ===================== ÉTAT ===================== */
 let landingMode = 'moderate';
@@ -1587,14 +1621,7 @@ function updatePdfBtn() {
 let depAssumeTA = false; // assumption 5kt arrière départ
 let arrAssumeTA = false; // assumption 5kt arrière arrivée
 
-const propByAircraft = {
-  'F-GCAL (120cv)': 'Sensenich',
-  'F-BXEK (120cv)': 'Sensenich',
-  'F-BTKG (120cv)': 'Sensenich',
-  'F-BTXS (120cv)': 'Sensenich',
-  'F-BTBS (120cv)': 'Mac Cauley',
-  'F-BTBJ (108cv)': 'Mac Cauley'
-};
+/* propByAircraft remplacé par aircraftData chargé dynamiquement */
 
 /* ===================== UTILITAIRES ===================== */
 const $ = s => document.querySelector(s);
@@ -1651,11 +1678,12 @@ function showValidMsg(side, msg) {
 
 /* ===================== SÉLECTION AVION ===================== */
 $('#aircraftSel').addEventListener('change', () => {
-  const ac = $('#aircraftSel').value;
-  $('#propeller').value = propByAircraft[ac] || '';
-  profile = (ac.startsWith('F-BTKG') || ac.startsWith('F-BTXS')) ? 'DR300' : 'DR400';
+  const immat = $('#aircraftSel').value;
+  applyAircraftData(immat);
   updateWindDisplay('dep');
   updateWindDisplay('arr');
+  resetComputedState('dep');
+  resetComputedState('arr');
 });
 
 /* ===================== TOGGLES ===================== */
@@ -2024,26 +2052,57 @@ function interpLDG_DR400(altFt, oat, massKg, mode, kind) {
 }
 
 function interpGridDR300(surface, kind, altFt, oat, massKg) {
-  const surf = TO_DR300[surface];
+  const tbl  = TO_DR300;
+  const surf = tbl[surface];
   const alts = surf.alts;
+  const temps = tbl.temps || DR300_TEMPS;
   function interpRow(row) {
     const x = oat;
-    if (x <= DR300_TEMPS[0]) return row[0];
-    if (x >= DR300_TEMPS[3]) return row[3];
-    if (x <= DR300_TEMPS[1]) return lerp(DR300_TEMPS[0],row[0],DR300_TEMPS[1],row[1],x);
-    if (x <= DR300_TEMPS[2]) return lerp(DR300_TEMPS[1],row[1],DR300_TEMPS[2],row[2],x);
-    return lerp(DR300_TEMPS[2],row[2],DR300_TEMPS[3],row[3],x);
+    if (x <= temps[0]) return row[0];
+    if (x >= temps[temps.length-1]) return row[temps.length-1];
+    for (let i = 0; i < temps.length - 1; i++) {
+      if (x <= temps[i+1]) return lerp(temps[i], row[i], temps[i+1], row[i+1], x);
+    }
+    return row[row.length-1];
   }
   let a0 = alts[0], a1 = alts[alts.length-1];
   for (let i = 0; i < alts.length - 1; i++) {
-    if (altFt <= alts[0])                              { a0 = a1 = alts[0]; break; }
-    if (altFt >= alts[alts.length-1])                  { a0 = a1 = alts[alts.length-1]; break; }
-    if (altFt >= alts[i] && altFt <= alts[i+1])       { a0 = alts[i]; a1 = alts[i+1]; break; }
+    if (altFt <= alts[0])                        { a0 = a1 = alts[0]; break; }
+    if (altFt >= alts[alts.length-1])            { a0 = a1 = alts[alts.length-1]; break; }
+    if (altFt >= alts[i] && altFt <= alts[i+1]) { a0 = alts[i]; a1 = alts[i+1]; break; }
   }
   const idx0 = alts.indexOf(a0), idx1 = alts.indexOf(a1);
   const v0 = interpRow(surf[kind][idx0]), v1 = interpRow(surf[kind][idx1]);
   const val = (a0 === a1) ? v0 : lerp(a0, v0, a1, v1, altFt);
-  return val * TO_DR300.massScale(massKg);
+  return val * Math.min(1, massKg / 1000);
+}
+
+function interpGridLDG_DR300(mode, kind, altFt, oat, massKg) {
+  const tbl  = LDG_DR300;
+  // mode = 'moderate' → 'hard', 'nobrake_grass' → 'grass'
+  const surfKey = (mode === 'nobrake_grass') ? 'grass' : 'hard';
+  const surf = tbl[surfKey];
+  const alts = surf.alts;
+  const temps = tbl.temps || DR300_TEMPS;
+  function interpRow(row) {
+    const x = oat;
+    if (x <= temps[0]) return row[0];
+    if (x >= temps[temps.length-1]) return row[temps.length-1];
+    for (let i = 0; i < temps.length - 1; i++) {
+      if (x <= temps[i+1]) return lerp(temps[i], row[i], temps[i+1], row[i+1], x);
+    }
+    return row[row.length-1];
+  }
+  let a0 = alts[0], a1 = alts[alts.length-1];
+  for (let i = 0; i < alts.length - 1; i++) {
+    if (altFt <= alts[0])                        { a0 = a1 = alts[0]; break; }
+    if (altFt >= alts[alts.length-1])            { a0 = a1 = alts[alts.length-1]; break; }
+    if (altFt >= alts[i] && altFt <= alts[i+1]) { a0 = alts[i]; a1 = alts[i+1]; break; }
+  }
+  const idx0 = alts.indexOf(a0), idx1 = alts.indexOf(a1);
+  const v0 = interpRow(surf[kind][idx0]), v1 = interpRow(surf[kind][idx1]);
+  const val = (a0 === a1) ? v0 : lerp(a0, v0, a1, v1, altFt);
+  return val * Math.min(1, massKg / 1000);
 }
 
 /* ===================== VALIDATION AVANT CALCUL ===================== */
@@ -2162,8 +2221,12 @@ function computeArrPerf() {
   const headwindForCalc = (arrAssumeTA && w.headwindForFactor > -5) ? -5 : w.headwindForFactor;
   const taActive = arrAssumeTA && headwindForCalc === -5 && w.headwindForFactor > -5;
 
-  const baseLDG_pass = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
-  const baseLDG_roll = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
+  const baseLDG_pass = profile === 'DR300'
+    ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
+    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+  const baseLDG_roll = profile === 'DR300'
+    ? interpGridLDG_DR300(landingMode, 'roll', arrAlt, arrOat, arrLdw)
+    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
   const arrWindF     = windDistanceFactor(headwindForCalc);
   const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
@@ -3388,9 +3451,8 @@ function switchTab(tab) {
 }
 
 /* ===================== INIT ===================== */
-(function init() {
-  const ac = $('#aircraftSel').value;
-  $('#propeller').value = propByAircraft[ac] || '';
+(async function init() {
+  await loadAllAircraft();
   updateWindDisplay('dep');
   updateWindDisplay('arr');
   updateBranchRows();
