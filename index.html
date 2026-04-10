@@ -1393,11 +1393,11 @@
       <div class="readme-section">
         <h3>TAF arrivée</h3>
         <p>Le bouton <strong>"TAF"</strong> réinitialise tous les champs puis charge le TAF via AVWX, les pistes et l'élévation simultanément. Si la station n'a pas de TAF, celui de la station la plus proche est utilisé.</p>
-        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chacune et les classe : <strong>① retenir</strong> (la plus restrictive, fond vert), <strong>② ③ ETA</strong> (les autres, fond bleu). Si le QFU n'est pas encore renseigné, le classement s'appuie sur le type de période : TEMPO > BECMG > FROM.</p>
+        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chacune et identifie la plus restrictive : <strong>⚠ retenir</strong> (fond vert), les autres en <strong>✓ ETA</strong> (fond bleu). Si le QFU n'est pas encore renseigné, le classement s'appuie sur le type : TEMPO > BECMG > FROM.</p>
         <p><strong>Code couleur :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ① retenir</span> : période active à l'ETA la plus restrictive. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ② ③ ETA</span> : périodes également actives mais moins restrictives, classées par ordre décroissant de restrictivité.</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période active à l'ETA la plus restrictive. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive.</li>
           <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison de restrictivité.</li>
           <li>Grisé : période non active à l'heure ETA saisie.</li>
         </ul>
@@ -3231,7 +3231,6 @@ function renderTafPicker(tafData) {
       const dist = isActive && qfu ? calcDistForPeriod(p) : null;
       const distStr = dist !== null ? ` · ${dist} m` : '';
 
-      const numeral = ['①','②','③','④','⑤'];
       let applyLabel;
       if (!isActive) {
         applyLabel = '↙ appliquer';
@@ -3239,8 +3238,7 @@ function renderTafPicker(tafData) {
         applyLabel = '✓ ETA';
       } else {
         const rank = rankByIdx[i] ?? activePeriods.length;
-        const num  = numeral[rank - 1] || String(rank);
-        applyLabel = rank === 1 ? `${num} retenir` : `${num} ETA`;
+        applyLabel = rank === 1 ? '⚠ retenir' : '✓ ETA';
       }
 
       const cls = ['taf-period',
