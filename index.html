@@ -3409,13 +3409,282 @@ function buildCompsFor(side) {
   return out;
 }
 
-function buildPrintHTML() {
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+  // ── Constantes layout ──
+  const PW = 210, PH = 297;
+  const ML = 11, MR = 11, MT = 11, MB = 10;
+  const UW = PW - ML - MR;
+  const both = depComputed && arrComputed;
+  const CGAP = 5;
+  const CW = both ? (UW - CGAP) / 2 : UW;
+  const LC = ML, RC = ML + CW + CGAP;
+
+  // ── Couleurs ──
+  const C = {
+    navy: [14,48,112], dep: [29,78,216], arr: [4,120,87],
+    okG: [21,128,61], badR: [185,28,28],
+    bgL: [248,250,252], bgM: [244,244,245],
+    bord: [226,232,240], mut: [100,116,139], dark: [15,23,42],
+    white: [255,255,255], okBg: [220,252,231], badBg: [254,226,226],
+    navyL: [188,210,255],
+  };
+
+  // ── Helpers ──
+  const fill  = (x,y,w,h,c)   => { doc.setFillColor(...c); doc.rect(x,y,w,h,'F'); };
+  const stroke = (x,y,w,h,c,lw=0.25) => { doc.setDrawColor(...c); doc.setLineWidth(lw); doc.rect(x,y,w,h,'S'); };
+  const ln    = (x1,y1,x2,y2,c=C.bord,lw=0.25) => { doc.setDrawColor(...c); doc.setLineWidth(lw); doc.line(x1,y1,x2,y2); };
+  const T     = (t,x,y,sz,bold,c,align='left',maxW=null) => {
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFontSize(sz);
+    doc.setTextColor(...c);
+    const opts = { align };
+    if (maxW) opts.maxWidth = maxW;
+    doc.text(String(t), x, y, opts);
+  };
+  const mono  = (t,x,y,sz,c) => {
+    doc.setFont('courier','normal');
+    doc.setFontSize(sz);
+    doc.setTextColor(...c);
+    doc.text(String(t),x,y);
+  };
+  const splitMono = (t,w,sz) => {
+    doc.setFont('courier','normal');
+    doc.setFontSize(sz);
+    return doc.splitTextToSize(t,w);
+  };
+  const splitT = (t,w,sz,bold) => {
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFontSize(sz);
+    return doc.splitTextToSize(t,w);
+  };
+
   const safety   = Math.max(0, +(document.getElementById('safety').value || 30));
   const aircraft = document.getElementById('aircraftSel').value;
   const prop     = document.getElementById('propeller').value;
-  const spats    = withSpats ? 'Avec carénages' : 'Sans carénages (+3 %)';
-  const compsDep = buildCompsFor('dep');
-  const compsArr = buildCompsFor('arr');
+  const spats    = withSpats ? 'Avec carenages' : 'Sans carenages (+3%)';
+
+  const stamp = () => {
+    const d = new Date();
+    const p = n => String(n).padStart(2,'0');
+    return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())} UTC`;
+  };
+
+  // ── HEADER ──────────────────────────────────────────
+  let y = MT;
+  fill(ML, y, UW, 13, C.navy);
+  T('FICHE DE PERFORMANCES', ML+3, y+5, 10, true, C.white);
+  T('Aereoclub de Beauvais-Tille  \u00B7  ACBT  \u00B7  LFOB  \u00B7  Document operationnel', ML+3, y+10, 6, false, C.navyL);
+  T(aircraft, ML+UW-3, y+5, 9.5, true, C.white, 'right');
+  T(`${prop}  \u00B7  ${profile}  \u00B7  Marge ${safety}%`, ML+UW-3, y+9.5, 5.5, false, C.navyL, 'right');
+  T(stamp(), ML+UW-3, y+12.5, 5, false, C.navyL, 'right');
+  y += 13;
+
+  // ── PARAMETRES GENERAUX ──────────────────────────────
+  fill(ML, y, UW, 9, C.bgL);
+  stroke(ML, y, UW, 9, C.bord);
+  const gps = [['Avion', aircraft], ['Helice', prop], ['Profil', profile], ['Marge', safety+'%'], ['Carenages', spats]];
+  const gpW = UW / gps.length;
+  gps.forEach(([k,v], i) => {
+    const gx = ML + i*gpW + 2;
+    T(k.toUpperCase(), gx, y+3.5, 5, false, C.mut);
+    T(v.length > 16 ? v.slice(0,15)+'…' : v, gx, y+7.5, 7, true, C.dark);
+    if (i < gps.length-1) ln(ML+(i+1)*gpW, y+1, ML+(i+1)*gpW, y+8, C.bord);
+  });
+  y += 9 + 3;
+
+  // ── SECTION DRAWING ──────────────────────────────────
+  const getVerdict = side => {
+    const chip = document.getElementById(side==='dep' ? 'toChip' : 'ldgChip');
+    if (chip.classList.contains('is-ok-chip'))  return 'ok';
+    if (chip.classList.contains('is-bad-chip')) return 'bad';
+    return 'neu';
+  };
+
+  const drawSection = (x, cw, side) => {
+    const isDep = side === 'dep';
+    const colC  = isDep ? C.dep : C.arr;
+    const verdict = getVerdict(side);
+    const vC  = verdict==='ok' ? C.okG  : verdict==='bad' ? C.badR  : C.mut;
+    const vBg = verdict==='ok' ? C.okBg : verdict==='bad' ? C.badBg : C.bgM;
+    const vIc = verdict==='ok' ? 'OK'   : verdict==='bad' ? 'NON'   : '--';
+
+    const icao   = (document.getElementById(side+'Icao').value||'').toUpperCase()||'—';
+    const qfu    = document.getElementById(side+'Qfu').value||'—';
+    const alt    = document.getElementById(side+'Alt').value||'—';
+    const oat    = document.getElementById(side+'Oat').value||'—';
+    const lenLbl = isDep ? 'TODA' : 'LDA';
+    const lenVal = document.getElementById(isDep ? 'depToda' : 'arrLda').value||'—';
+    const mass   = document.getElementById(isDep ? 'depTow' : 'arrLdw').value||'—';
+    const dir    = (document.getElementById(side+'WindDir').value||'—').toUpperCase();
+    const spd    = document.getElementById(side+'WindKt').value||'0';
+    const gst    = parseInt(document.getElementById(side+'WindGust').value||'0',10);
+    const surf   = isDep ? (depSurface==='grass' ? 'Herbe' : 'Dur') : (landingMode==='nobrake_grass' ? 'Herbe ss frein' : 'Freinage modere');
+    const metar  = (isDep ? lastDepMetarRaw : lastArrMetarRaw)||'—';
+
+    const req   = document.getElementById(isDep ? 'toKpiVal'   : 'ldgKpiVal').textContent;
+    const avail = document.getElementById(isDep ? 'todaMini'   : 'ldaMini').textContent;
+    const roll  = document.getElementById(isDep ? 'toBaseRoll' : 'ldgBaseRoll').textContent;
+    const pass  = document.getElementById(isDep ? 'toBasePass' : 'ldgBasePass').textContent;
+    const windF = document.getElementById(isDep ? 'toWindF'    : 'ldgWindF').textContent;
+    const extra = document.getElementById(isDep ? 'toExtra'    : 'ldgExtra').textContent;
+    const spat  = isDep ? document.getElementById('toSpat').textContent : '';
+    const comps = buildCompsFor(side);
+
+    let sy = y;
+
+    // Section header
+    fill(x, sy, cw, 10, colC);
+    T(isDep ? 'DECOLLAGE' : 'ATTERRISSAGE', x+3, sy+4.5, 7.5, true, C.white);
+    T(icao, x+3, sy+8.5, 9, true, C.white);
+    T(`QFU ${qfu}  \u00B7  ${lenLbl} ${lenVal}m  \u00B7  ${surf}`, x+cw-3, sy+8.5, 5.5, false, [200,230,255], 'right');
+    sy += 10;
+
+    // KPI bar
+    const kpiH = 19;
+    fill(x, sy, cw, kpiH, C.bgL);
+    stroke(x, sy, cw, kpiH, C.bord);
+
+    // Badge verdict
+    fill(x+3, sy+3.5, 13, 12, vBg);
+    T(vIc, x+9.5, sy+11.5, 8, true, vC, 'center');
+
+    // Big number
+    T('REQUIS - MARGE INCLUSE', x+18, sy+5, 5, false, C.mut);
+    T(req, x+18, sy+13.5, 17, true, vC);
+    T(`${lenLbl} disponible : ${avail}`, x+18, sy+17.5, 5.5, false, C.mut);
+
+    // Separator + details
+    ln(x+cw/2, sy+1, x+cw/2, sy+kpiH-1);
+    const dx = x + cw/2 + 2;
+    const dW = cw/2 - 4;
+    const rows = [
+      ['Roulement (ss marge)', roll],
+      ['Passage 15m (ss marge)', pass],
+      ['Facteur vent', windF],
+      ...(isDep ? [['Carenages', spat.length>20 ? spat.slice(0,19)+'…' : spat]] : []),
+      ['Facteur supplementaire', extra],
+    ];
+    rows.forEach(([k,v], i) => {
+      const ry = sy + 5 + i*3.8;
+      T(k, dx, ry, 5.5, false, C.mut);
+      T(v.length>18 ? v.slice(0,17)+'…':v, dx+dW, ry, 6, true, C.dark, 'right');
+    });
+    sy += kpiH;
+
+    // Terrain + Wind grid
+    const leftRows = [
+      ['Elevation', alt+' ft'],
+      ['OAT', oat+' C'],
+      ['Masse', mass+' kg'],
+    ];
+    if (!isDep) {
+      const etaSel = document.getElementById('arrEta');
+      const etaVal = etaSel?.options[etaSel.selectedIndex]?.text || '—';
+      leftRows.push(['ETA (UTC)', etaVal]);
+      if (lastMetarVsTafResult) leftRows.push(['Source meteo', lastMetarVsTafResult==='metar' ? 'METAR (restrictif)' : 'TAF (restrictif)']);
+      if (lastArrTafPeriodDesc) {
+        const pd = lastArrTafPeriodDesc.length > 24 ? lastArrTafPeriodDesc.slice(0,23)+'…' : lastArrTafPeriodDesc;
+        leftRows.push(['Periode TAF', pd]);
+      }
+    }
+    const windRows = [
+      ['Direction/Vitesse', `${dir}/${spd}${gst>0?' G'+gst:''} kt`],
+      ['Composante face', `${comps.face} kt`],
+      ['Composante arriere', `${comps.tail} kt`],
+      ['Composante travers', `${comps.meanX} kt${comps.worstX!==null?' (max '+comps.worstX+')':''}`],
+    ];
+    const gridH = Math.max(leftRows.length, windRows.length) * 5 + 7;
+    fill(x, sy, cw, gridH, C.white);
+    stroke(x, sy, cw, gridH, C.bord);
+    ln(x+cw/2, sy, x+cw/2, sy+gridH);
+    T('TERRAIN', x+2, sy+4, 5, true, C.mut);
+    leftRows.forEach(([k,v], i) => {
+      const gy = sy + 7 + i*5;
+      T(k, x+2, gy, 5.5, false, C.mut);
+      T(v, x+cw/2-2, gy, 6.5, true, C.dark, 'right');
+    });
+    T('VENT', x+cw/2+2, sy+4, 5, true, C.mut);
+    windRows.forEach(([k,v], i) => {
+      const gy = sy + 7 + i*5;
+      T(k, x+cw/2+2, gy, 5.5, false, C.mut);
+      T(v, x+cw-2, gy, 6.5, true, C.dark, 'right');
+    });
+    sy += gridH;
+
+    // METAR raw
+    if (metar && metar !== '—') {
+      fill(x, sy, cw, 4, C.bgM);
+      stroke(x, sy, cw, 4, C.bord);
+      T('METAR', x+2, sy+2.8, 5, true, C.mut);
+      sy += 4;
+      const lines = splitMono(metar, cw-4, 5.5);
+      const mH = lines.length * 3.3 + 3;
+      fill(x, sy, cw, mH, C.bgM);
+      stroke(x, sy, cw, mH, C.bord);
+      doc.setFont('courier','normal'); doc.setFontSize(5.5); doc.setTextColor(...C.dark);
+      doc.text(lines, x+2, sy+3);
+      sy += mH;
+    }
+
+    // TAF raw (arrivée seulement)
+    if (!isDep && lastArrTafRaw && lastArrTafRaw !== '—') {
+      fill(x, sy, cw, 4, C.bgM);
+      stroke(x, sy, cw, 4, C.bord);
+      T('TAF', x+2, sy+2.8, 5, true, C.mut);
+      sy += 4;
+      const lines = splitMono(lastArrTafRaw, cw-4, 5.5);
+      const tH = lines.length * 3.3 + 3;
+      fill(x, sy, cw, tH, C.bgM);
+      stroke(x, sy, cw, tH, C.bord);
+      doc.setFont('courier','normal'); doc.setFontSize(5.5); doc.setTextColor(...C.dark);
+      doc.text(lines, x+2, sy+3);
+      sy += tH;
+    }
+
+    return sy;
+  };
+
+  // ── DRAW COLUMNS ────────────────────────────────────
+  let bottomY;
+  if (both) {
+    const yDep = drawSection(LC, CW, 'dep');
+    const yArr = drawSection(RC, CW, 'arr');
+    bottomY = Math.max(yDep, yArr);
+  } else if (depComputed) {
+    bottomY = drawSection(LC, UW, 'dep');
+  } else {
+    bottomY = drawSection(LC, UW, 'arr');
+  }
+
+  // ── FOOTER ──────────────────────────────────────────
+  const fy = PH - MB - 6;
+  ln(ML, fy, ML+UW, fy, C.bord, 0.4);
+  T('Aide a la preparation du vol. Source officielle : manuel de vol. Le CDB est seul responsable.', ML, fy+4, 5, false, C.mut);
+  T(stamp(), ML+UW, fy+4, 5.5, true, C.mut, 'right');
+
+  // ── SAVE ────────────────────────────────────────────
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  doc.save(`perf-ACBT_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.pdf`);
+}
+
+document.getElementById('btnPrint').addEventListener('click', async () => {
+  if (!depComputed && !arrComputed) return;
+  const btn = document.getElementById('btnPrint');
+  btn.disabled = true;
+  btn.textContent = '⏳ Génération…';
+  try {
+    await generatePDF();
+  } catch(err) {
+    alert('Erreur PDF : ' + err.message);
+  } finally {
+    btn.disabled = false;
+    updatePdfBtn();
+  }
+});
 
   const css = `
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=DM+Mono&display=swap');
@@ -3503,226 +3772,6 @@ function buildPrintHTML() {
     if (chip.classList.contains('is-bad-chip')) return 'bad';
     return 'neu';
   }
-
-  const makeHeader = () => `
-    <div class="hd">
-      <div class="hd-left">
-        <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
-        <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
-      </div>
-      <div class="hd-right">
-        <div class="hd-ac">${aircraft}</div>
-        <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
-        <div class="hd-stamp">${nowStamp()}</div>
-      </div>
-    </div>`;
-
-  const makeFooter = (n, t) => `
-    <div class="page-footer">
-      <div class="disclaimer">Aide à la préparation du vol — Source officielle : manuel de vol. Le CDB est seul responsable.</div>
-      <div>Page ${n} / ${t} &nbsp;·&nbsp; ${nowStamp()}</div>
-    </div>`;
-
-  const genBlock = `
-    <div class="section">
-      <div class="section-head gen"><div class="sh-label">Paramètres généraux</div></div>
-      <div class="gen-grid">
-        <div class="gp"><span class="gp-k">Avion</span><span class="gp-v">${aircraft}</span></div>
-        <div class="gp"><span class="gp-k">Hélice</span><span class="gp-v">${prop}</span></div>
-        <div class="gp"><span class="gp-k">Profil</span><span class="gp-v">${profile}</span></div>
-        <div class="gp"><span class="gp-k">Marge</span><span class="gp-v">${safety} %</span></div>
-        <div class="gp"><span class="gp-k">Carénages</span><span class="gp-v">${spats}</span></div>
-      </div>
-    </div>`;
-
-  function pageSection(side, comps) {
-    const isDep   = side === 'dep';
-    const color   = isDep ? 'dep' : 'arr';
-    const verdict = getVerdict(side);
-    const icao    = (document.getElementById(side+'Icao').value||'').toUpperCase() || '—';
-    const qfu     = (document.getElementById(side+'Qfu').value||'—');
-    const alt     = document.getElementById(side+'Alt').value || '—';
-    const oat     = document.getElementById(side+'Oat').value || '—';
-    const lenLabel = isDep ? 'TODA' : 'LDA';
-    const lenId    = isDep ? 'depToda' : 'arrLda';
-    const lenVal   = document.getElementById(lenId).value || '—';
-    const massId   = isDep ? 'depTow' : 'arrLdw';
-    const mass     = document.getElementById(massId).value || '—';
-    const dir      = (document.getElementById(side+'WindDir').value||'—').toUpperCase();
-    const spd      = document.getElementById(side+'WindKt').value || '0';
-    const gst      = parseInt(document.getElementById(side+'WindGust').value||'0',10);
-    const gstStr   = gst > 0 ? ' G' + gst : '';
-    const surf     = isDep ? (depSurface === 'grass' ? 'Herbe' : 'Dur') : (landingMode === 'nobrake_grass' ? 'Herbe (sans frein)' : 'Freinage modéré');
-    const metar    = (isDep ? lastDepMetarRaw : lastArrMetarRaw) || '—';
-
-    const req      = document.getElementById(isDep ? 'toKpiVal'   : 'ldgKpiVal').textContent;
-    const avail    = document.getElementById(isDep ? 'todaMini'   : 'ldaMini').textContent;
-    const roll     = document.getElementById(isDep ? 'toBaseRoll' : 'ldgBaseRoll').textContent;
-    const pass     = document.getElementById(isDep ? 'toBasePass' : 'ldgBasePass').textContent;
-    const windF    = document.getElementById(isDep ? 'toWindF'    : 'ldgWindF').textContent;
-    const extra    = document.getElementById(isDep ? 'toExtra'    : 'ldgExtra').textContent;
-    const spatTxt  = isDep ? document.getElementById('toSpat').textContent : '';
-
-    const badgeIcon   = verdict === 'ok' ? '✓' : verdict === 'bad' ? '✗' : '—';
-    const sectionTitle = isDep ? '✈ DÉCOLLAGE' : '🛬 ATTERRISSAGE';
-
-    // ETA + source météo (arrivée uniquement)
-    let etaBlock = '';
-    if (!isDep) {
-      const etaSel = document.getElementById('arrEta');
-      const etaVal = etaSel?.options[etaSel.selectedIndex]?.text || '—';
-      const sourceInfo = lastMetarVsTafResult === 'metar' ? 'METAR (plus restrictif)'
-                       : lastMetarVsTafResult === 'taf'   ? 'TAF (plus restrictif)' : '—';
-      const tafPeriod  = lastArrTafPeriodDesc || '—';
-      etaBlock = `
-        <div class="tg-row"><span class="tg-k">ETA (UTC)</span><span class="tg-v">${etaVal}</span></div>
-        <div class="tg-row"><span class="tg-k">Source météo</span><span class="tg-v">${sourceInfo}</span></div>
-        ${lastArrTafPeriodDesc ? `<div class="tg-row"><span class="tg-k">Période TAF retenue</span><span class="tg-v">${tafPeriod}</span></div>` : ''}`;
-    }
-
-    // METAR brut
-    const metarBlock = metar !== '—' ? `
-      <div class="raw-block">
-        <div class="raw-label">METAR</div>
-        <div class="raw-text">${metar.replace(/</g,'&lt;')}</div>
-      </div>` : '';
-
-    // TAF brut (arrivée uniquement)
-    const tafBlock = !isDep && lastArrTafRaw !== '—' ? `
-      <div class="raw-block">
-        <div class="raw-label">TAF</div>
-        <div class="raw-text">${lastArrTafRaw.replace(/</g,'&lt;')}</div>
-      </div>` : '';
-
-    return `
-    <div class="section">
-      <div class="section-head ${color}">
-        <div>
-          <div class="sh-label">${sectionTitle}</div>
-          <div class="sh-icao">${icao}</div>
-        </div>
-        <div class="sh-right">
-          <div class="sh-piste">QFU ${qfu}° · ${lenLabel} ${lenVal} m · ${surf}</div>
-        </div>
-      </div>
-
-      <div class="kpi-bar">
-        <div class="kpi-main">
-          <div class="kpi-badge ${verdict}">${badgeIcon}</div>
-          <div class="kpi-info">
-            <div class="kpi-req-label">Requis — marge ${safety} % incluse</div>
-            <div class="kpi-req-val ${verdict}">${req}</div>
-            <div class="kpi-avail">${lenLabel} disponible : ${avail}</div>
-          </div>
-        </div>
-        <div class="kpi-sep"></div>
-        <div class="kpi-detail">
-          <div class="kd-row"><span class="kd-label">Roulement (sans marge)</span><span class="kd-val">${roll}</span></div>
-          <div class="kd-row"><span class="kd-label">Passage 15 m (sans marge)</span><span class="kd-val">${pass}</span></div>
-          <div class="kd-row"><span class="kd-label">Facteur vent</span><span class="kd-val">${windF}</span></div>
-          ${isDep ? `<div class="kd-row"><span class="kd-label">Carénages</span><span class="kd-val">${spatTxt}</span></div>` : ''}
-          <div class="kd-row"><span class="kd-label">Facteur supplémentaire</span><span class="kd-val">${extra}</span></div>
-        </div>
-      </div>
-
-      <div class="terrain-grid">
-        <div class="tg-col">
-          <div class="tg-label">Terrain</div>
-          <div class="tg-row"><span class="tg-k">Élévation</span><span class="tg-v">${alt} ft</span></div>
-          <div class="tg-row"><span class="tg-k">OAT</span><span class="tg-v">${oat} °C</span></div>
-          <div class="tg-row"><span class="tg-k">Masse</span><span class="tg-v">${mass} kg</span></div>
-          ${etaBlock}
-        </div>
-        <div class="tg-col">
-          <div class="tg-label">Vent</div>
-          <div class="tg-row"><span class="tg-k">Direction / Vitesse</span><span class="tg-v">${dir} / ${spd}${gstStr} kt</span></div>
-          <div class="tg-row"><span class="tg-k">Composante de face</span><span class="tg-v">${comps.face} kt</span></div>
-          <div class="tg-row"><span class="tg-k">Composante arrière</span><span class="tg-v">${comps.tail} kt</span></div>
-          <div class="tg-row"><span class="tg-k">Composante de travers</span><span class="tg-v">${comps.meanX} kt${comps.worstX !== null ? ' (max ' + comps.worstX + ' kt)' : ''}</span></div>
-        </div>
-      </div>
-
-      ${metarBlock}
-      ${tafBlock}
-    </div>`;
-  }
-
-  const pages = [];
-  const total = (depComputed ? 1 : 0) + (arrComputed ? 1 : 0);
-  let pageNum = 1;
-
-  if (depComputed) {
-    pages.push(`<div class="page">
-      ${makeHeader()}
-      ${genBlock}
-      ${pageSection('dep', compsDep)}
-      ${makeFooter(pageNum, total)}
-    </div>`);
-    pageNum++;
-  }
-
-  if (arrComputed) {
-    pages.push(`<div class="page">
-      ${makeHeader()}
-      ${genBlock}
-      ${pageSection('arr', compsArr)}
-      ${makeFooter(pageNum, total)}
-    </div>`);
-  }
-
-  return `<style>${css}</style>` + pages.join('');
-}
-
-document.getElementById('btnPrint').addEventListener('click', async () => {
-  if (!depComputed && !arrComputed) return;
-  const btn = document.getElementById('btnPrint');
-  btn.disabled = true;
-  btn.textContent = '⏳ Génération…';
-
-  const rawPre  = document.getElementById('rawPre');
-  const printEl = document.getElementById('printRaw');
-
-  rawPre.innerHTML = buildPrintHTML();
-
-  // Rendre le conteneur visible (hors écran) pour que html2canvas puisse le lire
-  printEl.style.cssText = 'display:block;position:fixed;top:0;left:0;width:794px;background:#fff;z-index:-9999;pointer-events:none;';
-
-  try {
-    const { jsPDF } = window.jspdf;
-    const pdf   = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    const pages = printEl.querySelectorAll('.page');
-
-    for (let i = 0; i < pages.length; i++) {
-      const canvas = await html2canvas(pages[i], {
-        scale      : 2,
-        useCORS    : true,
-        backgroundColor: '#ffffff',
-        logging    : false,
-        width      : 794,
-      });
-
-      const imgData  = canvas.toDataURL('image/jpeg', 0.92);
-      const pdfW     = pdf.internal.pageSize.getWidth();   // 210 mm
-      const pdfH     = (canvas.height / canvas.width) * pdfW;
-
-      if (i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
-    }
-
-    // Date pour le nom de fichier
-    const d   = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    const fn  = `perf-ACBT_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.pdf`;
-
-    pdf.save(fn);
-  } catch(err) {
-    alert('Erreur lors de la génération du PDF : ' + err.message);
-  } finally {
-    printEl.style.cssText = 'display:none;';
-    btn.disabled   = false;
-    btn.textContent = '📄 Exporter PDF';
-  }
-});
 
 /* ===================== DISCLAIMER MODAL ===================== */
 (function() {
