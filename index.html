@@ -1595,8 +1595,10 @@ let profile     = 'DR400';
 let depSurface  = 'hard';
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
-let lastDepMetarTime = null; // Date d'émission du METAR départ (objet Date)
-let lastArrMetarTime = null; // Date d'émission du METAR arrivée
+let lastArrTafRaw   = '—';          // TAF brut arrivée
+let lastArrTafPeriodDesc = null;    // Description de la période TAF appliquée
+let lastDepMetarTime = null;
+let lastArrMetarTime = null;
 let lastMetarVsTafResult = null; // 'metar' | 'taf' | null
 let depComputed = false;
 let arrComputed = false;
@@ -2743,6 +2745,8 @@ function resetSideFields(side) {
     document.getElementById('arrEta').value = '';
     lastArrMetarRaw  = '—';
     lastArrMetarTime = null;
+    lastArrTafRaw    = '—';
+    lastArrTafPeriodDesc = null;
   } else {
     lastDepMetarRaw  = '—';
     lastDepMetarTime = null;
@@ -3299,6 +3303,13 @@ function applyTafPeriod(idx) {
     document.getElementById('arrVrbTo').value   = '';
   }
 
+  // Mémoriser la période pour le PDF
+  const t1 = fmtTafTime(period.start_time);
+  const t2 = fmtTafTime(period.end_time);
+  const type = period.type_label || period.type || 'FROM';
+  const wind = fmtTafWind(period);
+  lastArrTafPeriodDesc = `${type} ${t1}→${t2} · ${wind}${period.extra_summary ? ' · ' + period.extra_summary : ''}`;
+
   updateWindDisplay('arr');
 
   document.querySelectorAll('.taf-period').forEach((el, i) => {
@@ -3318,9 +3329,9 @@ async function loadTafFor(side) {
   rwWrap.style.display = 'none';
 
   try {
-    // TAF + pistes + élévation en parallèle
+    // TAF + METAR + pistes + élévation en parallèle
     let usedIcao = icao, isNearest = false, distTxt = '';
-    const [tafResult, , ] = await Promise.allSettled([
+    const [tafResult, , , metarResult] = await Promise.allSettled([
       fetchTaf(icao),
       fetchStation(icao).then(station => {
         const elevFt = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
@@ -3328,8 +3339,16 @@ async function loadTafFor(side) {
       }).catch(() => {}),
       fetchRunways(icao)
         .then(rws => renderRunwayPicker(side, rws))
-        .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message))
+        .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message)),
+      fetchMetar(icao).catch(() => null) // METAR en parallèle pour le PDF
     ]);
+
+    // Stocker le METAR silencieusement (pour le PDF)
+    if (metarResult.status === 'fulfilled' && metarResult.value) {
+      const m = metarResult.value;
+      lastArrMetarRaw  = m.raw || '—';
+      lastArrMetarTime = m.time?.dt ? new Date(m.time.dt) : null;
+    }
 
     let taf;
     if (tafResult.status === 'fulfilled') {
@@ -3347,6 +3366,7 @@ async function loadTafFor(side) {
     }
 
     const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
+    lastArrTafRaw = taf.raw || '—';
     setMetarMsg(msgEl, prefix + (taf.raw || '—'));
     renderTafPicker(taf);
   } catch(e) {
@@ -3484,7 +3504,38 @@ function buildPrintHTML() {
     return 'neu';
   }
 
-  function pageSection(side, comps, pageLabel, totalPages) {
+  const makeHeader = () => `
+    <div class="hd">
+      <div class="hd-left">
+        <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
+        <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
+      </div>
+      <div class="hd-right">
+        <div class="hd-ac">${aircraft}</div>
+        <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
+        <div class="hd-stamp">${nowStamp()}</div>
+      </div>
+    </div>`;
+
+  const makeFooter = (n, t) => `
+    <div class="page-footer">
+      <div class="disclaimer">Aide à la préparation du vol — Source officielle : manuel de vol. Le CDB est seul responsable.</div>
+      <div>Page ${n} / ${t} &nbsp;·&nbsp; ${nowStamp()}</div>
+    </div>`;
+
+  const genBlock = `
+    <div class="section">
+      <div class="section-head gen"><div class="sh-label">Paramètres généraux</div></div>
+      <div class="gen-grid">
+        <div class="gp"><span class="gp-k">Avion</span><span class="gp-v">${aircraft}</span></div>
+        <div class="gp"><span class="gp-k">Hélice</span><span class="gp-v">${prop}</span></div>
+        <div class="gp"><span class="gp-k">Profil</span><span class="gp-v">${profile}</span></div>
+        <div class="gp"><span class="gp-k">Marge</span><span class="gp-v">${safety} %</span></div>
+        <div class="gp"><span class="gp-k">Carénages</span><span class="gp-v">${spats}</span></div>
+      </div>
+    </div>`;
+
+  function pageSection(side, comps) {
     const isDep   = side === 'dep';
     const color   = isDep ? 'dep' : 'arr';
     const verdict = getVerdict(side);
@@ -3503,23 +3554,44 @@ function buildPrintHTML() {
     const gstStr   = gst > 0 ? ' G' + gst : '';
     const surf     = isDep ? (depSurface === 'grass' ? 'Herbe' : 'Dur') : (landingMode === 'nobrake_grass' ? 'Herbe (sans frein)' : 'Freinage modéré');
     const metar    = (isDep ? lastDepMetarRaw : lastArrMetarRaw) || '—';
-    const tafRaw   = !isDep ? (document.getElementById('arrMetarMsg')?.textContent || '') : '';
 
-    const req      = document.getElementById(isDep ? 'toKpiVal'     : 'ldgKpiVal').textContent;
-    const avail    = document.getElementById(isDep ? 'todaMini'     : 'ldaMini').textContent;
-    const roll     = document.getElementById(isDep ? 'toBaseRoll'   : 'ldgBaseRoll').textContent;
-    const pass     = document.getElementById(isDep ? 'toBasePass'   : 'ldgBasePass').textContent;
-    const windF    = document.getElementById(isDep ? 'toWindF'      : 'ldgWindF').textContent;
-    const extra    = document.getElementById(isDep ? 'toExtra'      : 'ldgExtra').textContent;
+    const req      = document.getElementById(isDep ? 'toKpiVal'   : 'ldgKpiVal').textContent;
+    const avail    = document.getElementById(isDep ? 'todaMini'   : 'ldaMini').textContent;
+    const roll     = document.getElementById(isDep ? 'toBaseRoll' : 'ldgBaseRoll').textContent;
+    const pass     = document.getElementById(isDep ? 'toBasePass' : 'ldgBasePass').textContent;
+    const windF    = document.getElementById(isDep ? 'toWindF'    : 'ldgWindF').textContent;
+    const extra    = document.getElementById(isDep ? 'toExtra'    : 'ldgExtra').textContent;
     const spatTxt  = isDep ? document.getElementById('toSpat').textContent : '';
 
-    const badgeIcon = verdict === 'ok' ? '✓' : verdict === 'bad' ? '✗' : '—';
+    const badgeIcon   = verdict === 'ok' ? '✓' : verdict === 'bad' ? '✗' : '—';
     const sectionTitle = isDep ? '✈ DÉCOLLAGE' : '🛬 ATTERRISSAGE';
 
-    const tafBlock = !isDep && tafRaw && tafRaw.trim().length > 5 ? `
+    // ETA + source météo (arrivée uniquement)
+    let etaBlock = '';
+    if (!isDep) {
+      const etaSel = document.getElementById('arrEta');
+      const etaVal = etaSel?.options[etaSel.selectedIndex]?.text || '—';
+      const sourceInfo = lastMetarVsTafResult === 'metar' ? 'METAR (plus restrictif)'
+                       : lastMetarVsTafResult === 'taf'   ? 'TAF (plus restrictif)' : '—';
+      const tafPeriod  = lastArrTafPeriodDesc || '—';
+      etaBlock = `
+        <div class="tg-row"><span class="tg-k">ETA (UTC)</span><span class="tg-v">${etaVal}</span></div>
+        <div class="tg-row"><span class="tg-k">Source météo</span><span class="tg-v">${sourceInfo}</span></div>
+        ${lastArrTafPeriodDesc ? `<div class="tg-row"><span class="tg-k">Période TAF retenue</span><span class="tg-v">${tafPeriod}</span></div>` : ''}`;
+    }
+
+    // METAR brut
+    const metarBlock = metar !== '—' ? `
+      <div class="raw-block">
+        <div class="raw-label">METAR</div>
+        <div class="raw-text">${metar.replace(/</g,'&lt;')}</div>
+      </div>` : '';
+
+    // TAF brut (arrivée uniquement)
+    const tafBlock = !isDep && lastArrTafRaw !== '—' ? `
       <div class="raw-block">
         <div class="raw-label">TAF</div>
-        <div class="raw-text">${tafRaw.trim().replace(/</g,'&lt;').split('\n⚠')[0]}</div>
+        <div class="raw-text">${lastArrTafRaw.replace(/</g,'&lt;')}</div>
       </div>` : '';
 
     return `
@@ -3559,6 +3631,7 @@ function buildPrintHTML() {
           <div class="tg-row"><span class="tg-k">Élévation</span><span class="tg-v">${alt} ft</span></div>
           <div class="tg-row"><span class="tg-k">OAT</span><span class="tg-v">${oat} °C</span></div>
           <div class="tg-row"><span class="tg-k">Masse</span><span class="tg-v">${mass} kg</span></div>
+          ${etaBlock}
         </div>
         <div class="tg-col">
           <div class="tg-label">Vent</div>
@@ -3569,10 +3642,7 @@ function buildPrintHTML() {
         </div>
       </div>
 
-      <div class="raw-block">
-        <div class="raw-label">METAR</div>
-        <div class="raw-text">${(metar||'—').replace(/</g,'&lt;')}</div>
-      </div>
+      ${metarBlock}
       ${tafBlock}
     </div>`;
   }
@@ -3581,39 +3651,11 @@ function buildPrintHTML() {
   const total = (depComputed ? 1 : 0) + (arrComputed ? 1 : 0);
   let pageNum = 1;
 
-  const makeFooter = (n, t) => `
-    <div class="page-footer">
-      <div class="disclaimer">Aide à la préparation du vol — Source officielle : manuel de vol. Le CDB est seul responsable.</div>
-      <div>Page ${n} / ${t} &nbsp;·&nbsp; ${nowStamp()}</div>
-    </div>`;
-
-  const genBlock = `
-    <div class="section">
-      <div class="section-head gen"><div class="sh-label">Paramètres généraux</div></div>
-      <div class="gen-grid">
-        <div class="gp"><span class="gp-k">Avion</span><span class="gp-v">${aircraft}</span></div>
-        <div class="gp"><span class="gp-k">Hélice</span><span class="gp-v">${prop}</span></div>
-        <div class="gp"><span class="gp-k">Profil</span><span class="gp-v">${profile}</span></div>
-        <div class="gp"><span class="gp-k">Marge</span><span class="gp-v">${safety} %</span></div>
-        <div class="gp"><span class="gp-k">Carénages</span><span class="gp-v">${spats}</span></div>
-      </div>
-    </div>`;
-
   if (depComputed) {
     pages.push(`<div class="page">
-      <div class="hd">
-        <div class="hd-left">
-          <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
-          <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
-        </div>
-        <div class="hd-right">
-          <div class="hd-ac">${aircraft}</div>
-          <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
-          <div class="hd-stamp">${nowStamp()}</div>
-        </div>
-      </div>
+      ${makeHeader()}
       ${genBlock}
-      ${pageSection('dep', compsDep, pageNum, total)}
+      ${pageSection('dep', compsDep)}
       ${makeFooter(pageNum, total)}
     </div>`);
     pageNum++;
@@ -3621,19 +3663,9 @@ function buildPrintHTML() {
 
   if (arrComputed) {
     pages.push(`<div class="page">
-      ${pageNum === 1 ? `<div class="hd">
-        <div class="hd-left">
-          <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
-          <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
-        </div>
-        <div class="hd-right">
-          <div class="hd-ac">${aircraft}</div>
-          <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
-          <div class="hd-stamp">${nowStamp()}</div>
-        </div>
-      </div>
-      ${genBlock}` : ''}
-      ${pageSection('arr', compsArr, pageNum, total)}
+      ${makeHeader()}
+      ${genBlock}
+      ${pageSection('arr', compsArr)}
       ${makeFooter(pageNum, total)}
     </div>`);
   }
