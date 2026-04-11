@@ -2695,6 +2695,7 @@ function applyRunway(side, idx) {
     b.classList.toggle('active', i === idx));
 
   updateWindDisplay(side);
+  resetComputedState(side); // QFU et longueur changent → recalcul obligatoire
 }
 
 function setMetarMsg(el, text) {
@@ -3356,12 +3357,9 @@ async function loadTafFor(side) {
 /* ===================== IMPRESSION ===================== */
 function nowStamp() {
   const d = new Date();
-  return 'Exporté le ' +
-    String(d.getDate()).padStart(2,'0') + '/' +
-    String(d.getMonth()+1).padStart(2,'0') + '/' +
-    d.getFullYear() + ' à ' +
-    String(d.getHours()).padStart(2,'0') + ':' +
-    String(d.getMinutes()).padStart(2,'0');
+  const pad = n => String(n).padStart(2,'0');
+  return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear()
+    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' UTC';
 }
 
 function buildCompsFor(side) {
@@ -3391,129 +3389,256 @@ function buildCompsFor(side) {
   return out;
 }
 
-function sectionTerrainHTML(title, side, comps) {
-  const icao    = (document.getElementById(side+'Icao').value||'').toUpperCase();
-  const qfu     = (document.getElementById(side+'Qfu').value||'').padStart(3,'0');
-  const alt     = document.getElementById(side+'Alt').value || '—';
-  const oat     = document.getElementById(side+'Oat').value || '—';
-  const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
-  const lenVal   = document.getElementById(side+(side==='dep'?'Toda':'Lda')).value || '—';
-  const dir      = (document.getElementById(side+'WindDir').value||'').toUpperCase();
-  const spd      = document.getElementById(side+'WindKt').value || '0';
-  const gst      = document.getElementById(side+'WindGust').value || '0';
-  const metar    = side === 'dep' ? lastDepMetarRaw : lastArrMetarRaw;
-
-  let xwindBlock = `Travers moyen : ${comps.meanX} kt`;
-  if (comps.worstX !== null) xwindBlock += `\nTravers max secteur ${comps.worstLabel} : ${comps.worstX} kt`;
-
-  return `
-    <div class="psection">
-      <span class="ptitle">${title}</span>
-      <div class="kv" style="margin-top:5px">
-        <div class="k">ICAO</div><div class="v">${icao}</div>
-        <div class="k">QFU</div><div class="v">${qfu}°</div>
-        <div class="k">Élévation</div><div class="v">${alt} ft</div>
-        <div class="k">OAT</div><div class="v">${oat} °C</div>
-        <div class="k">${lenLabel}</div><div class="v">${lenVal} m</div>
-      </div>
-      <div class="subgrid" style="margin-top:5px">
-        <div>
-          <div class="k">Vent</div>
-          <div class="v">${dir} / ${spd} kt (G${gst})</div>
-        </div>
-        <div>
-          <div class="k">Composantes</div>
-          <div class="v">Face ${comps.face} kt · Arrière ${comps.tail} kt</div>
-          <div class="v" style="margin-top:3px;white-space:pre-line">${xwindBlock}</div>
-        </div>
-      </div>
-      <div style="margin-top:5px">
-        <div class="k">METAR brut</div>
-        <div class="metar-raw">${(metar||'—').replace(/</g,'&lt;')}</div>
-      </div>
-    </div>`;
-}
-
-function sectionPerfHTML(title, side) {
-  const isKoOrOk = side === 'dep'
-    ? (document.getElementById('toChip').classList.contains('is-ok-chip') ? 'ok' : document.getElementById('toChip').classList.contains('is-bad-chip') ? 'bad' : '')
-    : (document.getElementById('ldgChip').classList.contains('is-ok-chip') ? 'ok' : document.getElementById('ldgChip').classList.contains('is-bad-chip') ? 'bad' : '');
-
-  const req   = side==='dep' ? document.getElementById('toKpiVal').textContent  : document.getElementById('ldgKpiVal').textContent;
-  const avail = side==='dep' ? document.getElementById('todaMini').textContent   : document.getElementById('ldaMini').textContent;
-  const roll  = side==='dep' ? document.getElementById('toBaseRoll').textContent : document.getElementById('ldgBaseRoll').textContent;
-  const pass  = side==='dep' ? document.getElementById('toBasePass').textContent : document.getElementById('ldgBasePass').textContent;
-  const windF = side==='dep' ? document.getElementById('toWindF').textContent    : document.getElementById('ldgWindF').textContent;
-  const extra = side==='dep' ? document.getElementById('toExtra').textContent    : document.getElementById('ldgExtra').textContent;
-  const spat  = side==='dep' ? document.getElementById('toSpat').textContent     : '';
-
-  return `
-    <div class="psection">
-      <span class="ptitle">${title}</span>
-      <div class="kv" style="margin-top:5px">
-        <div class="kv-result ${isKoOrOk} k" style="grid-column:1">Requis (marge incluse)</div>
-        <div class="kv-result ${isKoOrOk} v b" style="grid-column:2">${req}</div>
-        <div class="k">${side==='dep'?'TODA dispo':'LDA dispo'}</div><div class="v">${avail}</div>
-        <div class="k">Roulement (sans marge)</div><div class="v">${roll}</div>
-        <div class="k">Passage 15m (sans marge)</div><div class="v">${pass}</div>
-        <div class="k">Facteur vent</div><div class="v">${windF}</div>
-        ${side==='dep' ? `<div class="k">Carénages</div><div class="v">${spat}</div>` : ''}
-        <div class="k">Facteur supplémentaire</div><div class="v">${extra}</div>
-      </div>
-    </div>`;
-}
-
 function buildPrintHTML() {
-  const safety      = Math.max(0, +(document.getElementById('safety').value || 30));
-  const aircraft    = document.getElementById('aircraftSel').value;
-  const prop        = document.getElementById('propeller').value;
-  const spats       = withSpats ? 'Avec carénages' : 'Sans carénages (+3% TO)';
-  const profileTxt  = profile;
-  const compsDep    = buildCompsFor('dep');
-  const compsArr    = buildCompsFor('arr');
+  const safety   = Math.max(0, +(document.getElementById('safety').value || 30));
+  const aircraft = document.getElementById('aircraftSel').value;
+  const prop     = document.getElementById('propeller').value;
+  const spats    = withSpats ? 'Avec carénages' : 'Sans carénages (+3 %)';
+  const compsDep = buildCompsFor('dep');
+  const compsArr = buildCompsFor('arr');
 
-  const headerSimple = (pageLabel) => `
-    <div class="print-header">
-      <div>
-        <div class="ph-title">Calculateur de Performances</div>
-        <div class="ph-club">Aéroclub de Beauvais-Tillé${pageLabel ? ' &nbsp;·&nbsp; ' + pageLabel : ''}</div>
-      </div>
-      <div class="ph-meta">${nowStamp()}</div>
-    </div>`;
+  const css = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=DM+Mono&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; font-size: 10px; color: #0f172a; background: #fff; }
+    .page { width: 794px; min-height: 1123px; padding: 28px 32px 24px; display: flex; flex-direction: column; gap: 14px; }
 
-  const paramsSection = `
-    <div class="psection">
-      <span class="ptitle">Paramètres généraux</span>
-      <div class="kv" style="margin-top:5px">
-        <div class="k">Avion</div><div class="v">${aircraft}</div>
-        <div class="k">Hélice</div><div class="v">${prop}</div>
-        <div class="k">Profil</div><div class="v">${profileTxt}</div>
-        <div class="k">Marge sécurité</div><div class="v">${safety} %</div>
-        <div class="k">Carénages</div><div class="v">${spats}</div>
+    /* ── HEADER ── */
+    .hd { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 2.5px solid #0e3070; }
+    .hd-left { display: flex; flex-direction: column; gap: 2px; }
+    .hd-title { font-size: 17px; font-weight: 800; color: #0e3070; letter-spacing: -.3px; }
+    .hd-sub { font-size: 9px; color: #64748b; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .hd-right { text-align: right; }
+    .hd-ac { font-size: 13px; font-weight: 800; color: #0e3070; }
+    .hd-ac-sub { font-size: 8.5px; color: #64748b; margin-top: 1px; }
+    .hd-stamp { font-size: 8px; color: #94a3b8; margin-top: 3px; }
+
+    /* ── SECTION ── */
+    .section { border-radius: 10px; overflow: hidden; border: 1.5px solid #e2e8f0; }
+    .section-head { padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; }
+    .section-head.dep { background: #1d4ed8; }
+    .section-head.arr { background: #047857; }
+    .section-head.gen { background: #334155; }
+    .sh-label { font-size: 10px; font-weight: 800; color: #fff; letter-spacing: .06em; text-transform: uppercase; }
+    .sh-icao { font-size: 14px; font-weight: 800; color: #fff; font-family: 'DM Mono', monospace; letter-spacing: .05em; }
+    .sh-right { display: flex; align-items: center; gap: 8px; }
+    .sh-piste { font-size: 9px; color: rgba(255,255,255,.75); font-weight: 600; }
+
+    /* ── KPI RÉSULTAT ── */
+    .kpi-bar { display: flex; align-items: stretch; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+    .kpi-main { flex: 1; padding: 10px 14px; display: flex; align-items: center; gap: 14px; }
+    .kpi-badge { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 900; flex-shrink: 0; }
+    .kpi-badge.ok  { background: #dcfce7; color: #15803d; }
+    .kpi-badge.bad { background: #fee2e2; color: #b91c1c; }
+    .kpi-badge.neu { background: #f1f5f9; color: #64748b; }
+    .kpi-info { flex: 1; }
+    .kpi-req-label { font-size: 7.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .05em; }
+    .kpi-req-val { font-size: 22px; font-weight: 800; line-height: 1; color: #0f172a; }
+    .kpi-req-val.ok  { color: #15803d; }
+    .kpi-req-val.bad { color: #b91c1c; }
+    .kpi-avail { font-size: 8.5px; color: #64748b; margin-top: 2px; font-weight: 600; }
+    .kpi-sep { width: 1px; background: #e2e8f0; margin: 8px 0; }
+    .kpi-detail { padding: 8px 14px; display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 180px; }
+    .kd-row { display: flex; justify-content: space-between; gap: 10px; font-size: 8.5px; }
+    .kd-label { color: #64748b; }
+    .kd-val { font-weight: 700; color: #0f172a; font-family: 'DM Mono', monospace; }
+
+    /* ── GRILLE TERRAIN ── */
+    .terrain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .tg-col { padding: 10px 14px; }
+    .tg-col:first-child { border-right: 1px solid #e2e8f0; }
+    .tg-label { font-size: 7.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+    .tg-row { display: flex; justify-content: space-between; align-items: baseline; padding: 2px 0; border-bottom: 1px solid #f1f5f9; }
+    .tg-row:last-child { border-bottom: none; }
+    .tg-k { font-size: 8.5px; color: #64748b; }
+    .tg-v { font-size: 9px; font-weight: 700; color: #0f172a; font-family: 'DM Mono', monospace; }
+
+    /* ── VENT ── */
+    .wind-strip { display: flex; gap: 0; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+    .wc { flex: 1; padding: 7px 10px; text-align: center; border-right: 1px solid #e2e8f0; }
+    .wc:last-child { border-right: none; }
+    .wc-lbl { font-size: 7px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; }
+    .wc-val { font-size: 13px; font-weight: 800; color: #0f172a; font-family: 'DM Mono', monospace; margin-top: 1px; }
+    .wc-unit { font-size: 8px; color: #94a3b8; font-weight: 600; }
+
+    /* ── METAR / TAF ── */
+    .raw-block { padding: 8px 12px; background: #f4f4f5; border-top: 1px solid #e2e8f0; }
+    .raw-label { font-size: 7.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    .raw-text { font-family: 'DM Mono', monospace; font-size: 8px; color: #3f3f46; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+
+    /* ── PARAMS GÉNÉRAUX ── */
+    .gen-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 14px; gap: 8px; background: #f8fafc; }
+    .gp { display: flex; flex-direction: column; gap: 2px; }
+    .gp-k { font-size: 7.5px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .gp-v { font-size: 9.5px; font-weight: 700; color: #0f172a; }
+
+    /* ── FOOTER PAGE ── */
+    .page-footer { margin-top: auto; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 7.5px; color: #94a3b8; }
+    .disclaimer { font-size: 7px; color: #94a3b8; font-style: italic; max-width: 420px; }
+  `;
+
+  function getVerdict(side) {
+    const chip = document.getElementById(side === 'dep' ? 'toChip' : 'ldgChip');
+    if (chip.classList.contains('is-ok-chip'))  return 'ok';
+    if (chip.classList.contains('is-bad-chip')) return 'bad';
+    return 'neu';
+  }
+
+  function pageSection(side, comps, pageLabel, totalPages) {
+    const isDep   = side === 'dep';
+    const color   = isDep ? 'dep' : 'arr';
+    const verdict = getVerdict(side);
+    const icao    = (document.getElementById(side+'Icao').value||'').toUpperCase() || '—';
+    const qfu     = (document.getElementById(side+'Qfu').value||'—');
+    const alt     = document.getElementById(side+'Alt').value || '—';
+    const oat     = document.getElementById(side+'Oat').value || '—';
+    const lenLabel = isDep ? 'TODA' : 'LDA';
+    const lenId    = isDep ? 'depToda' : 'arrLda';
+    const lenVal   = document.getElementById(lenId).value || '—';
+    const massId   = isDep ? 'depTow' : 'arrLdw';
+    const mass     = document.getElementById(massId).value || '—';
+    const dir      = (document.getElementById(side+'WindDir').value||'—').toUpperCase();
+    const spd      = document.getElementById(side+'WindKt').value || '0';
+    const gst      = parseInt(document.getElementById(side+'WindGust').value||'0',10);
+    const gstStr   = gst > 0 ? ' G' + gst : '';
+    const surf     = isDep ? (depSurface === 'grass' ? 'Herbe' : 'Dur') : (landingMode === 'nobrake_grass' ? 'Herbe (sans frein)' : 'Freinage modéré');
+    const metar    = (isDep ? lastDepMetarRaw : lastArrMetarRaw) || '—';
+    const tafRaw   = !isDep ? (document.getElementById('arrMetarMsg')?.textContent || '') : '';
+
+    const req      = document.getElementById(isDep ? 'toKpiVal'     : 'ldgKpiVal').textContent;
+    const avail    = document.getElementById(isDep ? 'todaMini'     : 'ldaMini').textContent;
+    const roll     = document.getElementById(isDep ? 'toBaseRoll'   : 'ldgBaseRoll').textContent;
+    const pass     = document.getElementById(isDep ? 'toBasePass'   : 'ldgBasePass').textContent;
+    const windF    = document.getElementById(isDep ? 'toWindF'      : 'ldgWindF').textContent;
+    const extra    = document.getElementById(isDep ? 'toExtra'      : 'ldgExtra').textContent;
+    const spatTxt  = isDep ? document.getElementById('toSpat').textContent : '';
+
+    const badgeIcon = verdict === 'ok' ? '✓' : verdict === 'bad' ? '✗' : '—';
+    const sectionTitle = isDep ? '✈ DÉCOLLAGE' : '🛬 ATTERRISSAGE';
+
+    const tafBlock = !isDep && tafRaw && tafRaw.trim().length > 5 ? `
+      <div class="raw-block">
+        <div class="raw-label">TAF</div>
+        <div class="raw-text">${tafRaw.trim().replace(/</g,'&lt;').split('\n⚠')[0]}</div>
+      </div>` : '';
+
+    return `
+    <div class="section">
+      <div class="section-head ${color}">
+        <div>
+          <div class="sh-label">${sectionTitle}</div>
+          <div class="sh-icao">${icao}</div>
+        </div>
+        <div class="sh-right">
+          <div class="sh-piste">QFU ${qfu}° · ${lenLabel} ${lenVal} m · ${surf}</div>
+        </div>
       </div>
+
+      <div class="kpi-bar">
+        <div class="kpi-main">
+          <div class="kpi-badge ${verdict}">${badgeIcon}</div>
+          <div class="kpi-info">
+            <div class="kpi-req-label">Requis — marge ${safety} % incluse</div>
+            <div class="kpi-req-val ${verdict}">${req}</div>
+            <div class="kpi-avail">${lenLabel} disponible : ${avail}</div>
+          </div>
+        </div>
+        <div class="kpi-sep"></div>
+        <div class="kpi-detail">
+          <div class="kd-row"><span class="kd-label">Roulement (sans marge)</span><span class="kd-val">${roll}</span></div>
+          <div class="kd-row"><span class="kd-label">Passage 15 m (sans marge)</span><span class="kd-val">${pass}</span></div>
+          <div class="kd-row"><span class="kd-label">Facteur vent</span><span class="kd-val">${windF}</span></div>
+          ${isDep ? `<div class="kd-row"><span class="kd-label">Carénages</span><span class="kd-val">${spatTxt}</span></div>` : ''}
+          <div class="kd-row"><span class="kd-label">Facteur supplémentaire</span><span class="kd-val">${extra}</span></div>
+        </div>
+      </div>
+
+      <div class="terrain-grid">
+        <div class="tg-col">
+          <div class="tg-label">Terrain</div>
+          <div class="tg-row"><span class="tg-k">Élévation</span><span class="tg-v">${alt} ft</span></div>
+          <div class="tg-row"><span class="tg-k">OAT</span><span class="tg-v">${oat} °C</span></div>
+          <div class="tg-row"><span class="tg-k">Masse</span><span class="tg-v">${mass} kg</span></div>
+        </div>
+        <div class="tg-col">
+          <div class="tg-label">Vent</div>
+          <div class="tg-row"><span class="tg-k">Direction / Vitesse</span><span class="tg-v">${dir} / ${spd}${gstStr} kt</span></div>
+          <div class="tg-row"><span class="tg-k">Composante de face</span><span class="tg-v">${comps.face} kt</span></div>
+          <div class="tg-row"><span class="tg-k">Composante arrière</span><span class="tg-v">${comps.tail} kt</span></div>
+          <div class="tg-row"><span class="tg-k">Composante de travers</span><span class="tg-v">${comps.meanX} kt${comps.worstX !== null ? ' (max ' + comps.worstX + ' kt)' : ''}</span></div>
+        </div>
+      </div>
+
+      <div class="raw-block">
+        <div class="raw-label">METAR</div>
+        <div class="raw-text">${(metar||'—').replace(/</g,'&lt;')}</div>
+      </div>
+      ${tafBlock}
     </div>`;
+  }
 
   const pages = [];
+  const total = (depComputed ? 1 : 0) + (arrComputed ? 1 : 0);
+  let pageNum = 1;
+
+  const makeFooter = (n, t) => `
+    <div class="page-footer">
+      <div class="disclaimer">Aide à la préparation du vol — Source officielle : manuel de vol. Le CDB est seul responsable.</div>
+      <div>Page ${n} / ${t} &nbsp;·&nbsp; ${nowStamp()}</div>
+    </div>`;
+
+  const genBlock = `
+    <div class="section">
+      <div class="section-head gen"><div class="sh-label">Paramètres généraux</div></div>
+      <div class="gen-grid">
+        <div class="gp"><span class="gp-k">Avion</span><span class="gp-v">${aircraft}</span></div>
+        <div class="gp"><span class="gp-k">Hélice</span><span class="gp-v">${prop}</span></div>
+        <div class="gp"><span class="gp-k">Profil</span><span class="gp-v">${profile}</span></div>
+        <div class="gp"><span class="gp-k">Marge</span><span class="gp-v">${safety} %</span></div>
+        <div class="gp"><span class="gp-k">Carénages</span><span class="gp-v">${spats}</span></div>
+      </div>
+    </div>`;
 
   if (depComputed) {
     pages.push(`<div class="page">
-      ${headerSimple(arrComputed ? 'Page 1 / 2' : '')}
-      ${paramsSection}
-      ${sectionTerrainHTML('Terrain de départ', 'dep', compsDep)}
-      ${sectionPerfHTML('Décollage — Résultats', 'dep')}
+      <div class="hd">
+        <div class="hd-left">
+          <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
+          <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
+        </div>
+        <div class="hd-right">
+          <div class="hd-ac">${aircraft}</div>
+          <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
+          <div class="hd-stamp">${nowStamp()}</div>
+        </div>
+      </div>
+      ${genBlock}
+      ${pageSection('dep', compsDep, pageNum, total)}
+      ${makeFooter(pageNum, total)}
     </div>`);
+    pageNum++;
   }
 
   if (arrComputed) {
     pages.push(`<div class="page">
-      ${headerSimple(depComputed ? 'Page 2 / 2' : '')}
-      ${depComputed ? '' : paramsSection}
-      ${sectionTerrainHTML("Terrain d'arrivée", 'arr', compsArr)}
-      ${sectionPerfHTML('Atterrissage — Résultats', 'arr')}
+      ${pageNum === 1 ? `<div class="hd">
+        <div class="hd-left">
+          <div class="hd-title">Fiche de Performances — Aéroclub de Beauvais-Tillé</div>
+          <div class="hd-sub">ACBT · LFOB · Document opérationnel</div>
+        </div>
+        <div class="hd-right">
+          <div class="hd-ac">${aircraft}</div>
+          <div class="hd-ac-sub">${prop} · ${profile} · Marge ${safety} %</div>
+          <div class="hd-stamp">${nowStamp()}</div>
+        </div>
+      </div>
+      ${genBlock}` : ''}
+      ${pageSection('arr', compsArr, pageNum, total)}
+      ${makeFooter(pageNum, total)}
     </div>`);
   }
 
-  return pages.join('');
+  return `<style>${css}</style>` + pages.join('');
 }
 
 document.getElementById('btnPrint').addEventListener('click', async () => {
