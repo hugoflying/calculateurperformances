@@ -1595,10 +1595,14 @@ let profile     = 'DR400';
 let depSurface  = 'hard';
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
-let lastArrTafRaw   = '—';          // TAF brut arrivée
-let lastArrTafPeriodDesc = null;    // Description de la période TAF appliquée
+let lastArrTafRaw   = '—';
+let lastArrTafPeriodDesc = null;
 let lastDepMetarTime = null;
 let lastArrMetarTime = null;
+let lastDepStationLat = null; // Coordonnées pour calcul coucher soleil
+let lastDepStationLon = null;
+let lastArrStationLat = null;
+let lastArrStationLon = null;
 let lastMetarVsTafResult = null; // 'metar' | 'taf' | null
 let depComputed = false;
 let arrComputed = false;
@@ -2778,6 +2782,10 @@ async function loadMetarFor(side) {
     const elevFt  = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
     if (elevFt > 0) document.getElementById(side+'Alt').value = String(Math.round(elevFt));
     const lat = station?.latitude, lon = station?.longitude;
+    if (typeof lat === 'number' && typeof lon === 'number') {
+      if (side === 'dep') { lastDepStationLat = lat; lastDepStationLon = lon; }
+      else                { lastArrStationLat = lat; lastArrStationLon = lon; }
+    }
     // Pistes OpenAIP via proxy Cloudflare (pas besoin de coords)
     fetchRunways(icao)
       .then(rws => renderRunwayPicker(side, rws))
@@ -3343,6 +3351,10 @@ async function loadTafFor(side) {
       fetchStation(icao).then(station => {
         const elevFt = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
         if (elevFt > 0) document.getElementById(side + 'Alt').value = String(Math.round(elevFt));
+        if (typeof station?.latitude === 'number') {
+          if (side === 'dep') { lastDepStationLat = station.latitude; lastDepStationLon = station.longitude; }
+          else                { lastArrStationLat = station.latitude; lastArrStationLon = station.longitude; }
+        }
       }).catch(() => {}),
       fetchRunways(icao)
         .then(rws => renderRunwayPicker(side, rws))
@@ -3414,6 +3426,42 @@ function buildCompsFor(side) {
     out.worstLabel = pad3(f) + 'V' + pad3(t);
   }
   return out;
+}
+
+// ── Calcul coucher de soleil (formule astronomique standard) ──
+function sunsetUtc(lat, lon, date = new Date()) {
+  const rad = Math.PI / 180;
+  const J2000 = 2451545.0;
+  const toJD = d => (d.getTime() / 86400000) + 2440587.5;
+  const jd = Math.floor(toJD(date)) + 0.5;
+  const n = jd - J2000;
+
+  // Longitude solaire moyenne
+  const L = (280.46 + 0.9856474 * n) % 360;
+  // Anomalie moyenne
+  const g = (357.528 + 0.9856003 * n) % 360;
+  // Ecliptique
+  const lambda = L + 1.915 * Math.sin(g * rad) + 0.02 * Math.sin(2 * g * rad);
+  // Obliquité
+  const eps = 23.439 - 0.0000004 * n;
+  // Déclinaison
+  const sinDec = Math.sin(eps * rad) * Math.sin(lambda * rad);
+  const dec = Math.asin(sinDec);
+  // Equation du temps (approximation)
+  const RA = Math.atan2(Math.cos(eps * rad) * Math.sin(lambda * rad), Math.cos(lambda * rad)) / rad;
+  const eqt = L - RA;
+  // Angle horaire au coucher du soleil (h = -0.833° pour réfraction)
+  const cosH = (Math.sin(-0.833 * rad) - Math.sin(lat * rad) * Math.sin(dec)) /
+               (Math.cos(lat * rad) * Math.cos(dec));
+  if (Math.abs(cosH) > 1) return null; // soleil ne se couche pas / ne se lève pas
+
+  const H = Math.acos(cosH) / rad;
+  // Heure coucher UTC
+  const sunsetUTCdec = 12 + H / 15 - lon / 15 - eqt / 15;
+  const h = Math.floor(sunsetUTCdec) % 24;
+  const m = Math.round((sunsetUTCdec - Math.floor(sunsetUTCdec)) * 60);
+  const pad = n => String(n).padStart(2,'0');
+  return { h, m, str: pad(h) + ':' + pad(m) };
 }
 
 async function generatePDF() {
@@ -3568,8 +3616,8 @@ async function generatePDF() {
     const dx = x + cw/2 + 2;
     const dW = cw/2 - 4;
     const rows = [
-      ['Roulement (ss marge)', roll],
-      ['Passage 15m (ss marge)', pass],
+      ['Roulement sans marge', roll],
+      ['Passage 15m sans marge', pass],
       ['Facteur vent', windF],
       ...(isDep ? [['Carenages', spat.length>22 ? spat.slice(0,21)+'…' : spat]] : []),
       ['Facteur supplementaire', extra],
@@ -3594,33 +3642,63 @@ async function generatePDF() {
       if (lastMetarVsTafResult) leftRows.push(['Source meteo', lastMetarVsTafResult==='metar' ? 'METAR (restrictif)' : 'TAF (restrictif)']);
     }
     const windRows = [
-      ['Direction/Vitesse', `${dir}/${spd}${gst>0?' G'+gst:''} kt`],
-      ['Composante face', `${comps.face} kt`],
-      ['Composante arriere', `${comps.tail} kt`],
-      ['Composante travers', `${comps.meanX} kt${comps.worstX!==null?' (max '+comps.worstX+')':''}`],
+      ['Direction / Vitesse', `${dir}/${spd}${gst>0?' G'+gst:''} kt`],
+      ['Face',   `${comps.face} kt`],
+      ['Arriere',`${comps.tail} kt`],
+      ['Travers', `${comps.meanX} kt${comps.worstX!==null?' (max '+comps.worstX+' kt)':''}`],
     ];
-    const gridH = Math.max(leftRows.length, windRows.length) * 5 + 8;
+
+    // Coucher du soleil
+    const sLat = isDep ? lastDepStationLat : lastArrStationLat;
+    const sLon = isDep ? lastDepStationLon : lastArrStationLon;
+    if (sLat !== null && sLon !== null) {
+      const ss = sunsetUtc(sLat, sLon);
+      if (ss) {
+        const pad = n => String(n).padStart(2,'0');
+        const nah = ss.h + (ss.m >= 30 ? 1 : 0);
+        const nam = ss.m >= 30 ? ss.m - 30 : ss.m + 30;
+        leftRows.push(['Coucher soleil', ss.str + ' UTC']);
+        leftRows.push(['Nuit aeronautique', pad(nah%24) + ':' + pad(nam) + ' UTC']);
+      }
+    }
+
+    // Nb de lignes max
+    const nLeft  = leftRows.length;
+    const nRight = windRows.length;
+    const nMax   = Math.max(nLeft, nRight);
+    const rowH   = 5.5;
+    const hdrH   = 5.5;
+    const gridH  = hdrH + nMax * rowH + 4;
+
     fill(x, sy, cw, gridH, C.white);
     stroke(x, sy, cw, gridH, C.bord);
     ln(x+cw/2, sy, x+cw/2, sy+gridH);
 
-    // Bandeau titres TERRAIN / VENT
-    fill(x, sy, cw/2, 5.5, C.bgM);
-    fill(x+cw/2, sy, cw/2, 5.5, C.bgM);
-    ln(x, sy+5.5, x+cw, sy+5.5, C.bord);
+    // Bandeau titres
+    fill(x,       sy, cw/2, hdrH, C.bgM);
+    fill(x+cw/2,  sy, cw/2, hdrH, C.bgM);
+    ln(x, sy+hdrH, x+cw, sy+hdrH, C.bord);
+    T('TERRAIN', x+3, sy+hdrH-1.5, 5.5, true, C.dark);
+    T('VENT',    x+cw/2+3, sy+hdrH-1.5, 5.5, true, C.dark);
 
-    T('TERRAIN', x+2, sy+4, 5.5, true, C.dark);
-    leftRows.forEach(([k,v], i) => {
-      const gy = sy + 8 + i*5;
-      T(k, x+2, gy, 5.5, false, C.mut);
-      T(v, x+cw/2-2, gy, 6.5, true, C.dark, 'right');
+    // Colonne TERRAIN
+    const kX = x + 3, vX = x + cw/2 - 3;
+    leftRows.forEach(([k, v], i) => {
+      const gy = sy + hdrH + 4 + i * rowH;
+      T(k, kX, gy, 5.5, false, C.mut);
+      T(v, vX, gy, 6, true, C.dark, 'right');
+      if (i < nLeft - 1) ln(kX, gy + 1.5, vX, gy + 1.5, C.bord, 0.15);
     });
-    T('VENT', x+cw/2+2, sy+4, 5.5, true, C.dark);
-    windRows.forEach(([k,v], i) => {
-      const gy = sy + 8 + i*5;
-      T(k, x+cw/2+2, gy, 5.5, false, C.mut);
-      T(v, x+cw-2, gy, 6.5, true, C.dark, 'right');
+
+    // Colonne VENT
+    const wkX = x + cw/2 + 3, wvX = x + cw - 3;
+    windRows.forEach(([k, v], i) => {
+      const gy = sy + hdrH + 4 + i * rowH;
+      T(k, wkX, gy, 5.5, false, C.mut);
+      T(v, wvX, gy, 6, true, C.dark, 'right');
+      if (i < nRight - 1) ln(wkX, gy + 1.5, wvX, gy + 1.5, C.bord, 0.15);
     });
+
     sy += gridH;
 
     // METAR raw
