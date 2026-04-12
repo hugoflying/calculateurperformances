@@ -1350,64 +1350,52 @@
 
       <div class="readme-section">
         <h3>Profils avion</h3>
-        <p><strong>DR400</strong> (F-GCAL, F-BXEK) — tables à 3 altitudes-densité (0 / 4 000 / 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage en dur ou en herbe.</p>
-        <p><strong>DR300</strong> (F-BTBS, F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est intégrée via un facteur d'échelle linéaire (masse / 1 000, plafonné à 1).</p>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK) — tables à 3 altitudes-densité (0 / 4 000 / 8 000 ft) et 3 températures. Deux masses de référence : 700 kg et 900 kg. Décollage en dur ou en herbe.</p>
+        <p><strong>DR300</strong> (F-BTBS, F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. Masse intégrée via facteur d'échelle linéaire (masse / 1 000, plafonné à 1).</p>
         <p>Changer d'avion réinitialise automatiquement les calculs précédents.</p>
       </div>
 
       <div class="readme-section">
         <h3>Interpolation des performances</h3>
-        <p>Les performances sont calculées par <strong>interpolation linéaire triple</strong> : altitude-densité × température × masse.</p>
-        <ol>
-          <li><strong>Température</strong> : interpolation entre les colonnes du manuel (ISA−20, ISA, ISA+20).</li>
-          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes.</li>
-          <li><strong>Masse</strong> : interpolation linéaire. Si hors plage, valeurs limites utilisées (conservateur) avec avertissement.</li>
-        </ol>
-        <p>La distance de référence est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance). Le roulement est affiché à titre indicatif.</p>
+        <p>Interpolation linéaire triple : altitude-densité × température × masse. La distance de référence est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance). Le roulement est affiché à titre indicatif.</p>
+        <p>Si la masse est hors plage du manuel, les valeurs limites sont utilisées (conservateur) avec avertissement.</p>
       </div>
 
       <div class="readme-section">
         <h3>Composantes vent</h3>
-        <p>Calculées trigonométriquement pour un QFU donné :</p>
-        <ul>
-          <li><strong>Vent de face</strong> = V × cos(angle)</li>
-          <li><strong>Vent de travers</strong> = |V × sin(angle)|</li>
-          <li><strong>Vent arrière</strong> = max(0, −vent de face)</li>
-        </ul>
-        <p>Alerte <span style="color:#b45309;font-weight:700">orange</span> si travers ≥ 18 kt, <span style="color:#dc2626;font-weight:700">rouge</span> si ≥ 22 kt. Au-delà de 22 kt, le calcul est bloqué (hors limites avion).</p>
+        <p>Calculées trigonométriquement : vent de face = V × cos(angle), vent de travers = |V × sin(angle)|, vent arrière = max(0, −vent de face).</p>
+        <p>Alerte <span style="color:#b45309;font-weight:700">orange</span> si travers ≥ 18 kt. <span style="color:#dc2626;font-weight:700">Rouge</span> si ≥ 22 kt — le calcul est alors <strong>bloqué</strong> (hors limites avion).</p>
       </div>
 
       <div class="readme-section">
         <h3>Vent variable (secteur VRB)</h3>
-        <p>Avec un secteur renseigné (ex. 340V040) : balayage degré par degré dans l'arc court, vitesse moyenne ET rafales, composante la plus défavorable retenue.</p>
-        <p><strong>VRB sans secteur</strong> (ex. VRB03KT) : direction inconnue → calcul en vent arrière pur à la vitesse indiquée, hypothèse conservatrice signalée dans les résultats.</p>
+        <p>Avec secteur renseigné (ex. 340V040) : balayage degré par degré, vitesse moyenne ET rafales, composante la plus défavorable retenue.</p>
+        <p><strong>VRB sans secteur</strong> (ex. VRB03KT) : calcul en vent arrière pur à la vitesse indiquée — hypothèse conservatrice, signalée dans les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>METAR et pistes automatiques</h3>
-        <p>Le bouton <strong>"Charger METAR"</strong> réinitialise tous les champs du terrain puis applique automatiquement : vent (direction, vitesse, rafales, secteur VRB), OAT et élévation. Si le METAR de la station est indisponible, la station la plus proche est utilisée.</p>
-        <p><strong>TEMPO</strong> dans le METAR : si le vent temporaire est plus défavorable (plus de vent arrière ou de travers), il remplace automatiquement le vent principal.</p>
-        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via OpenAIP (QFU exact + TODA ou LDA déclarée). Un clic sur une piste remplit automatiquement les champs correspondants.</p>
+        <p>Le bouton <strong>"Charger METAR"</strong> réinitialise tous les champs puis applique : vent, OAT, élévation. Si la station est indisponible, la plus proche est utilisée. Si un groupe TEMPO présente un vent plus défavorable, il remplace automatiquement le vent principal.</p>
+        <p>Les <strong>pistes</strong> sont chargées simultanément via OpenAIP (QFU exact + TODA/LDA déclarée). Un clic sur une piste remplit les champs correspondants et <strong>réinitialise les calculs</strong> précédents, car QFU et longueur ont changé.</p>
       </div>
 
       <div class="readme-section">
         <h3>TAF arrivée</h3>
-        <p>Le bouton <strong>"TAF"</strong> réinitialise tous les champs puis charge le TAF via AVWX, les pistes et l'élévation simultanément. Si la station n'a pas de TAF, celui de la station la plus proche est utilisé.</p>
-        <p><strong>Sélection de l'ETA (heure UTC) :</strong> les périodes concernées sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), l'outil calcule la vraie distance LDG pour chacune et identifie la plus restrictive : <strong>⚠ retenir</strong> (fond vert), les autres en <strong>✓ ETA</strong> (fond bleu). Si le QFU n'est pas encore renseigné, le classement s'appuie sur le type : TEMPO > BECMG > FROM.</p>
+        <p>Le bouton <strong>"TAF"</strong> réinitialise tous les champs puis charge TAF, pistes et élévation simultanément. Le METAR arrivée est récupéré en arrière-plan pour la comparaison et le PDF. Si aucun TAF n'est disponible pour la station, celui de la station la plus proche est utilisé.</p>
+        <p><strong>Sélection de l'ETA :</strong> les périodes actives à l'ETA sont mises en évidence, les autres grisées. Quand plusieurs périodes sont actives simultanément (ex. BECMG + TEMPO), la vraie distance LDG est calculée pour chacune — la plus restrictive est indiquée <strong>⚠ retenir</strong> (vert), les autres en <strong>✓ ETA</strong> (bleu). Sans QFU, le classement s'appuie sur le type : TEMPO > BECMG > FROM.</p>
         <p><strong>Code couleur :</strong></p>
         <ul>
-          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période active à l'ETA la plus restrictive. C'est celle-ci qu'il faut utiliser pour le calcul.</li>
-          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période également active mais moins restrictive.</li>
-          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison de restrictivité.</li>
+          <li><span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:4px;font-weight:700">Vert — ⚠ retenir</span> : période la plus restrictive à l'ETA.</li>
+          <li><span style="background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700">Bleu — ✓ ETA</span> : période active mais moins restrictive.</li>
+          <li><span style="background:#fffbeb;color:#b45309;padding:1px 6px;border-radius:4px;font-weight:700">Jaune</span> : TEMPO ou PROB TEMPO — inclus dans la comparaison.</li>
           <li>Grisé : période non active à l'heure ETA saisie.</li>
         </ul>
-        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR (fenêtre de validité), les deux sources sont comparées et la plus restrictive est indiquée, à la fois dans le sélecteur de périodes et dans le popup de résultats.</p>
-        <p><strong>Option 5 kt arrière :</strong> si le vent de la période ETA est favorable (moins de 5 kt arrière), un bouton propose d'appliquer cette hypothèse conservatrice. Le libellé indique si c'est par rapport au METAR ou au TAF. Changer cette option après un calcul réinitialise les résultats.</p>
+        <p><strong>Comparaison METAR / TAF :</strong> si l'ETA tombe dans les 2 heures suivant l'émission du METAR, les deux sources sont comparées par vraie distance LDG. Si le METAR est plus restrictif, son vent est appliqué automatiquement aux champs arrivée et un message l'indique. Si le TAF est plus restrictif, les champs restent inchangés. Cliquer sur une période TAF remet le vent TAF (override manuel).</p>
+        <p><strong>Option 5 kt arrière :</strong> si le vent de la période ETA est favorable, un bouton propose d'appliquer cette hypothèse conservatrice. Modifier cette option après un calcul réinitialise les résultats.</p>
       </div>
 
       <div class="readme-section">
         <h3>Facteur vent</h3>
-        <p>Le vent de face réduit la distance, le vent arrière l'augmente :</p>
         <ul>
           <li><strong>Vent de face</strong> : interpolation linéaire (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
           <li><strong>Vent arrière</strong> : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
@@ -1417,7 +1405,7 @@
 
       <div class="readme-section">
         <h3>⚠ Appliquer 5 kt de vent arrière</h3>
-        <p>S'affiche quand le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Hypothèse conservatrice fréquemment utilisée en opérations. Disparaît si le vent réel est déjà ≥ 5 kt arrière. Changer cette option après un calcul réinitialise les résultats.</p>
+        <p>S'affiche quand le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Hypothèse conservatrice fréquemment utilisée en opérations. Disparaît si le vent réel est déjà ≥ 5 kt arrière. Modifier cette option après un calcul réinitialise les résultats.</p>
       </div>
 
       <div class="readme-section">
@@ -1427,27 +1415,26 @@
 
       <div class="readme-section">
         <h3>Surface de piste</h3>
-        <p>Piste dure ou herbe au décollage (tables distinctes, herbe généralement +20 à 40 %). À l'atterrissage : freinage modéré (dur/herbe) ou sans frein sur herbe.</p>
+        <p>Piste dure ou herbe au décollage (herbe généralement +20 à 40 %). À l'atterrissage : freinage modéré (dur/herbe) ou sans frein sur herbe.</p>
       </div>
 
       <div class="readme-section">
         <h3>Marge de sécurité</h3>
-        <p>Appliquée en multiplicateur final (30 % par défaut) :</p>
+        <p>Multiplicateur final (30 % par défaut) :</p>
         <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
-        <p>C'est la valeur "Requis, marge incluse" qu'il faut comparer avec la TODA ou LDA disponible. Modifier la marge réinitialise les deux calculs (départ et arrivée).</p>
+        <p>C'est la valeur "Requis, marge incluse" à comparer avec la TODA ou LDA disponible. Modifier la marge réinitialise les deux calculs.</p>
       </div>
 
       <div class="readme-section">
         <h3>Facteur supplémentaire</h3>
-        <p>Multiplicateur libre (1,00 par défaut) appliqué avant la marge. Permet d'intégrer tout coefficient non couvert : piste contaminée, pilote en formation, procédure particulière, etc.</p>
+        <p>Multiplicateur libre (1,00 par défaut) appliqué avant la marge : piste contaminée, pilote en formation, procédure particulière, etc.</p>
       </div>
 
       <div class="readme-section">
         <h3>Résultats et export PDF</h3>
-        <p>Après calcul, le bouton principal indique <strong>"✅ Calculé — voir résultats"</strong>. Un reclic affiche directement les résultats sans recalcul si aucun paramètre n'a changé. Toute modification d'un champ réinitialise l'état et force un nouveau calcul.</p>
-        <p>Le bouton <strong>"📄 Exporter PDF"</strong> (actif uniquement après au moins un calcul) génère une fiche A4 avec paramètres, METAR brut et résultats. Ne génère que les pages calculées (départ seul, arrivée seule, ou les deux). La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si compatible, <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon.</p>
+        <p>Après calcul, le bouton indique <strong>"✅ Calculé — voir résultats"</strong>. Un reclic affiche directement les résultats si rien n'a changé. Toute modification d'un champ (vent, piste, masse, marge, avion, option 5 kt…) réinitialise l'état et force un nouveau calcul.</p>
+        <p>Le bouton <strong>"📄 Exporter PDF"</strong> génère une fiche vectorielle sur une page unique (départ et arrivée côte à côte si les deux sont calculés). Le PDF inclut : paramètres généraux, résultats avec verdict OK/NON, terrain, vent, composantes, METAR brut, TAF brut (arrivée) avec la période retenue surlignée en bleu, ETA, source météo retenue, et <strong>heure du coucher du soleil et de la nuit aéronautique</strong> (coucher + 30 min) calculées depuis les coordonnées de la station.</p>
       </div>
-
     </div><!-- /readme-body -->
   </div><!-- /readme-wrap -->
 
@@ -1602,7 +1589,7 @@ let lastArrMetarTime = null;
 let lastDepStationLat = null; // Coordonnées pour calcul coucher soleil
 let lastDepStationLon = null;
 let lastArrStationLat = null;
-let lastArrStationLon = null;
+let lastArrMetarData  = null; // METAR arrivée parsé complet
 let lastMetarVsTafResult = null; // 'metar' | 'taf' | null
 let depComputed = false;
 let arrComputed = false;
@@ -2618,6 +2605,7 @@ function applyMetar(side, data) {
   } else {
     lastArrMetarRaw  = data?.raw || '—';
     lastArrMetarTime = data?.time?.dt ? new Date(data.time.dt) : null;
+    lastArrMetarData = data; // stocker pour application automatique si plus restrictif
   }
 
   // Prise en compte TEMPO : remplace si plus contraignant
@@ -3112,37 +3100,43 @@ function renderTafPicker(tafData) {
   }
 
   function checkMetarVsTaf(etaHour, curPeriod) {
-    if (etaHour === '' || etaHour == null || !lastArrMetarTime) return null;
+    if (etaHour === '' || etaHour == null || !lastArrMetarTime || !lastArrMetarData) return null;
     const h = parseInt(etaHour, 10);
     if (isNaN(h)) return null;
 
-    // ETA en heure epoch approximative
     const now = new Date();
     let etaDt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
     if (etaDt < lastArrMetarTime) etaDt = new Date(etaDt.getTime() + 86400000);
 
-    // METAR valide 2h après émission
     const metarExpiry = new Date(lastArrMetarTime.getTime() + 2 * 3600000);
-    if (etaDt > metarExpiry) return null; // ETA hors fenêtre METAR
+    if (etaDt > metarExpiry) return null; // ETA hors fenêtre METAR → TAF fait foi
 
-    // Comparer vent METAR vs vent TAF de la période ETA
     const qfu = normQFU(document.getElementById('arrQfu').value);
-    if (!qfu || !curPeriod?.wind) return 'metar'; // pas assez d'info, garder METAR
+    if (!qfu || !curPeriod?.wind) return null; // pas assez d'info pour comparer
 
-    const metarComps = getMetarWindStrength(qfu);
-    if (!metarComps) return 'metar';
+    // Score METAR
+    const mDir = lastArrMetarData.wind_direction?.value ?? 0;
+    const mKt  = Math.max(
+      lastArrMetarData.wind_speed?.value ?? 0,
+      lastArrMetarData.wind_gust?.value  ?? 0
+    );
+    const metarComps = compsFrom(qfu, mDir, mKt);
+    if (!metarComps) return null;
 
-    const tafDir = curPeriod.wind.dirValue ?? 0;
-    const tafKt  = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
+    // Score TAF période active
+    const tafDir   = curPeriod.wind.dirValue ?? 0;
+    const tafKt    = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
     const tafComps = compsFrom(qfu, tafDir, tafKt);
+    if (!tafComps) return null;
 
-    if (!tafComps) return 'metar';
+    // Comparer par vraie distance LDG
+    const distForWind = (hw) => windDistanceFactor(hw);
+    const metarHW = metarComps.hwSigned ?? 0;
+    const tafHW   = tafComps.hwSigned   ?? 0;
 
-    // Le plus restrictif = plus de vent arrière, ou plus de vent de travers
-    const metarScore = (metarComps.tail || 0) * 10 + Math.abs(metarComps.xw || 0);
-    const tafScore   = (tafComps.tail  || 0) * 10 + Math.abs(tafComps.xw  || 0);
+    const metarIsMoreRestrictive = distForWind(metarHW) > distForWind(tafHW);
 
-    return tafScore > metarScore ? 'taf' : 'metar';
+    return metarIsMoreRestrictive ? 'metar' : 'taf';
   }
 
   function calcDistForPeriod(period) {
@@ -3225,11 +3219,14 @@ function renderTafPicker(tafData) {
     const metarVsTaf = checkMetarVsTaf(etaHour, curPeriod);
     lastMetarVsTafResult = metarVsTaf;
 
-    if (metarVsTaf && lastArrMetarRaw && lastArrMetarRaw !== '—') {
-      const suffix = metarVsTaf === 'metar'
-        ? '\n⚠ ETA dans fenêtre METAR (< 2h) — METAR utilisé (plus récent et valide)'
-        : '\n⚠ ETA dans fenêtre METAR (< 2h) — TAF plus restrictif, utiliser le TAF';
-      setMetarMsg(msgEl, lastArrMetarRaw + suffix);
+    if (metarVsTaf === 'metar' && lastArrMetarRaw && lastArrMetarRaw !== '—') {
+      setMetarMsg(msgEl, lastArrMetarRaw + '\n⚠ ETA dans fenêtre METAR (< 2h) — METAR plus restrictif : vent METAR appliqué');
+      // Appliquer automatiquement le vent METAR (sauf si l'utilisateur vient de cliquer sur un TEMPO)
+      if (lastArrMetarData && !window._tafManualOverride) {
+        applyMetarWindOnly('arr', lastArrMetarData);
+      }
+    } else if (metarVsTaf === 'taf' && lastArrMetarRaw && lastArrMetarRaw !== '—') {
+      setMetarMsg(msgEl, lastArrMetarRaw + '\n⚠ ETA dans fenêtre METAR (< 2h) — TAF plus restrictif : utiliser le TAF');
     }
 
     const hasEta = etaHour !== '' && etaHour != null;
@@ -3268,7 +3265,7 @@ function renderTafPicker(tafData) {
         inactive ? 'is-inactive' : '',
       ].filter(Boolean).join(' ');
 
-      return `<div class="${cls}" onclick="applyTafPeriod(${i})">
+      return `<div class="${cls}" onclick="applyTafPeriodImpl(${i})">
         <span class="tp-type">${type}</span>
         <span class="tp-time">${t1}→${t2}</span>
         <span class="tp-wind">${wind}${extra}</span>
@@ -3281,7 +3278,10 @@ function renderTafPicker(tafData) {
 
   render(etaSelect.value);
   wrap.classList.add('visible');
-  etaSelect.onchange = () => render(etaSelect.value);
+  etaSelect.onchange = () => {
+    window._tafManualOverride = false; // nouvel ETA → réévaluer METAR vs TAF
+    render(etaSelect.value);
+  };
 }
 
 function tafToggleTw5() {
@@ -3292,7 +3292,37 @@ function tafToggleTw5() {
   etaSelect.dispatchEvent(new Event('change'));
 }
 
-function applyTafPeriod(idx) {
+// Applique uniquement le vent d'un METAR aux champs (sans changer OAT, alt, etc.)
+function applyMetarWindOnly(side, data) {
+  if (!data) return;
+  const wd = data.wind_direction;
+  const ws = data.wind_speed;
+  const wg = data.wind_gust;
+  const dirEl  = document.getElementById(side+'WindDir');
+  const spdEl  = document.getElementById(side+'WindKt');
+  const gstEl  = document.getElementById(side+'WindGust');
+  const fromEl = document.getElementById(side+'VrbFrom');
+  const toEl   = document.getElementById(side+'VrbTo');
+
+  if (wd?.repr === 'VRB') dirEl.value = 'VRB';
+  else if (typeof wd?.value === 'number') dirEl.value = String(wd.value === 0 ? 360 : wd.value).padStart(3,'0');
+  spdEl.value = String(ws?.value ?? 0);
+  gstEl.value = String(wg?.value ?? 0);
+
+  // VRB avec secteur
+  const vd = data.variable?.from != null ? data.variable : null;
+  if (vd) { fromEl.value = String(vd.from).padStart(3,'0'); toEl.value = String(vd.to).padStart(3,'0'); }
+  else     { fromEl.value = ''; toEl.value = ''; }
+
+  updateWindDisplay(side);
+  resetComputedState(side);
+}
+
+// Applique une période TAF manuellement (override du METAR auto)
+window._tafManualOverride = false;
+
+function applyTafPeriodImpl(idx) {
+  window._tafManualOverride = true; // l'utilisateur a choisi manuellement → ne pas réappliquer le METAR
   const forecast = document.getElementById('arrTafPeriods')._forecast;
   const period   = forecast?.[idx];
   if (!period || !period.wind) return;
