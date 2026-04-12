@@ -2387,6 +2387,9 @@ const RM_STEPS = [
 function openResultsModal(side, computeFn) {
   if (!validateBeforeCompute(side)) return;
 
+  // Annuler le timer de fermeture éventuel
+  if (_closeModalTimer) { clearTimeout(_closeModalTimer); _closeModalTimer = null; }
+
   const alreadyCalc = side === 'dep' ? depComputed : arrComputed;
   const snap        = lastSnapshot[side];
   const current     = getInputSnapshot(side);
@@ -2539,14 +2542,18 @@ function showResultsContent(side) {
   content.style.display  = 'flex';
 }
 
+let _closeModalTimer = null;
+
 function closeResultsModal() {
   const modal = document.getElementById('resultsModal');
   modal.classList.remove('is-open');
   document.body.style.overflow = '';
-  setTimeout(() => {
+  if (_closeModalTimer) clearTimeout(_closeModalTimer);
+  _closeModalTimer = setTimeout(() => {
     modal.style.display = 'none';
     document.getElementById('rmContent').style.display = 'none';
     document.getElementById('rmLoading').style.display = 'flex';
+    _closeModalTimer = null;
   }, 400);
 }
 
@@ -3592,19 +3599,25 @@ async function generatePDF() {
       ['Composante arriere', `${comps.tail} kt`],
       ['Composante travers', `${comps.meanX} kt${comps.worstX!==null?' (max '+comps.worstX+')':''}`],
     ];
-    const gridH = Math.max(leftRows.length, windRows.length) * 5 + 7;
+    const gridH = Math.max(leftRows.length, windRows.length) * 5 + 8;
     fill(x, sy, cw, gridH, C.white);
     stroke(x, sy, cw, gridH, C.bord);
     ln(x+cw/2, sy, x+cw/2, sy+gridH);
-    T('TERRAIN', x+2, sy+4, 5, true, C.mut);
+
+    // Bandeau titres TERRAIN / VENT
+    fill(x, sy, cw/2, 5.5, C.bgM);
+    fill(x+cw/2, sy, cw/2, 5.5, C.bgM);
+    ln(x, sy+5.5, x+cw, sy+5.5, C.bord);
+
+    T('TERRAIN', x+2, sy+4, 5.5, true, C.dark);
     leftRows.forEach(([k,v], i) => {
-      const gy = sy + 7 + i*5;
+      const gy = sy + 8 + i*5;
       T(k, x+2, gy, 5.5, false, C.mut);
       T(v, x+cw/2-2, gy, 6.5, true, C.dark, 'right');
     });
-    T('VENT', x+cw/2+2, sy+4, 5, true, C.mut);
+    T('VENT', x+cw/2+2, sy+4, 5.5, true, C.dark);
     windRows.forEach(([k,v], i) => {
-      const gy = sy + 7 + i*5;
+      const gy = sy + 8 + i*5;
       T(k, x+cw/2+2, gy, 5.5, false, C.mut);
       T(v, x+cw-2, gy, 6.5, true, C.dark, 'right');
     });
