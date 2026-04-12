@@ -3474,13 +3474,12 @@ async function generatePDF() {
 
   // ── HEADER ──────────────────────────────────────────
   let y = MT;
-  fill(ML, y, UW, 13, C.navy);
-  T('FICHE DE PERFORMANCES', ML+3, y+5, 10, true, C.white);
-  T('Aereoclub de Beauvais-Tille  \u00B7  ACBT  \u00B7  LFOB  \u00B7  Document operationnel', ML+3, y+10, 6, false, C.navyL);
+  fill(ML, y, UW, 11, C.navy);
+  T('FICHE DE PERFORMANCES', ML+3, y+4.5, 10, true, C.white);
+  T('Aereoclub de Beauvais-Tille', ML+3, y+9, 6, false, C.navyL);
   T(aircraft, ML+UW-3, y+5, 9.5, true, C.white, 'right');
-  T(`${prop}  \u00B7  ${profile}  \u00B7  Marge ${safety}%`, ML+UW-3, y+9.5, 5.5, false, C.navyL, 'right');
-  T(stamp(), ML+UW-3, y+12.5, 5, false, C.navyL, 'right');
-  y += 13;
+  T(stamp(), ML+UW-3, y+9.5, 5, false, C.navyL, 'right');
+  y += 11;
 
   // ── PARAMETRES GENERAUX ──────────────────────────────
   fill(ML, y, UW, 9, C.bgL);
@@ -3543,7 +3542,8 @@ async function generatePDF() {
     sy += 10;
 
     // KPI bar
-    const kpiH = 19;
+    const nRows = isDep ? 5 : 4;
+    const kpiH = 7 + nRows * 3.8;
     fill(x, sy, cw, kpiH, C.bgL);
     stroke(x, sy, cw, kpiH, C.bord);
 
@@ -3564,13 +3564,13 @@ async function generatePDF() {
       ['Roulement (ss marge)', roll],
       ['Passage 15m (ss marge)', pass],
       ['Facteur vent', windF],
-      ...(isDep ? [['Carenages', spat.length>20 ? spat.slice(0,19)+'…' : spat]] : []),
+      ...(isDep ? [['Carenages', spat.length>22 ? spat.slice(0,21)+'…' : spat]] : []),
       ['Facteur supplementaire', extra],
     ];
     rows.forEach(([k,v], i) => {
       const ry = sy + 5 + i*3.8;
       T(k, dx, ry, 5.5, false, C.mut);
-      T(v.length>18 ? v.slice(0,17)+'…':v, dx+dW, ry, 6, true, C.dark, 'right');
+      T(v.length>20 ? v.slice(0,19)+'…':v, dx+dW, ry, 6, true, C.dark, 'right');
     });
     sy += kpiH;
 
@@ -3585,10 +3585,6 @@ async function generatePDF() {
       const etaVal = etaSel?.options[etaSel.selectedIndex]?.text || '—';
       leftRows.push(['ETA (UTC)', etaVal]);
       if (lastMetarVsTafResult) leftRows.push(['Source meteo', lastMetarVsTafResult==='metar' ? 'METAR (restrictif)' : 'TAF (restrictif)']);
-      if (lastArrTafPeriodDesc) {
-        const pd = lastArrTafPeriodDesc.length > 24 ? lastArrTafPeriodDesc.slice(0,23)+'…' : lastArrTafPeriodDesc;
-        leftRows.push(['Periode TAF', pd]);
-      }
     }
     const windRows = [
       ['Direction/Vitesse', `${dir}/${spd}${gst>0?' G'+gst:''} kt`],
@@ -3629,18 +3625,58 @@ async function generatePDF() {
       sy += mH;
     }
 
-    // TAF raw (arrivée seulement)
+    // TAF raw (arrivée seulement) avec surlignage de la période retenue
     if (!isDep && lastArrTafRaw && lastArrTafRaw !== '—') {
       fill(x, sy, cw, 4, C.bgM);
       stroke(x, sy, cw, 4, C.bord);
       T('TAF', x+2, sy+2.8, 5, true, C.mut);
+      // Légende surlignage si période appliquée
+      if (lastArrTafPeriodDesc) {
+        T('Periode retenue (fond bleu)', x+cw-2, sy+2.8, 4.5, false, [29,78,216], 'right');
+      }
       sy += 4;
-      const lines = splitMono(lastArrTafRaw, cw-4, 5.5);
-      const tH = lines.length * 3.3 + 3;
+
+      // Découper le TAF en tokens pour surligner la période retenue
+      const tafText = lastArrTafRaw;
+      const lines = splitMono(tafText, cw-4, 5.5);
+      const lineH = 3.3;
+      const tH = lines.length * lineH + 3;
       fill(x, sy, cw, tH, C.bgM);
       stroke(x, sy, cw, tH, C.bord);
-      doc.setFont('courier','normal'); doc.setFontSize(5.5); doc.setTextColor(...C.dark);
-      doc.text(lines, x+2, sy+3);
+
+      // Identifier les tokens de la période retenue pour surlignage
+      // On cherche le groupe correspondant dans le TAF brut
+      let highlightTokens = [];
+      if (lastArrTafPeriodDesc) {
+        // Extraire type et horaires depuis la description (ex: "FROM 12/15z→12/19z · 250/10kt")
+        const m = lastArrTafPeriodDesc.match(/(\S+)\s+(\d{2}\/\d{2}z)→(\d{2}\/\d{2}z)/);
+        if (m) {
+          // Convertir "12/15z" → "1215" pour chercher dans le TAF
+          const toRepr = s => s.replace('/', '').replace('z','');
+          const startR = toRepr(m[2]), endR = toRepr(m[3]);
+          highlightTokens = [startR + '/' + endR, startR, endR];
+        }
+      }
+
+      // Dessiner ligne par ligne avec surlignage
+      doc.setFont('courier','normal');
+      doc.setFontSize(5.5);
+      const charW = doc.getTextWidth('M');
+
+      lines.forEach((line, li) => {
+        const ly = sy + 3 + li * lineH;
+        // Chercher si cette ligne contient un token à surligner
+        let highlighted = false;
+        if (highlightTokens.length > 0) {
+          highlighted = highlightTokens.some(tok => line.includes(tok));
+        }
+        if (highlighted) {
+          // Surligner toute la ligne en bleu clair
+          fill(x, sy + li * lineH + 0.5, cw, lineH, [219,234,254]);
+        }
+        doc.setTextColor(...(highlighted ? [29,78,216] : C.dark));
+        doc.text(line, x+2, ly);
+      });
       sy += tH;
     }
 
