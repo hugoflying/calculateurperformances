@@ -38,18 +38,33 @@
   .settings-bar .input { max-width:60px;font-family:'IBM Plex Mono',monospace;
     font-weight:700;text-align:center;border-radius:7px; }
 
-  /* Toggle buttons — corrigé pour Bulma */
-  .tog-group { display:inline-flex!important;flex-wrap:nowrap!important;gap:0!important; }
-  .tog-group .button { font-size:.75rem;font-weight:600; }
-  /* État inactif */
-  .tog-group .button:not(.tog-on) { background:#F9FAFB;border-color:#D1D5DB;color:#6B7280; }
-  .tog-group .button:not(.tog-on):hover { background:#F3F4F6; }
-  /* État actif normal (bleu) */
+  /* Toggle buttons — modern pill full-width */
+  .tog-group-wrap { display:block; width:100%; }
+  .tog-group {
+    display:flex!important;width:100%;
+    background:#F3F4F6;border-radius:12px!important;
+    padding:3px;gap:3px;border:none!important;
+    box-shadow:none!important;
+  }
+  .tog-group .button {
+    flex:1;border:none!important;border-radius:9px!important;
+    font-size:.76rem;font-weight:600;height:auto!important;
+    padding:8px 6px!important;line-height:1.2;
+    transition:all .18s;box-shadow:none!important;
+    white-space:normal;text-align:center;
+  }
+  .tog-group .button:not(.tog-on) {
+    background:transparent;color:#6B7280;
+  }
+  .tog-group .button:not(.tog-on):hover { background:#E5E7EB;color:#374151; }
   .tog-group .button.tog-on:not(.tog-grass) {
-    background:var(--dep)!important;border-color:var(--dep)!important;color:#fff!important; }
-  /* État actif herbe (vert) */
+    background:#fff!important;color:var(--dep)!important;
+    box-shadow:0 1px 4px rgba(0,0,0,.12)!important;font-weight:700!important;
+  }
   .tog-group .button.tog-on.tog-grass {
-    background:#065F46!important;border-color:#065F46!important;color:#D1FAE5!important; }
+    background:#fff!important;color:#065F46!important;
+    box-shadow:0 1px 4px rgba(0,0,0,.12)!important;font-weight:700!important;
+  }
 
   /* Settings bar toggles (btnRegWind, spats) */
   .setbar-tog { display:inline-flex;gap:0; }
@@ -94,14 +109,24 @@
   /* Runway picker */
   #depRunwayPicker,#arrRunwayPicker { display:none; }
   #depRunwayPicker.visible,#arrRunwayPicker.visible { display:block; }
-  .rwy-grid { display:flex;flex-wrap:wrap;gap:6px; }
-  .rwy-btn-js { background:#F9FAFB;border:1px solid #D1D5DB;border-radius:8px;
-    padding:7px 12px;cursor:pointer;transition:all .13s;text-align:center;min-width:64px; }
-  .rwy-btn-js:hover { border-color:var(--dep);background:var(--dep-bg); }
-  .rwy-btn-js.active { background:var(--dep-bg);border-color:var(--dep); }
-  .rwy-desig { font:700 13px 'IBM Plex Mono',monospace;color:#111827;display:block; }
-  .rwy-len { font:500 9px system-ui;color:#6B7280;display:block;margin-top:2px; }
-  .rwy-hdg { font:400 9px 'IBM Plex Mono',monospace;color:#9CA3AF;display:block; }
+  .rwy-tag {
+    display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;padding:10px 14px;
+    background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:12px;
+    cursor:pointer;transition:all .15s;text-align:center;min-width:80px;
+    font-family:system-ui,sans-serif;
+  }
+  .rwy-tag:hover { border-color:var(--dep);background:var(--dep-bg);transform:translateY(-1px);box-shadow:0 2px 8px rgba(37,99,235,.12); }
+  .rwy-tag.active { background:var(--dep-bg);border-color:var(--dep);box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+  .rwy-tag strong { font:700 18px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
+  .rwy-tag span { font:500 10px system-ui;color:#6B7280; }
+  .rwy-surf-badge {
+    font:600 9px system-ui;text-transform:uppercase;letter-spacing:.04em;
+    padding:1px 5px;border-radius:4px;margin-top:2px;
+    background:#F1F5F9;color:#64748B;
+  }
+  .rwy-tag.active .rwy-surf-badge { background:rgba(37,99,235,.1);color:var(--dep); }
+  .tags { display:flex;flex-wrap:wrap;gap:8px; }
 
   /* Wind strip */
   .wind-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
@@ -137,24 +162,44 @@
   /* TAF */
   .taf-wrap { display:none; }
   .taf-wrap.visible { display:block; }
-  .taf-period { display:flex;align-items:flex-start;gap:8px;background:#fff;
-    border:1px solid #E2E8F0;border-radius:8px;padding:9px 11px;
-    cursor:pointer;transition:all .13s;margin-bottom:4px; }
-  .taf-period:hover { border-color:#CBD5E1; }
-  .taf-period.is-current   { background:#ECFDF5;border-color:rgba(5,150,105,.3); }
-  .taf-period.is-eta-other { background:#EFF6FF;border-color:rgba(37,99,235,.2); }
+  .taf-period {
+    display:flex;align-items:stretch;gap:0;
+    background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;
+    cursor:pointer;transition:all .15s;margin-bottom:5px;overflow:hidden;
+  }
+  .taf-period:hover { border-color:#D1D5DB;background:#F3F4F6; }
+  .taf-period.is-current   { background:#ECFDF5;border-color:rgba(5,150,105,.4); }
+  .taf-period.is-eta-other { background:#EFF6FF;border-color:rgba(37,99,235,.35); }
   .taf-period.is-tempo     { border-style:dashed;border-color:#F59E0B;background:#FFFBEB; }
   .taf-period.is-inactive  { opacity:.3; }
-  .taf-period.is-excluded  { opacity:.45;border-style:dotted; }
-  .tp-type { font:700 8px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;
-    color:#9CA3AF;min-width:44px;flex-shrink:0;padding-top:2px; }
-  .tp-time { font:400 9px 'IBM Plex Mono';color:#9CA3AF;min-width:96px;flex-shrink:0;padding-top:2px; }
-  .tp-wind { flex:1;font:700 12px 'IBM Plex Mono';color:#111827; }
-  .tp-extra { font:400 9px system-ui;color:#9CA3AF;margin-top:3px; }
-  .tp-apply { font:600 9px system-ui;color:#9CA3AF;white-space:nowrap;flex-shrink:0;padding-top:2px; }
-  .taf-period.is-current .tp-apply   { color:#059669;font-weight:700; }
-  .taf-period.is-eta-other .tp-apply { color:var(--dep); }
+  .taf-period.is-excluded  { opacity:.45;border-style:dotted;border-color:#CBD5E1; }
+
+  /* Colonne gauche type */
+  .tp-type-col {
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex-shrink:0;width:52px;
+    background:rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.06);
+    padding:10px 4px;gap:3px;
+  }
+  .taf-period.is-current   .tp-type-col { background:rgba(5,150,105,.08); }
+  .taf-period.is-eta-other .tp-type-col { background:rgba(37,99,235,.06); }
+  .taf-period.is-tempo     .tp-type-col { background:rgba(245,158,11,.08); }
+
+  .tp-type { font:800 10px system-ui;letter-spacing:.03em;text-transform:uppercase;color:#6B7280;text-align:center; }
+  .tp-time { font:400 8px 'IBM Plex Mono',monospace;color:#9CA3AF;text-align:center;line-height:1.4; }
+
+  /* Corps principal */
+  .tp-main { flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:10px 12px; }
+  .tp-wind { font:700 16px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
+  .tp-extra { font:400 10px system-ui;color:#9CA3AF; }
+
+  /* Colonne droite apply */
+  .tp-apply { flex-shrink:0;font:700 9px system-ui;color:#9CA3AF;padding:10px 10px;
+    display:flex;align-items:center;text-align:right; }
+
+  .taf-period.is-current .tp-apply   { color:#059669; }
   .taf-period.is-current .tp-type    { color:#059669; }
+  .taf-period.is-eta-other .tp-apply { color:var(--dep); }
   .taf-period.is-eta-other .tp-type  { color:var(--dep); }
   .taf-period.is-tempo .tp-type      { color:#D97706; }
   .taf-period.is-excluded .tp-apply  { font-style:italic; }
@@ -347,14 +392,14 @@
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <label class="label">Vent réglementaire</label>
-    <div class="buttons has-addons setbar-tog" style="margin-bottom:0">
+    <div class="buttons has-addons setbar-tog">
       <button id="btnRegWindOff" class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">100 % réel</button>
       <button id="btnRegWindOn"  class="button is-small" style="border-radius:0 8px 8px 0!important">50 % / 150 %</button>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <label class="label">Carénages</label>
-    <div class="buttons has-addons setbar-tog" style="margin-bottom:0">
+    <div class="buttons has-addons setbar-tog">
       <button id="spatsWith"    class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">Avec</button>
       <button id="spatsWithout" class="button is-small" style="border-radius:0 8px 8px 0!important">Sans (+3 %)</button>
     </div>
@@ -461,21 +506,18 @@
         <div class="sec-body">
           <div class="field">
             <label class="label">Type de piste</label>
-            <div class="buttons has-addons tog-group" style="margin-bottom:0">
+            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
               <button id="depSurfHard"  class="button is-small tog-on">Revêtue (dur)</button>
               <button id="depSurfGrass" class="button is-small">Herbe</button>
-            </div>
+            </div></div>
           </div>
           <div id="depWetWrap" style="display:none;margin-top:10px">
             <label class="label">État de la piste en herbe</label>
-            <div class="buttons has-addons tog-group" style="flex-wrap:wrap!important;margin-bottom:0">
+            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
               <button id="depGrassDry"      class="button is-small tog-on">Herbe sèche</button>
-              <button id="depGrassWet"      class="button is-small">Herbe mouillée <span style="opacity:.6;font-size:.7em">×1,15</span></button>
-              <button id="depGrassWetShort" class="button is-small">Herbe courte mouillée <span style="opacity:.6;font-size:.7em">×1,60</span></button>
-            </div>
-            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:6px">
-              Facteurs selon OMA Part C tableau 1.18 (AMC1 CAT.POL.A.305)
-            </p>
+              <button id="depGrassWet"      class="button is-small">Herbe mouillée</button>
+              <button id="depGrassWetShort" class="button is-small">Herbe courte mouillée</button>
+            </div></div>
           </div>
         </div>
       </div>
@@ -616,24 +658,18 @@
         <div class="sec-body">
           <div class="field">
             <label class="label">Type de freinage</label>
-            <div class="buttons has-addons tog-group" style="margin-bottom:0">
+            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
               <button id="arrModerate" class="button is-small tog-on">Freinage normal (dur/herbe)</button>
               <button id="arrNoBrake"  class="button is-small">Sans freins (herbe sèche)</button>
-            </div>
-            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:5px">
-              «Freinage normal» = piste dure sèche ou herbe sèche. «Sans freins» = herbe uniquement (tableau LDG no-brake AFM).
-            </p>
+            </div></div>
           </div>
           <div class="field mt-3">
             <label class="label">État de la piste</label>
-            <div class="buttons has-addons tog-group" style="flex-wrap:wrap!important;margin-bottom:0">
+            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
               <button id="arrGrassDry"      class="button is-small tog-on">Sèche</button>
-              <button id="arrGrassWet"      class="button is-small">Mouillée <span style="opacity:.6;font-size:.7em">×1,15</span></button>
-              <button id="arrGrassWetShort" class="button is-small" style="display:none">Herbe courte mouillée <span style="opacity:.6;font-size:.7em">×1,60</span></button>
-            </div>
-            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:5px">
-              Facteurs selon OMA Part C tableau 1.25.1. «Herbe courte mouillée ×1,60» : uniquement disponible en mode «Sans freins».
-            </p>
+              <button id="arrGrassWet"      class="button is-small">Mouillée</button>
+              <button id="arrGrassWetShort" class="button is-small" style="display:none">Herbe courte mouillée</button>
+            </div></div>
           </div>
         </div>
       </div>
@@ -1323,6 +1359,19 @@ function crosswindLimitColor(side, xwVal) {
 }
 
 function updateWindDisplay(side) {
+  // Afficher les champs VRB seulement si la direction est VRB
+  const dirEl   = document.getElementById(side + 'WindDir');
+  const vrbFrom = document.getElementById(side + 'VrbFrom');
+  const vrbTo   = document.getElementById(side + 'VrbTo');
+  const vrbRowEl = vrbFrom?.closest('.columns') || vrbFrom?.parentElement?.parentElement;
+  if (vrbFrom && vrbTo && dirEl) {
+    const isVrb = (dirEl.value || '').toUpperCase().includes('VRB');
+    const display = isVrb ? '' : 'none';
+    if (vrbFrom.closest) {
+      const row = vrbFrom.closest('.columns') || vrbFrom.closest('[class*="column"]')?.parentElement;
+      if (row) row.style.display = isVrb ? '' : 'none';
+    }
+  }
   const qfu    = normQFU(document.getElementById(side+'Qfu').value);
   const dirStr = (document.getElementById(side+'WindDir').value||'');
   const kt     = parseInt(document.getElementById(side+'WindKt').value||'0', 10) || 0;
@@ -1873,10 +1922,9 @@ function openResultsModal(side, computeFn) {
   const sub  = document.getElementById('rmSub');
 
   loading.style.display = 'flex';
-  loading.style.background = side === 'arr'
-    ? 'linear-gradient(135deg,#047857,var(--arr))'
-    : 'var(--navy)';
+  loading.style.background = '';
   content.style.display = 'none';
+  fill.className   = 'rm-bar-fill ' + side;
   fill.style.width = '0%';
   pct.textContent  = '0 %';
   sub.textContent  = RM_STEPS[0];
@@ -2117,12 +2165,17 @@ async function fetchRunways(icao) {
       const desigNum   = parseInt(designator, 10);
       // QFU = trueHeading exact d'OpenAIP (déjà en magnétique dans leur base)
       const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
+      // Surface : OpenAIP retourne mainSurface avec codes ASPH/CONC/GRASS/TURF/GRVL etc.
+      const surf = (rwy.mainSurface || '').toUpperCase();
+      const surfaceType = /GRASS|TURF|GRVL|SAND|DIRT|SOD|WATER/.test(surf) ? 'grass' : 'hard';
       return {
         designator,
         qfu,
         toraM  : Math.round(rwy.declaredDistance?.toda?.value || rwy.declaredDistance?.tora?.value || rwy.dimension.length.value),
         ldaM   : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
         lengthM: Math.round(rwy.dimension.length.value),
+        surfaceType,
+        surfaceRaw: surf || null,
       };
     })
     .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
@@ -2134,14 +2187,20 @@ function renderRunwayPicker(side, runways) {
 
   const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
   wrap.innerHTML = `
-    <div class="runway-picker-label">🛬 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
-    <div class="rwy-list">
-      ${runways.map((rwy, i) => `
-        <button class="rwy-btn" onclick="applyRunway('${side}', ${i})">
-          <span class="rwy-desig">${rwy.designator}</span>
-          <span class="rwy-len">${side === 'dep' ? rwy.toraM : rwy.ldaM} m</span>
-          <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
-        </button>`).join('')}
+    <p style="font:600 10px system-ui;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:8px">
+      🛣 Pistes — sélectionner pour remplir QFU + ${lenLabel}
+    </p>
+    <div class="tags" style="gap:6px">
+      ${runways.map((rwy, i) => {
+        const surfIcon = rwy.surfaceType === 'grass' ? '🌿' : '⬛';
+        const surfLabel = rwy.surfaceType === 'grass' ? 'Herbe' : 'Revêtue';
+        return `<button class="rwy-tag" id="rwy-${side}-${i}" onclick="applyRunway('${side}', ${i})">
+          <strong>${rwy.designator}</strong>
+          <span>${side === 'dep' ? rwy.toraM : rwy.ldaM} m</span>
+          <span>${String(rwy.qfu).padStart(3,'0')}°</span>
+          <span class="rwy-surf-badge">${surfIcon} ${surfLabel}</span>
+        </button>`;
+      }).join('')}
     </div>`;
   wrap.style.display = 'block';
   wrap._runways = runways;
@@ -2158,11 +2217,25 @@ function applyRunway(side, idx) {
   const lenEl = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda');
   lenEl.value = String(side === 'dep' ? rwy.toraM : rwy.ldaM);
 
+  // Auto-sélection surface si OpenAIP fournit l'info
+  if (rwy.surfaceType && side === 'dep') {
+    if (rwy.surfaceType === 'grass') {
+      depSurface = 'grass';
+      setToggleGrass($('#depSurfGrass'), $('#depSurfHard'));
+      document.getElementById('depWetWrap').style.display = 'block';
+    } else {
+      depSurface = 'hard';
+      setToggleActive($('#depSurfHard'), $('#depSurfGrass'));
+      document.getElementById('depWetWrap').style.display = 'none';
+      depWetFactor = 1.0;
+    }
+  }
+
   wrap.querySelectorAll('.rwy-btn').forEach((b, i) =>
     b.classList.toggle('active', i === idx));
 
   updateWindDisplay(side);
-  resetComputedState(side); // QFU et longueur changent → recalcul obligatoire
+  resetComputedState(side);
 }
 
 function setMetarMsg(el, text) {
@@ -2603,6 +2676,19 @@ function renderTafPicker(tafData) {
 
   rawEl.style.display = 'none';
 
+  // Générer les options horaires si pas encore fait
+  if (etaSelect.options.length <= 1) {
+    etaSelect.innerHTML = '<option value="">ETA UTC…</option>';
+    for (let h = 0; h < 24; h++) {
+      const hh   = String(h).padStart(2,'0');
+      const hh1  = String((h+1)%24).padStart(2,'0');
+      const opt  = document.createElement('option');
+      opt.value  = String(h);
+      opt.textContent = hh + 'h – ' + hh1 + 'h';
+      etaSelect.appendChild(opt);
+    }
+  }
+
   const rawForecast      = buildTafPeriodsFromRaw(tafData.raw || '');
   const fallbackForecast = (tafData.forecast || []).filter(p => p.wind_direction && p.wind_speed);
   const forecast         = rawForecast.length ? rawForecast : fallbackForecast;
@@ -2839,9 +2925,15 @@ function renderTafPicker(tafData) {
       }
 
       return `<div class="${cls}" onclick="applyTafPeriodImpl(${i})">
-        <span class="tp-type">${type}</span>
-        <span class="tp-time">${t1}→${t2}</span>
-        <div style="flex:1"><span class="tp-wind">${wind}</span>${extra}${becmgHint}</div>
+        <div class="tp-type-col">
+          <span class="tp-type">${type}</span>
+          <span class="tp-time">${t1.replace('→','')}</span>
+          <span class="tp-time">${t2}</span>
+        </div>
+        <div class="tp-main">
+          <span class="tp-wind">${wind}</span>
+          ${extra}${becmgHint}
+        </div>
         <span class="tp-apply">${applyLabel}</span>
       </div>`;
     }).join('');
