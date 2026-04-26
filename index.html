@@ -469,10 +469,7 @@
               <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
             </div>
           </div>
-          <div class="field">
-            <label class="label">Facteur supplémentaire</label>
-            <input id="depExtraTO" class="input is-small" type="number" step="0.01" value="1.00"/>
-          </div>
+
         </div>
       </div>
 
@@ -485,10 +482,14 @@
             <div class="column"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number"/></div>
             <div class="column"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number"/></div>
           </div>
-          <div class="columns is-mobile is-variable is-2 mb-3">
-            <div class="column"><label class="label">VRB de</label><input id="depVrbFrom" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">VRB à</label><input id="depVrbTo" class="input is-small" type="number"/></div>
-            <div class="column"></div>
+          <div id="depVrbRow" class="columns is-mobile is-variable is-2 mb-3" style="display:none;align-items:flex-end">
+            <div class="column is-narrow"><label class="label">Secteur variable</label>
+              <div class="field has-addons">
+                <div class="control"><input id="depVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+                <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
+                <div class="control"><input id="depVrbTo" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+              </div>
+            </div>
           </div>
           <div class="wind-strip mb-3">
             <div class="wc"><div class="lbl">Face</div><div class="val" id="depHwFace">—</div><div class="unit">kt</div></div>
@@ -620,10 +621,7 @@
               <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
             </div>
           </div>
-          <div class="field">
-            <label class="label">Facteur supplémentaire</label>
-            <input id="arrExtraLDG" class="input is-small" type="number" step="0.01" value="1.00"/>
-          </div>
+
         </div>
       </div>
 
@@ -636,10 +634,14 @@
             <div class="column"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number"/></div>
             <div class="column"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number"/></div>
           </div>
-          <div class="columns is-mobile is-variable is-2 mb-3">
-            <div class="column"><label class="label">VRB de</label><input id="arrVrbFrom" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">VRB à</label><input id="arrVrbTo" class="input is-small" type="number"/></div>
-            <div class="column"></div>
+          <div id="arrVrbRow" class="columns is-mobile is-variable is-2 mb-3" style="display:none;align-items:flex-end">
+            <div class="column is-narrow"><label class="label">Secteur variable</label>
+              <div class="field has-addons">
+                <div class="control"><input id="arrVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+                <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
+                <div class="control"><input id="arrVrbTo" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+              </div>
+            </div>
           </div>
           <div id="arrTafTwSuggest" style="margin-bottom:8px"></div>
           <div class="wind-strip mb-3">
@@ -1364,13 +1366,10 @@ function updateWindDisplay(side) {
   const vrbFrom = document.getElementById(side + 'VrbFrom');
   const vrbTo   = document.getElementById(side + 'VrbTo');
   const vrbRowEl = vrbFrom?.closest('.columns') || vrbFrom?.parentElement?.parentElement;
-  if (vrbFrom && vrbTo && dirEl) {
+  if (dirEl) {
     const isVrb = (dirEl.value || '').toUpperCase().includes('VRB');
-    const display = isVrb ? '' : 'none';
-    if (vrbFrom.closest) {
-      const row = vrbFrom.closest('.columns') || vrbFrom.closest('[class*="column"]')?.parentElement;
-      if (row) row.style.display = isVrb ? '' : 'none';
-    }
+    const rowEl = document.getElementById(side + 'VrbRow');
+    if (rowEl) rowEl.style.display = isVrb ? '' : 'none';
   }
   const qfu    = normQFU(document.getElementById(side+'Qfu').value);
   const dirStr = (document.getElementById(side+'WindDir').value||'');
@@ -1742,7 +1741,7 @@ function computeDepPerf() {
   document.getElementById('toBaseRoll').textContent = Math.round(baseTO_roll) + ' m';
   document.getElementById('toWindF').textContent    = depWindF.toFixed(2) + '×' + (useRegWind ? ' (régl.)' : '') + (taActive ? ' (5 kt arrière)' : '');
   document.getElementById('toSpat').textContent     = spatsF.toFixed(2) + '× ' + (withSpats ? '(carénages présents)' : '(sans carénages)');
-  document.getElementById('toExtra').textContent    = depExtra.toFixed(2) + '×' + (depWetFactor > 1 ? ` · ×${depWetFactor.toFixed(2)} (piste mouillée)` : '');
+  document.getElementById('toExtra').textContent    = depWetFactor > 1 ? `×${depWetFactor.toFixed(2)} (piste mouillée)` : '×1,00';
   document.getElementById('toRes').textContent      = toCalc + ' m';
   document.getElementById('todaMini').textContent   = depToda ? depToda + ' m' : '—';
   document.getElementById('toKpiVal').textContent   = toMargin + ' m';
@@ -1789,7 +1788,7 @@ function computeArrPerf() {
   document.getElementById('ldgBasePass').textContent = Math.round(baseLDG_pass) + ' m';
   document.getElementById('ldgBaseRoll').textContent = Math.round(baseLDG_roll) + ' m';
   document.getElementById('ldgWindF').textContent    = arrWindF.toFixed(2) + '×' + (useRegWind ? ' (régl.)' : '') + (taActive ? ' (5 kt arrière)' : '');
-  document.getElementById('ldgExtra').textContent    = arrExtra.toFixed(2) + '×' + (arrWetFactor > 1 ? ` · ×${arrWetFactor.toFixed(2)} (piste mouillée)` : '');
+  document.getElementById('ldgExtra').textContent    = arrWetFactor > 1 ? `×${arrWetFactor.toFixed(2)} (piste mouillée)` : '×1,00';
   document.getElementById('ldgRes').textContent      = ldgCalc + ' m';
   document.getElementById('ldaMini').textContent     = arrLda ? arrLda + ' m' : '—';
   document.getElementById('ldgKpiVal').textContent   = ldgMargin + ' m';
@@ -1933,12 +1932,11 @@ function openResultsModal(side, computeFn) {
   requestAnimationFrame(() => modal.classList.add('is-open'));
   document.body.style.overflow = 'hidden';
 
-  computeFn();
-  lastSnapshot[side] = getInputSnapshot(side);
-
-  const TOTAL = 3000;
+  // Lancer le calcul APRES le premier frame pour que la barre s'affiche
+  const TOTAL = 1800;
   const start = performance.now();
-  let stepIdx = 0;
+  let stepIdx  = 0;
+  let calcDone = false;
 
   function tick(now) {
     const elapsed  = now - start;
@@ -1955,6 +1953,12 @@ function openResultsModal(side, computeFn) {
       setTimeout(() => { sub.textContent = RM_STEPS[stepIdx]; sub.style.opacity = '1'; }, 150);
     }
 
+    // Lancer le calcul à mi-chemin (600ms)
+    if (!calcDone && elapsed >= 600) {
+      calcDone = true;
+      computeFn();
+      lastSnapshot[side] = getInputSnapshot(side);
+    }
     if (progress < 1) requestAnimationFrame(tick);
     else setTimeout(() => {
       showResultsContent(side);
@@ -2167,7 +2171,9 @@ async function fetchRunways(icao) {
       const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
       // Surface : OpenAIP retourne mainSurface avec codes ASPH/CONC/GRASS/TURF/GRVL etc.
       const surf = (rwy.mainSurface || '').toUpperCase();
-      const surfaceType = /GRASS|TURF|GRVL|SAND|DIRT|SOD|WATER/.test(surf) ? 'grass' : 'hard';
+      // Paved: ASP/ASPH, CON/CONC, BIT/BITU → 'hard'
+      // Unpaved: GRS/GRASS, GRVL, DIRT, SAND, SOD, TURF, WATER, SNOW → 'grass'
+      const surfaceType = /^(GRS|GRASS|GRVL|GRAVEL|DIRT|SAND|SOD|TURF|WATER|SNOW|CLAY|LATERITE|CORAL)/.test(surf) ? 'grass' : 'hard';
       return {
         designator,
         qfu,
@@ -2887,9 +2893,9 @@ function renderTafPicker(tafData) {
       } else if (excluded) {
         // Période active mais exclue de la comparaison
         const t = type.toUpperCase();
-        if (t === 'PROB30') applyLabel = '⚠ ignoré (PROB < 30 %)';
-        else if (/PROB(?:30|40).*TEMPO/.test(t)) applyLabel = '⚠ ignoré (PROB TEMPO)';
-        else if (t === 'TEMPO' && p.wx_type === 'transient') applyLabel = '⚠ ignoré (phénomène passager)';
+        if (t === 'PROB30') applyLabel = '⚠ non retenu (probabilité trop faible)';
+        else if (/PROB(?:30|40).*TEMPO/.test(t)) applyLabel = '⚠ non retenu (phénomène passager)';
+        else if (t === 'TEMPO' && p.wx_type === 'transient') applyLabel = '⚠ non retenu (orage/averse)';
         else applyLabel = '⚠ ignoré';
       } else if (compareablePeriods.length === 1) {
         applyLabel = '✓ ETA';
@@ -2912,16 +2918,16 @@ function renderTafPicker(tafData) {
         const prevGust = p.prevWind.gust ?? p.prevWind.speed ?? 0;
         const curGust  = p.wind.gust    ?? p.wind.speed     ?? 0;
         if (curGust >= prevGust) {
-          becmgHint = '<div class="tp-extra" style="color:#D97706">⬆ Dégradation — appliqué dès début transition (OMA 4.13.1)</div>';
+          becmgHint = '<div class="tp-extra" style="color:#D97706">⬆ Vent qui empire — conditions appliquées dès le début du changement</div>';
         } else {
-          becmgHint = '<div class="tp-extra" style="color:#059669">⬇ Amélioration — appliqué dès fin transition (OMA 4.13.1)</div>';
+          becmgHint = '<div class="tp-extra" style="color:#059669">⬇ Vent en amélioration — conditions appliquées seulement à la fin du changement</div>';
         }
       }
       if (p.type === 'TEMPO') {
         if (p.wx_type === 'transient')
-          becmgHint = '<div class="tp-extra" style="color:#9CA3AF">⚡ Phénomène passager (TS/SH) — ignoré pour les perf (OMA 4.13.1)</div>';
+          becmgHint = '<div class="tp-extra" style="color:#9CA3AF">⚡ Phénomène passager (orage, averse) — non retenu pour le calcul</div>';
         else if (p.wx_type === 'persistent')
-          becmgHint = '<div class="tp-extra" style="color:#D97706">🌧 Phénomène persistant (FG/RA/SN…) — pris en compte (OMA 4.13.1)</div>';
+          becmgHint = '<div class="tp-extra" style="color:#D97706">🌧 Phénomène durable (brouillard, pluie, neige…) — retenu pour le calcul</div>';
       }
 
       return `<div class="${cls}" onclick="applyTafPeriodImpl(${i})">
@@ -3741,7 +3747,6 @@ if ('serviceWorker' in navigator) {
   };
 })();
 
-/* crosswindLimitColor patch */
 (function() {
   const orig = window.crosswindLimitColor;
   if (!orig) return;
