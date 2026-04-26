@@ -893,56 +893,6 @@ if ('serviceWorker' in navigator)
 // JS writes to depIcao_display via a separate update fn we add below
 
 // Update the col-hd icao display when depIcao/arrIcao changes
-function _syncIcaoDisplay() {
-  const dep = (document.getElementById('depIcao')?.value || '').toUpperCase() || '— — — —';
-  const arr = (document.getElementById('arrIcao')?.value || '').toUpperCase() || '— — — —';
-  const dEl = document.getElementById('depIcao_display');
-  const aEl = document.getElementById('arrIcao_display');
-  if (dEl) dEl.textContent = dep.length >= 2 ? dep : '— — — —';
-  if (aEl) aEl.textContent = arr.length >= 2 ? arr : '— — — —';
-}
-document.addEventListener('DOMContentLoaded', () => {
-  ['depIcao','arrIcao'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', _syncIcaoDisplay);
-  });
-  _syncIcaoDisplay();
-
-  // Show perf detail sections after first calc
-  const obs = new MutationObserver(() => {
-    const toV = document.getElementById('toKpiVal')?.textContent;
-    const ldV = document.getElementById('ldgKpiVal')?.textContent;
-    const dSec = document.getElementById('depPerfDetail');
-    const aSec = document.getElementById('arrPerfDetail');
-    if (dSec) dSec.style.display = (toV && toV !== '— m') ? 'block' : 'none';
-    if (aSec) aSec.style.display = (ldV && ldV !== '— m') ? 'block' : 'none';
-  });
-  ['toKpiVal','ldgKpiVal'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) obs.observe(el, {childList:true,characterData:true,subtree:true});
-  });
-
-  // Fix switchTab to update tab button active classes
-  const origSwitch = window.switchTab;
-  // will be patched after main JS loads — see bottom
-});
-
-// ── switchTab override (called by mob-tab buttons) ──────────
-// Original sets hidden-mobile on cols — we also update tab button classes
-function _patchSwitchTab() {
-  const orig = window.switchTab;
-  if (!orig) return;
-  window.switchTab = function(tab) {
-    orig(tab);
-    const dep = document.getElementById('tabDep');
-    const arr = document.getElementById('tabArr');
-    if (!dep || !arr) return;
-    dep.classList.toggle('dep-active', tab === 'dep');
-    dep.classList.toggle('arr-active', false);
-    arr.classList.toggle('arr-active', tab === 'arr');
-    arr.classList.toggle('dep-active', false);
-  };
-}
 
 
 'use strict';
@@ -3453,14 +3403,8 @@ function switchTab(tab) {
   await loadAllAircraft();
   updateWindDisplay('dep');
   updateWindDisplay('arr');
-  updateBranchRows();
   updatePdfBtn();
 })();
-
-
-// Patch after JS has loaded
-_patchSwitchTab();
-_syncIcaoDisplay();
 
 function toggleReadme() {
   const body  = document.getElementById('readmeBody');
@@ -3528,19 +3472,6 @@ if ('serviceWorker' in navigator) {
       set(v) { this.textContent = v; }
     });
   }
-})();
-
-// rmFill width → progress value
-(function() {
-  const orig = document.getElementById('rmFill');
-  if (!orig) return;
-  const origStyle = orig.style;
-  const proxy = new Proxy(origStyle, {
-    set(t, k, v) {
-      if (k === 'width') { orig.value = parseInt(v) || 0; return true; }
-      t[k] = v; return true;
-    }
-  });
 })();
 
 // crosswindLimitColor
