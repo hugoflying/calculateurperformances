@@ -111,17 +111,19 @@
     grid-template-columns: 1fr;
     gap: 0;
   }
-  @media (min-width: 960px) {
-    .perf-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-  }
   .perf-col {
-    display: flex;
+    display: none; /* caché par défaut sur mobile, géré par switchTab */
     flex-direction: column;
     gap: 12px;
     padding: 4px 0;
+  }
+  .perf-col.is-visible { display: flex; }
+
+  @media (min-width: 960px) {
+    .mobile-tabs { display: none !important; }
+    .perf-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+    /* Sur desktop : toujours afficher les deux colonnes */
+    .perf-col { display: flex !important; }
   }
 
   /* ── Grids de champs internes ── */
@@ -166,9 +168,9 @@
   .tags { display:flex;flex-wrap:wrap;gap:8px; }
 
   /* Wind strip */
-  .wind-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
+  .wind-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px; }
   .wc { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;
-    padding:12px 8px;text-align:center;transition:all .2s; }
+    padding:14px 10px;text-align:center;transition:all .2s; }
   .wc.warn-yellow { border-color:#F59E0B;background:rgba(245,158,11,.06); }
   .wc.warn-red    { border-color:#EF4444;background:rgba(239,68,68,.06); }
   .wc .lbl { font:700 8px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:5px; }
@@ -382,6 +384,7 @@
     <div class="rm-bar-track"><div id="rmFill" class="rm-bar-fill"></div></div>
     <div id="rmPct" style="font:700 10px 'IBM Plex Mono';color:#9CA3AF">0 %</div>
     <div id="rmSub" style="font:400 11px system-ui;color:#9CA3AF;text-align:center;max-width:280px;line-height:1.5">Calcul en cours…</div>
+    <button id="rmCancelBtn" onclick="closeResultsModal()" style="display:none;margin-top:8px;background:transparent;border:1px solid #D1D5DB;border-radius:8px;padding:7px 18px;font:600 11px system-ui;color:#6B7280;cursor:pointer">✕ Annuler</button>
   </div>
   <div id="rmContent" class="rm-content" style="display:none">
     <div id="rmHeader" class="rm-header">
@@ -454,7 +457,7 @@
   <div class="perf-grid">
 
     <!-- DEP -->
-    <div id="colDep" class="perf-col">
+    <div id="colDep" class="perf-col is-visible">
 
       <div class="col-header dep">
         <div style="display:flex;align-items:center;gap:10px">
@@ -1459,7 +1462,7 @@ function updateWindDisplay(side) {
       if (c.tail > worst.val) worst = { type:'arrière', val:c.tail, dir };
       else if (c.tail === 0 && c.xw > worst.val) worst = { type:'travers', val:c.xw, dir };
     }
-    xwElem.textContent = `${worstX} kt (moyen)\n${Math.round(worst.val)} kt max secteur ${pad3(f)}V${pad3(t)} (${pad3(worst.dir)}°)`;
+    xwElem.textContent = `${worstX} kt (moy.)  /  ${Math.round(worst.val)} kt max`;
     crosswindLimitColor(side, worst.val);
   } else {
     xwElem.textContent = baseText;
@@ -1956,6 +1959,7 @@ function openResultsModal(side, computeFn) {
   const fill = document.getElementById('rmFill');
   const pct  = document.getElementById('rmPct');
   const sub  = document.getElementById('rmSub');
+  const cancelBtn = document.getElementById('rmCancelBtn');
 
   loading.style.display = 'flex';
   loading.style.background = '';
@@ -1964,6 +1968,7 @@ function openResultsModal(side, computeFn) {
   fill.style.width = '0%';
   pct.textContent  = '0 %';
   sub.textContent  = RM_STEPS[0];
+  if (cancelBtn) cancelBtn.style.display = 'inline-flex';
 
   modal.style.display = 'flex';
   requestAnimationFrame(() => modal.classList.add('is-open'));
@@ -1997,7 +2002,9 @@ function openResultsModal(side, computeFn) {
         computeFn();
         lastSnapshot[side] = getInputSnapshot(side);
       } catch(err) {
-        console.error('[Calcul]', err);
+        console.error('[Calcul] Erreur:', err);
+        // Afficher l'erreur dans le sub-text
+        if (sub) sub.textContent = '⚠ Erreur : ' + (err.message || 'calcul impossible');
       }
     }
     if (progress < 1) requestAnimationFrame(tick);
@@ -2088,6 +2095,8 @@ function showResultsContent(side) {
   }
 
   // Transition
+  const cancelBtnEnd = document.getElementById('rmCancelBtn');
+  if (cancelBtnEnd) cancelBtnEnd.style.display = 'none';
   loading.style.display = 'none';
   content.style.display  = 'flex';
 }
@@ -2210,11 +2219,15 @@ async function fetchRunways(icao) {
       const desigNum   = parseInt(designator, 10);
       // QFU = trueHeading exact d'OpenAIP (déjà en magnétique dans leur base)
       const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
-      // Surface : OpenAIP retourne mainSurface avec codes ASPH/CONC/GRASS/TURF/GRVL etc.
-      const surf = (rwy.mainSurface || '').toUpperCase();
-      // Paved: ASP/ASPH, CON/CONC, BIT/BITU → 'hard'
-      // Unpaved: GRS/GRASS, GRVL, DIRT, SAND, SOD, TURF, WATER, SNOW → 'grass'
-      const surfaceType = /^(GRS|GRASS|GRVL|GRAVEL|DIRT|SAND|SOD|TURF|WATER|SNOW|CLAY|LATERITE|CORAL)/.test(surf) ? 'grass' : 'hard';
+      // Surface OpenAIP - codes texte ET numériques (l'API renvoie parfois des entiers)
+      const surf = String(rwy.mainSurface || rwy.surface || '').toUpperCase().trim();
+      // Codes herbe / non revêtu
+      const GRASS_CODES = /^(GRS|GRASS|TURF|GRVL|GRAVEL|DIRT|SAND|SOD|WATER|SNOW|CLAY|LATERITE|CORAL|TREATED|NATURAL|LAWN)/;
+      // OpenAIP peut aussi retourner des codes numériques : 3=GRASS, 4=DIRT, 5=GRAVEL, 6=SAND
+      const GRASS_NUMS = /^(3|4|5|6|7|8|9)$/;
+      const surfaceType = (GRASS_CODES.test(surf) || GRASS_NUMS.test(surf)) ? 'grass' : 'hard';
+      // Debug: logger la surface pour diagnostic
+      console.log('[OpenAIP] Piste', designator, '– mainSurface:', rwy.mainSurface, '→', surfaceType);
       return {
         designator,
         qfu,
@@ -3663,36 +3676,16 @@ function switchTab(tab) {
   const colArr = document.getElementById('colArr');
   const btnDep = document.getElementById('tabDep');
   const btnArr = document.getElementById('tabArr');
-
   if (tab === 'dep') {
-    if (colDep) colDep.style.display = 'flex';
-    if (colArr) colArr.style.display = 'none';
-    if (btnDep) { btnDep.classList.add('tab-active'); btnArr?.classList.remove('tab-active'); }
+    if (colDep) { colDep.classList.add('is-visible'); }
+    if (colArr) { colArr.classList.remove('is-visible'); }
+    if (btnDep) btnDep.classList.add('is-active');
+    if (btnArr) btnArr.classList.remove('is-active');
   } else {
-    if (colArr) colArr.style.display = 'flex';
-    if (colDep) colDep.style.display = 'none';
-    if (btnArr) { btnArr.classList.add('tab-active'); btnDep?.classList.remove('tab-active'); }
-  }
-
-  // Sidebar nav buttons
-  const sDep = document.getElementById('sideNavDep');
-  const sArr = document.getElementById('sideNavArr');
-  if (sDep) sDep.className = tab === 'dep'
-    ? 'flex items-center gap-3 font-semibold text-sm w-full px-4 py-2 rounded-lg bg-primary text-primary-content'
-    : 'flex items-center gap-3 font-semibold text-sm w-full px-4 py-2 rounded-lg hover:bg-base-200 transition-colors';
-  if (sArr) sArr.className = tab === 'arr'
-    ? 'flex items-center gap-3 font-semibold text-sm w-full px-4 py-2 rounded-lg bg-success text-success-content'
-    : 'flex items-center gap-3 font-semibold text-sm w-full px-4 py-2 rounded-lg hover:bg-base-200 transition-colors';
-
-  // Fermer le drawer mobile
-  const drawer = document.getElementById('mainDrawer');
-  if (drawer && window.innerWidth < 1024) drawer.checked = false;
-
-  // Badge ICAO
-  const badge = document.getElementById('activeIcaoBadge');
-  if (badge) {
-    const icao = document.getElementById(tab === 'dep' ? 'depIcao' : 'arrIcao');
-    badge.textContent = icao?.value?.toUpperCase() || '—';
+    if (colArr) { colArr.classList.add('is-visible'); }
+    if (colDep) { colDep.classList.remove('is-visible'); }
+    if (btnArr) btnArr.classList.add('is-active');
+    if (btnDep) btnDep.classList.remove('is-active');
   }
 }
 
