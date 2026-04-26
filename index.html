@@ -1,783 +1,831 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="night">
+<html lang="fr">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#1B2737"/>
+<meta name="theme-color" content="#485fc7"/>
 <title>Perfs ACBT</title>
 <link rel="manifest" href="/manifest.json"/>
 <link rel="apple-touch-icon" href="/icons/icon-180.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
-<style id="tw-utilities">*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.visible{visibility:visible}.fixed{position:fixed}.z-40{z-index:40}.mx-auto{margin-left:auto;margin-right:auto}.my-0{margin-top:0}.mb-0,.my-0{margin-bottom:0}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-5{margin-bottom:1.25rem}.ml-auto{margin-left:auto}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-5{height:1.25rem}.h-8{height:2rem}.h-full{height:100%}.h-screen{height:100vh}.min-h-\[52px\]{min-height:52px}.w-12{width:3rem}.w-16{width:4rem}.w-48{width:12rem}.w-5{width:1.25rem}.w-64{width:16rem}.w-8{width:2rem}.w-full{width:100%}.max-w-5xl{max-width:64rem}.max-w-md{max-width:28rem}.max-w-xs{max-width:20rem}.flex-1{flex:1 1 0%}.flex-shrink{flex-shrink:1}.flex-shrink-0,.shrink-0{flex-shrink:0}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-not-allowed{cursor:not-allowed}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.rounded-2xl{border-radius:1rem}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.stroke-current{stroke:currentColor}.p-0{padding:0}.p-1{padding:.25rem}.p-10{padding:2.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-1{padding-left:.25rem;padding-right:.25rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.pb-3{padding-bottom:.75rem}.pb-4{padding-bottom:1rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-5xl{font-size:3rem;line-height:1}.text-base{font-size:1rem;line-height:1.5rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.tracking-widest{letter-spacing:.1em}.opacity-30{opacity:.3}.opacity-40{opacity:.4}.opacity-50{opacity:.5}.opacity-60{opacity:.6}.opacity-70{opacity:.7}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.outline{outline-style:solid}.blur{--tw-blur:blur(8px)}.blur,.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.ease-in-out{transition-timing-function:cubic-bezier(.4,0,.2,1)}@media (min-width:1024px){.lg\:hidden{display:none}.lg\:w-64{width:16rem}.lg\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.lg\:p-6{padding:1.5rem}}</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  body, * { font-family: 'Inter', sans-serif; }
-  .mono, input.mono, .font-mono { font-family: 'IBM Plex Mono', monospace !important; }
+  :root {
+    --dep:#2563EB; --dep-bg:#EFF6FF; --dep-border:#BFDBFE;
+    --arr:#059669; --arr-bg:#ECFDF5; --arr-border:#A7F3D0;
+  }
+  body { font-family: system-ui, sans-serif; background: #F3F4F6; }
+  .mono { font-family:'IBM Plex Mono',monospace !important; }
   input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-  input[type=number] { -moz-appearance: textfield; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: hsl(var(--bc)/0.15); border-radius: 2px; }
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
+  input[type=number] { -moz-appearance:textfield; }
 
-  /* Sidebar icons */
-  .sb-nav-btn {
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .15s; color: hsl(var(--bc)/0.3);
-    border: 1px solid transparent; background: transparent;
-  }
-  .sb-nav-btn:hover { background: hsl(var(--b3)); color: hsl(var(--bc)/0.7); }
-  .sb-nav-btn.dep-active { background: hsl(var(--p)/0.15); color: hsl(var(--p)); border-color: hsl(var(--p)/0.3); }
-  .sb-nav-btn.arr-active { background: hsl(var(--su)/0.15); color: hsl(var(--su)); border-color: hsl(var(--su)/0.3); }
-  .sb-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  /* Navbar */
+  .navbar { border-bottom:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .ac-logo { width:30px;height:30px;border-radius:8px;background:var(--dep);
+    display:flex;align-items:center;justify-content:center;color:#fff;
+    font:700 11px 'IBM Plex Mono',monospace;flex-shrink:0; }
 
-  /* Section label */
-  .sec-lbl {
-    font: 700 9px 'IBM Plex Mono'; letter-spacing: .12em; text-transform: uppercase;
-    color: hsl(var(--bc)/0.35); margin-bottom: 10px;
-    padding-bottom: 8px; border-bottom: 1px solid hsl(var(--b3));
-    display: flex; align-items: center; gap: 6px;
-  }
+  /* Settings bar */
+  .settings-bar { background:#fff;border-bottom:1px solid #E5E7EB;
+    padding:8px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap; }
+  .settings-bar .label { margin-bottom:0!important;font-size:.72rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;color:#6B7280;white-space:nowrap; }
+  .settings-bar .input { max-width:60px;font-family:'IBM Plex Mono',monospace;
+    font-weight:700;text-align:center;border-radius:7px; }
 
-  /* Field label */
-  .fld-lbl {
-    display: block; font: 600 9px 'Inter';
-    letter-spacing: .07em; text-transform: uppercase;
-    color: hsl(var(--bc)/0.4); margin-bottom: 5px;
-  }
+  /* Toggle buttons — corrigé pour Bulma */
+  .tog-group { display:inline-flex!important;flex-wrap:nowrap!important;gap:0!important; }
+  .tog-group .button { font-size:.75rem;font-weight:600; }
+  /* État inactif */
+  .tog-group .button:not(.tog-on) { background:#F9FAFB;border-color:#D1D5DB;color:#6B7280; }
+  .tog-group .button:not(.tog-on):hover { background:#F3F4F6; }
+  /* État actif normal (bleu) */
+  .tog-group .button.tog-on:not(.tog-grass) {
+    background:var(--dep)!important;border-color:var(--dep)!important;color:#fff!important; }
+  /* État actif herbe (vert) */
+  .tog-group .button.tog-on.tog-grass {
+    background:#065F46!important;border-color:#065F46!important;color:#D1FAE5!important; }
 
-  /* Wind cell */
-  .wc {
-    background: hsl(var(--b1)); border: 1px solid hsl(var(--b3));
-    border-radius: 12px; padding: 12px 8px; text-align: center; transition: all .2s;
-  }
-  .wc.warn-yellow { border-color: hsl(var(--wa)); background: hsl(var(--wa)/0.08); }
-  .wc.warn-red    { border-color: hsl(var(--er)); background: hsl(var(--er)/0.08); }
-  .wc .lbl { font: 700 8px 'IBM Plex Mono'; letter-spacing:.1em; text-transform:uppercase; color:hsl(var(--bc)/0.35); margin-bottom:5px; }
-  .wc .val { font: 700 22px 'IBM Plex Mono'; color: hsl(var(--bc)); line-height:1; }
-  .wc.warn-yellow .val { color: hsl(var(--wa)); }
-  .wc.warn-red    .val { color: hsl(var(--er)); }
-  .wc .unit { font: 400 9px 'Inter'; color: hsl(var(--bc)/0.3); margin-top: 3px; }
+  /* Settings bar toggles (btnRegWind, spats) */
+  .setbar-tog { display:inline-flex;gap:0; }
+  .setbar-tog .button { font-size:.72rem;font-weight:600; }
+  .setbar-tog .button:not(.tog-on) { background:#F9FAFB;border-color:#D1D5DB;color:#6B7280; }
+  .setbar-tog .button.tog-on { background:var(--dep)!important;border-color:var(--dep)!important;color:#fff!important; }
 
-  /* KPI bar */
-  .kpi-bar { background: hsl(var(--b2)); border: 1px solid hsl(var(--b3)); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; transition: all .25s; }
-  .kpi-bar.is-ok  { background: hsl(var(--su)/0.08); border-color: hsl(var(--su)/0.3); }
-  .kpi-bar.is-bad { background: hsl(var(--er)/0.08); border-color: hsl(var(--er)/0.3); }
-  .kpi-lbl { font: 700 9px 'IBM Plex Mono'; letter-spacing:.1em; text-transform:uppercase; color: hsl(var(--bc)/0.35); margin-bottom: 4px; }
-  .kpi-val { font: 800 28px 'IBM Plex Mono'; color: hsl(var(--bc)); }
-  .kpi-bar.is-ok  .kpi-val { color: hsl(var(--su)); }
-  .kpi-bar.is-bad .kpi-val { color: hsl(var(--er)); }
-  .kpi-avail { font: 400 10px 'Inter'; color: hsl(var(--bc)/0.35); margin-top: 2px; }
+  /* Col header */
+  .col-header { border-radius:10px;padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+  .col-header.dep { background:var(--dep-bg);border:1px solid var(--dep-border); }
+  .col-header.arr { background:var(--arr-bg);border:1px solid var(--arr-border); }
+  .col-hd-badge { font-size:.65rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.08em;padding:2px 8px;border-radius:4px; }
+  .dep .col-hd-badge { background:var(--dep-border);color:var(--dep); }
+  .arr .col-hd-badge { background:var(--arr-border);color:var(--arr); }
+  .col-icao { font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:800;color:#111827; }
 
-  /* Chip */
-  .chip { display:inline-flex; align-items:center; font: 700 10px 'IBM Plex Mono'; padding: 3px 10px; border-radius: 20px; }
-  .chip.neutral    { background: hsl(var(--b3)); color: hsl(var(--bc)/0.4); }
-  .chip.is-ok-chip  { background: hsl(var(--su)/0.15); color: hsl(var(--su)); border: 1px solid hsl(var(--su)/0.3); }
-  .chip.is-bad-chip { background: hsl(var(--er)/0.15); color: hsl(var(--er)); border: 1px solid hsl(var(--er)/0.3); }
+  /* Section card */
+  .sec-card { background:#fff;border:1px solid #E5E7EB;border-radius:10px;
+    overflow:hidden;margin-bottom:12px; }
+  .sec-head { padding:8px 14px;background:#F9FAFB;border-bottom:1px solid #F0F0F0;
+    display:flex;align-items:center;gap:7px; }
+  .sec-head-title { font-size:.7rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.08em;color:#9CA3AF; }
+  .sec-body { padding:14px; }
+  .sec-body .label { font-size:.7rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:#6B7280;margin-bottom:4px!important; }
+  .sec-body .input,.sec-body .select select {
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.85rem;
+    border-color:#D1D5DB;border-radius:8px; }
+  .sec-body .input:focus,.sec-body .select select:focus {
+    border-color:var(--dep);box-shadow:0 0 0 2px rgba(37,99,235,.12); }
+  .sec-body .input::placeholder { color:#CBD5E1;font-weight:400; }
 
   /* Metar box */
-  .metar-box { display: none; }
-  .metar-box.visible {
-    display: block; background: hsl(var(--b1)); border: 1px solid hsl(var(--b3));
-    border-radius: 8px; padding: 10px 12px;
-    font: 400 10px 'IBM Plex Mono'; color: hsl(var(--bc)/0.5);
-    white-space: pre-wrap; word-break: break-word; line-height: 1.65; margin-top: 8px;
-  }
+  .metar-box { display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
+    padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#64748B;
+    white-space:pre-wrap;word-break:break-word;line-height:1.65;margin-top:10px; }
+  .metar-box.visible { display:block; }
 
   /* Runway picker */
-  #depRunwayPicker, #arrRunwayPicker { display: none; }
-  #depRunwayPicker.visible, #arrRunwayPicker.visible { display: block; }
-  .rwy-btn-js {
-    background: hsl(var(--b1)); border: 1px solid hsl(var(--b3));
-    border-radius: 8px; padding: 8px 12px; cursor: pointer;
-    transition: all .13s; text-align: center; min-width: 64px;
-  }
-  .rwy-btn-js:hover { border-color: hsl(var(--p)/0.5); }
-  .rwy-btn-js.active { background: hsl(var(--p)/0.1); border-color: hsl(var(--p)/0.5); }
-  .rwy-desig { font: 700 13px 'IBM Plex Mono'; color: hsl(var(--bc)); display: block; }
-  .rwy-len   { font: 500 9px 'Inter'; color: hsl(var(--bc)/0.35); display: block; margin-top: 2px; }
-  .rwy-hdg   { font: 400 9px 'IBM Plex Mono'; color: hsl(var(--bc)/0.35); display: block; }
+  #depRunwayPicker,#arrRunwayPicker { display:none; }
+  #depRunwayPicker.visible,#arrRunwayPicker.visible { display:block; }
+  .rwy-grid { display:flex;flex-wrap:wrap;gap:6px; }
+  .rwy-btn-js { background:#F9FAFB;border:1px solid #D1D5DB;border-radius:8px;
+    padding:7px 12px;cursor:pointer;transition:all .13s;text-align:center;min-width:64px; }
+  .rwy-btn-js:hover { border-color:var(--dep);background:var(--dep-bg); }
+  .rwy-btn-js.active { background:var(--dep-bg);border-color:var(--dep); }
+  .rwy-desig { font:700 13px 'IBM Plex Mono',monospace;color:#111827;display:block; }
+  .rwy-len { font:500 9px system-ui;color:#6B7280;display:block;margin-top:2px; }
+  .rwy-hdg { font:400 9px 'IBM Plex Mono',monospace;color:#9CA3AF;display:block; }
+
+  /* Wind strip */
+  .wind-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:8px; }
+  .wc { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;
+    padding:12px 8px;text-align:center;transition:all .2s; }
+  .wc.warn-yellow { border-color:#F59E0B;background:rgba(245,158,11,.06); }
+  .wc.warn-red    { border-color:#EF4444;background:rgba(239,68,68,.06); }
+  .wc .lbl { font:700 8px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:5px; }
+  .wc .val { font:700 22px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
+  .wc.warn-yellow .val { color:#D97706; }
+  .wc.warn-red    .val { color:#DC2626; }
+  .wc .unit { font:400 9px system-ui;color:#9CA3AF;margin-top:3px; }
+
+  /* KPI box */
+  .kpi-box { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;
+    padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:12px;transition:all .25s; }
+  .kpi-box.is-ok  { background:rgba(5,150,105,.06);border-color:rgba(5,150,105,.3); }
+  .kpi-box.is-bad { background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.3); }
+  .kpi-lbl { font:700 9px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px; }
+  .kpi-val { font:800 28px 'IBM Plex Mono',monospace;color:#111827; }
+  .kpi-box.is-ok  .kpi-val { color:#059669; }
+  .kpi-box.is-bad .kpi-val { color:#DC2626; }
+  .kpi-avail { font:400 10px system-ui;color:#9CA3AF;margin-top:2px; }
+
+  /* Chip */
+  .chip { display:inline-flex;align-items:center;font:700 10px 'IBM Plex Mono',monospace;
+    padding:3px 10px;border-radius:20px; }
+  .chip.neutral    { background:#F1F5F9;color:#94A3B8; }
+  .chip.is-ok-chip  { background:#ECFDF5;color:#059669;border:1px solid #A7F3D0; }
+  .chip.is-bad-chip { background:#FEF2F2;color:#DC2626;border:1px solid #FECACA; }
 
   /* TAF */
-  .taf-wrap { display: none; }
-  .taf-wrap.visible { display: block; }
-  .taf-period {
-    display: flex; align-items: flex-start; gap: 8px;
-    background: hsl(var(--b1)); border: 1px solid hsl(var(--b3));
-    border-radius: 8px; padding: 9px 11px; cursor: pointer; transition: all .13s;
-  }
-  .taf-period:hover { border-color: hsl(var(--bc)/0.2); }
-  .taf-period.is-current   { background: hsl(var(--su)/0.06); border-color: hsl(var(--su)/0.3); }
-  .taf-period.is-eta-other { background: hsl(var(--p)/0.06); border-color: hsl(var(--p)/0.2); }
-  .taf-period.is-tempo     { border-style: dashed; border-color: hsl(var(--wa)/0.5); }
-  .taf-period.is-inactive  { opacity: .3; }
-  .taf-period.is-excluded  { opacity: .4; border-style: dotted; }
-  .tp-type  { font: 700 8px 'IBM Plex Mono'; letter-spacing:.08em; text-transform:uppercase; color:hsl(var(--bc)/0.35); min-width:44px; flex-shrink:0; padding-top:2px; }
-  .tp-time  { font: 400 9px 'IBM Plex Mono'; color:hsl(var(--bc)/0.35); min-width:96px; flex-shrink:0; padding-top:2px; }
-  .tp-wind  { flex:1; font: 700 12px 'IBM Plex Mono'; color: hsl(var(--bc)); }
-  .tp-extra { font: 400 9px 'Inter'; color: hsl(var(--bc)/0.35); margin-top: 3px; }
-  .tp-apply { font: 600 9px 'Inter'; color: hsl(var(--bc)/0.35); white-space:nowrap; flex-shrink:0; padding-top:2px; }
-  .taf-period.is-current   .tp-apply { color: hsl(var(--su)); font-weight:700; }
-  .taf-period.is-eta-other .tp-apply { color: hsl(var(--p)); }
-  .taf-period.is-current   .tp-type  { color: hsl(var(--su)); }
-  .taf-period.is-eta-other .tp-type  { color: hsl(var(--p)); }
-  .taf-period.is-tempo     .tp-type  { color: hsl(var(--wa)); }
+  .taf-wrap { display:none; }
+  .taf-wrap.visible { display:block; }
+  .taf-period { display:flex;align-items:flex-start;gap:8px;background:#fff;
+    border:1px solid #E2E8F0;border-radius:8px;padding:9px 11px;
+    cursor:pointer;transition:all .13s;margin-bottom:4px; }
+  .taf-period:hover { border-color:#CBD5E1; }
+  .taf-period.is-current   { background:#ECFDF5;border-color:rgba(5,150,105,.3); }
+  .taf-period.is-eta-other { background:#EFF6FF;border-color:rgba(37,99,235,.2); }
+  .taf-period.is-tempo     { border-style:dashed;border-color:#F59E0B;background:#FFFBEB; }
+  .taf-period.is-inactive  { opacity:.3; }
+  .taf-period.is-excluded  { opacity:.45;border-style:dotted; }
+  .tp-type { font:700 8px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;
+    color:#9CA3AF;min-width:44px;flex-shrink:0;padding-top:2px; }
+  .tp-time { font:400 9px 'IBM Plex Mono';color:#9CA3AF;min-width:96px;flex-shrink:0;padding-top:2px; }
+  .tp-wind { flex:1;font:700 12px 'IBM Plex Mono';color:#111827; }
+  .tp-extra { font:400 9px system-ui;color:#9CA3AF;margin-top:3px; }
+  .tp-apply { font:600 9px system-ui;color:#9CA3AF;white-space:nowrap;flex-shrink:0;padding-top:2px; }
+  .taf-period.is-current .tp-apply   { color:#059669;font-weight:700; }
+  .taf-period.is-eta-other .tp-apply { color:var(--dep); }
+  .taf-period.is-current .tp-type    { color:#059669; }
+  .taf-period.is-eta-other .tp-type  { color:var(--dep); }
+  .taf-period.is-tempo .tp-type      { color:#D97706; }
+  .taf-period.is-excluded .tp-apply  { font-style:italic; }
 
   /* tw-wrap */
-  .tw-wrap { display: none; }
-  .tw-wrap.visible { display: block; }
-  .tw-btn, .taf-tw-suggest {
-    width:100%; display:block; text-align:left; cursor:pointer;
-    background: hsl(var(--wa)/0.06); border: 1px dashed hsl(var(--wa)/0.4);
-    border-radius: 8px; color: hsl(var(--wa));
-    font: 600 11px 'Inter'; padding: 9px 12px; transition: all .13s;
-  }
-  .tw-btn.active, .taf-tw-suggest.active { border-style: solid; background: hsl(var(--wa)/0.12); }
-  .tw-btn:hover, .taf-tw-suggest:hover { background: hsl(var(--wa)/0.1); }
+  .tw-wrap { display:none; }
+  .tw-wrap.visible { display:block; }
+  .tw-btn,.taf-tw-suggest {
+    width:100%;display:block;text-align:left;cursor:pointer;
+    background:rgba(245,158,11,.06);border:1px dashed rgba(245,158,11,.5);
+    border-radius:8px;color:#D97706;font:600 11px system-ui;padding:9px 12px;transition:all .13s; }
+  .tw-btn.active,.taf-tw-suggest.active { border-style:solid;background:rgba(245,158,11,.1); }
 
-  /* Calc button states */
-  .calc-btn-done-dep { background: hsl(var(--p)/0.1) !important; color: hsl(var(--p)) !important; border: 1px solid hsl(var(--p)/0.3) !important; }
-  .calc-btn-done-arr { background: hsl(var(--su)/0.1) !important; color: hsl(var(--su)) !important; border: 1px solid hsl(var(--su)/0.3) !important; }
+  /* Calc button */
+  .calc-btn { border-radius:10px!important;font-weight:700!important;
+    text-transform:uppercase;letter-spacing:.05em;height:auto!important;padding:14px!important; }
+  .calc-btn.done-dep { background:#EFF6FF!important;color:var(--dep)!important;
+    border:1px solid #BFDBFE!important;box-shadow:none!important; }
+  .calc-btn.done-arr { background:#ECFDF5!important;color:var(--arr)!important;
+    border:1px solid #A7F3D0!important;box-shadow:none!important; }
 
-  .is-hidden { display: none !important; }
-  .valid-msg { font: 500 10px 'Inter'; color: hsl(var(--er)); text-align: center; min-height: 14px; }
+  .valid-msg { font-size:.72rem;font-weight:500;color:#DC2626;text-align:center;min-height:14px; }
+  .mass-warn { font-size:.7rem;color:#D97706;margin-top:3px;display:none; }
+  .is-hidden { display:none!important; }
+  .explain-text { font:400 10px system-ui;color:#9CA3AF;line-height:1.5;margin-top:6px; }
+
+  /* Perf detail */
+  .pf-rows { display:flex;flex-direction:column; }
+  .pf-row { display:flex;justify-content:space-between;align-items:center;
+    padding:7px 0;border-bottom:1px solid #F1F5F9; }
+  .pf-row:last-child { border-bottom:none; }
+  .pf-lbl { font:400 11px system-ui;color:#64748B; }
+  .pf-val { font:700 11px 'IBM Plex Mono',monospace;color:#111827; }
 
   /* Results modal */
-  .results-modal {
-    position: fixed; inset: 0; z-index: 500;
-    background: hsl(var(--b1));
-    transform: translateY(100%);
-    transition: transform .38s cubic-bezier(.32,1,.58,1);
-    pointer-events: none; display: flex; flex-direction: column;
-  }
-  .results-modal.is-open { transform: translateY(0); pointer-events: auto; }
+  .results-modal { position:fixed;inset:0;z-index:500;background:#fff;
+    display:flex;flex-direction:column;transform:translateY(100%);
+    transition:transform .38s cubic-bezier(.32,1,.58,1);pointer-events:none; }
+  .results-modal.is-open { transform:translateY(0);pointer-events:auto; }
   @keyframes bob { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)} }
-  .animate-bob { animation: bob 2s ease-in-out infinite; }
+  .rm-plane { animation:bob 2s ease-in-out infinite;display:inline-block; }
+  .rm-loading { flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:16px;padding:40px; }
+  .rm-bar-track { width:200px;height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden; }
+  .rm-bar-fill  { height:100%;border-radius:2px;width:0%;transition:width .08s linear; }
+  .rm-bar-fill.dep { background:var(--dep); }
+  .rm-bar-fill.arr { background:var(--arr); }
+  .rm-content { flex:1;display:flex;flex-direction:column;overflow:hidden; }
+  .rm-header  { padding:16px 20px;border-bottom:1px solid #E5E7EB;
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
+  .rm-header.is-ok  { background:#ECFDF5;border-color:rgba(5,150,105,.2); }
+  .rm-header.is-bad { background:#FEF2F2;border-color:rgba(239,68,68,.2); }
+  .rm-body { flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px; }
+  .rm-kpi-card { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:16px;
+    padding:24px;text-align:center; }
+  .rm-kpi-card.is-ok  { background:rgba(5,150,105,.06);border-color:rgba(5,150,105,.25); }
+  .rm-kpi-card.is-bad { background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25); }
+  .rm-kpi-lbl { font:700 9px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:8px; }
+  .rm-kpi-val { font:800 52px 'IBM Plex Mono',monospace;line-height:1;color:#111827; }
+  .rm-kpi-card.is-ok  .rm-kpi-val { color:#059669; }
+  .rm-kpi-card.is-bad .rm-kpi-val { color:#DC2626; }
+  .rm-rows { background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden; }
+  .rm-row { display:flex;justify-content:space-between;align-items:center;
+    padding:10px 16px;border-bottom:1px solid #F1F5F9; }
+  .rm-row:last-child { border-bottom:none; }
+  .rm-row-label { font:400 12px system-ui;color:#64748B; }
+  .rm-row-value { font:700 12px 'IBM Plex Mono',monospace;color:#111827; }
+  .rm-foot { padding:16px 20px;border-top:1px solid #E5E7EB;background:#F9FAFB;flex-shrink:0;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom,0px)); }
 
-  /* rm-row */
-  .rm-row { display:flex; justify-content:space-between; align-items:center; padding: 10px 16px; border-bottom: 1px solid hsl(var(--b3)); }
-  .rm-row:last-child { border-bottom: none; }
-  .rm-row-label { font: 400 12px 'Inter'; color: hsl(var(--bc)/0.5); }
-  .rm-row-value { font: 700 12px 'IBM Plex Mono'; color: hsl(var(--bc)); }
+  /* Mobile tabs */
+  .mobile-tabs { display:none; }
+  @media(max-width:768px){
+    .mobile-tabs { display:flex;border-bottom:2px solid #E5E7EB;background:#fff; }
+    .mobile-tab { flex:1;padding:10px;text-align:center;font-size:.72rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.05em;color:#9CA3AF;
+      border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all .2s; }
+    #tabDep.is-active { color:var(--dep);border-color:var(--dep); }
+    #tabArr.is-active { color:var(--arr);border-color:var(--arr); }
+    .is-hidden-mobile { display:none!important; }
+  }
 
-  /* DaisyUI tab override */
-  .tabs-boxed .tab-active { background: hsl(var(--p)) !important; color: hsl(var(--pc)) !important; }
+  /* Disclaimer */
+  .disc-overlay { position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);
+    backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center; }
+  .disc-overlay:not(.is-active) { display:none; }
+  .disc-box { background:#fff;border-radius:16px 16px 0 0;padding:24px 20px;
+    max-width:520px;width:100%;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)); }
+  @media(min-width:580px) { .disc-overlay{align-items:center} .disc-box{border-radius:16px} }
 
-  /* toggle buttons (surface, freinage) - remap is-selected/is-primary */
-  .tog-btn { transition: all .13s; }
-  .tog-btn.is-selected, .tog-btn.is-primary { background: hsl(var(--p)); color: hsl(var(--pc)); }
-  .tog-btn.is-grass-selected { background: hsl(var(--su)); color: hsl(var(--suc)); }
+  /* Readme */
+  .readme-wrap { max-width:1200px;margin:0 auto;padding:16px 16px 40px; }
+  .readme-toggle { background:#fff;border:1px solid #E5E7EB;border-radius:10px;
+    padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer; }
+  .readme-toggle:hover { border-color:#CBD5E1; }
+  .readme-toggle-lbl { font:700 11px system-ui;text-transform:uppercase;letter-spacing:.06em;color:#64748B; }
+  .readme-body { background:#fff;border:1px solid #E5E7EB;border-top:none;
+    border-radius:0 0 10px 10px;padding:20px;display:none; }
+  .rm-sec { margin-bottom:20px; }
+  .rm-sec:last-child { margin-bottom:0; }
+  .rm-sec h3 { font:700 11px system-ui;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--dep);border-bottom:1px solid #E5E7EB;padding-bottom:6px;margin-bottom:10px; }
+  .rm-sec p,.rm-sec li { font:400 13px system-ui;color:#374151;line-height:1.7;margin-bottom:6px; }
+  .rm-sec strong { color:#111827; }
+  .rm-sec ul,.rm-sec ol { padding-left:16px;margin-bottom:8px; }
+  .rm-sec li { margin-bottom:4px; }
+  .rm-sec .tag-ok   { background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;
+    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
+  .rm-sec .tag-warn { background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;
+    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
+  .rm-sec .tag-muted { background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;
+    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
+  .rm-alert { background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
+    padding:10px 14px;font:600 12px system-ui;color:#DC2626;line-height:1.5;margin-bottom:14px; }
+
+  .app-foot { text-align:center;padding:12px;font:400 10px system-ui;color:#9CA3AF;
+    border-top:1px solid #E5E7EB; }
 </style>
 </head>
-<body class="flex h-screen overflow-hidden bg-base-200">
+<body>
 
-<!-- ═══ DISCLAIMER ═══════════════════════════════════════ -->
-<div id="modalDisclaimer" class="modal modal-open" style="z-index:1000">
-  <div class="modal-box max-w-md">
-    <div class="text-3xl mb-3">⚠️</div>
-    <h2 class="text-base font-bold mb-2">Document opérationnel — ACBT</h2>
-    <p class="text-sm opacity-60 leading-relaxed mb-4">Outil d'aide à la préparation du vol basé sur les manuels officiels. Ne remplace pas le manuel de vol.</p>
-    <div class="alert alert-error alert-sm mb-5 text-xs leading-relaxed">
-      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-      <span>Le commandant de bord est seul responsable du vol.<br/>En cas de doute, le manuel de vol fait foi.</span>
+<!-- DISCLAIMER -->
+<div id="modalDisclaimer" class="disc-overlay is-active">
+  <div class="disc-box">
+    <div style="font-size:26px;margin-bottom:10px">⚠️</div>
+    <h2 style="font:700 16px system-ui;color:#111827;margin-bottom:10px">Document opérationnel — ACBT</h2>
+    <p style="font:400 12px system-ui;color:#64748B;line-height:1.6;margin-bottom:14px">
+      Outil d'aide à la préparation du vol basé sur les manuels officiels des avions de l'aéroclub. Ne remplace pas le manuel de vol.
+    </p>
+    <div class="rm-alert">
+      Le commandant de bord est seul responsable du vol qu'il entreprend.<br/>En cas de doute, le manuel de vol de l'avion fait foi.
     </div>
-    <button id="btnCloseDisclaimer" class="btn btn-primary w-full">J'ai compris — Accéder au calculateur</button>
+    <button id="btnCloseDisclaimer" class="button is-link is-fullwidth" style="border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;height:auto;padding:13px">
+      J'ai compris — Accéder au calculateur
+    </button>
   </div>
 </div>
 
-<!-- ═══ RESULTS MODAL ════════════════════════════════════ -->
+<!-- RESULTS MODAL -->
 <div id="resultsModal" class="results-modal" style="display:none">
-  <div id="rmLoading" class="flex-1 flex flex-col items-center justify-center gap-5 p-10">
-    <div class="animate-bob text-5xl">✈</div>
-    <progress id="rmFill" class="progress progress-primary w-48" value="0" max="100"></progress>
-    <div id="rmPct" class="font-mono text-xs opacity-40 font-bold">0 %</div>
-    <div id="rmSub" class="text-sm opacity-50 text-center max-w-xs leading-relaxed">Calcul en cours…</div>
+  <div id="rmLoading" class="rm-loading">
+    <div class="rm-plane" style="font-size:42px">✈</div>
+    <div class="rm-bar-track"><div id="rmFill" class="rm-bar-fill"></div></div>
+    <div id="rmPct" style="font:700 10px 'IBM Plex Mono';color:#9CA3AF">0 %</div>
+    <div id="rmSub" style="font:400 11px system-ui;color:#9CA3AF;text-align:center;max-width:280px;line-height:1.5">Calcul en cours…</div>
   </div>
-  <div id="rmContent" class="flex flex-col flex-1 overflow-hidden" style="display:none">
-    <div id="rmHeader" class="flex items-center justify-between px-5 py-4 border-b border-base-300 bg-base-200 flex-shrink-0">
+  <div id="rmContent" class="rm-content" style="display:none">
+    <div id="rmHeader" class="rm-header">
       <div>
-        <div id="rmType" class="text-xs font-bold opacity-40 uppercase tracking-widest mb-1">—</div>
-        <div id="rmVerdict" class="text-base font-bold">—</div>
+        <div id="rmType" style="font:700 9px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px">—</div>
+        <div id="rmVerdict" style="font:700 15px system-ui;color:#111827">—</div>
       </div>
-      <div id="rmBadge" class="font-mono text-xl font-bold w-12 h-12 rounded-2xl flex items-center justify-center bg-base-300 opacity-50">—</div>
+      <div id="rmBadge" style="font:700 16px 'IBM Plex Mono';width:44px;height:44px;border-radius:10px;background:#F1F5F9;color:#9CA3AF;display:flex;align-items:center;justify-content:center">—</div>
     </div>
-    <div class="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
-      <div id="rmKpiCard" class="card bg-base-200 border border-base-300">
-        <div class="card-body items-center text-center py-6">
-          <div class="text-xs font-bold opacity-40 uppercase tracking-widest mb-2">Distance requise — marge incluse</div>
-          <div id="rmKpiVal" class="font-mono text-5xl font-extrabold leading-none">— m</div>
-          <div id="rmKpiAvail" class="text-xs opacity-40 mt-2">—</div>
-        </div>
+    <div class="rm-body">
+      <div id="rmKpiCard" class="rm-kpi-card">
+        <div class="rm-kpi-lbl">Distance requise — marge incluse</div>
+        <div id="rmKpiVal" class="rm-kpi-val">— m</div>
+        <div id="rmKpiAvail" style="font:400 12px system-ui;color:#9CA3AF;margin-top:6px">—</div>
       </div>
-      <div id="rmRows" class="card bg-base-200 border border-base-300 overflow-hidden"></div>
+      <div id="rmRows" class="rm-rows"></div>
     </div>
-    <div class="px-5 py-4 border-t border-base-300 bg-base-200 flex-shrink-0" style="padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))">
-      <button id="rmFooterBtn" onclick="closeResultsModal()" class="btn btn-outline w-full">← Modifier les paramètres</button>
+    <div class="rm-foot">
+      <button id="rmFooterBtn" onclick="closeResultsModal()" class="button is-fullwidth" style="border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;height:auto;padding:13px">← Modifier les paramètres</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ LAYOUT ════════════════════════════════════════════ -->
-<div class="drawer lg:drawer-open h-screen w-full">
-  <input id="mainDrawer" type="checkbox" class="drawer-toggle"/>
-
-  <!-- ── MAIN CONTENT ───────────────────────────────── -->
-  <div class="drawer-content flex flex-col h-screen">
-
-    <!-- TOP BAR -->
-    <div class="navbar bg-base-100 border-b border-base-300 flex-shrink-0 min-h-[52px] px-4 gap-3">
-      <!-- Mobile burger -->
-      <label for="mainDrawer" class="btn btn-ghost btn-sm btn-square lg:hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-      </label>
-
-      <!-- Title + active ICAO -->
-      <div class="flex items-center gap-3 flex-shrink-0">
-        <span class="text-base font-bold">Performance</span>
-        <span id="activeIcaoBadge" class="badge badge-ghost font-mono text-xs opacity-50">—</span>
-      </div>
-
-      <div class="flex-1"></div>
-
-      <!-- Tabs -->
-      <div class="tabs tabs-boxed bg-base-200 p-1 gap-1">
-        <button id="tabDep" class="tab tab-sm tab-active font-semibold text-xs" onclick="switchTab('dep')">✈ Décollage</button>
-        <button id="tabArr" class="tab tab-sm font-semibold text-xs" onclick="switchTab('arr')">🛬 Atterrissage</button>
-      </div>
-
-      <!-- Settings button (mobile) -->
-      <label for="settingsDrawer" class="btn btn-ghost btn-sm btn-square lg:hidden">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-      </label>
+<!-- NAVBAR -->
+<nav class="navbar" role="navigation">
+  <div class="navbar-brand" style="padding:0 16px;gap:10px;align-items:center;min-height:52px">
+    <div class="ac-logo">AC</div>
+    <span style="font:700 13px system-ui;color:#111827">ACBT Performances</span>
+    <div style="flex:1;display:flex;align-items:center;gap:8px">
+      <select id="aircraftSel" class="select is-small" style="font-family:'IBM Plex Mono',monospace;font-weight:600;border-radius:8px;max-width:240px">
+        <option value="">Chargement…</option>
+      </select>
+      <span id="propeller" style="font:500 10px 'IBM Plex Mono',monospace;color:#9CA3AF"></span>
     </div>
+    <button id="btnPrint" class="button is-dark is-small" style="border-radius:8px;font-weight:700;opacity:.4;flex-shrink:0" disabled>📄 PDF</button>
+  </div>
+</nav>
 
-    <!-- SCROLLABLE CONTENT -->
-    <div class="flex-1 overflow-y-auto">
+<!-- SETTINGS BAR -->
+<div class="settings-bar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <label class="label">Marge</label>
+    <input id="safety" class="input is-small" type="number" value="30" min="0" style="border-radius:8px"/>
+    <span style="font-size:.8rem;color:#9CA3AF">%</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <label class="label">Vent réglementaire</label>
+    <div class="buttons has-addons setbar-tog" style="margin-bottom:0">
+      <button id="btnRegWindOff" class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">100 % réel</button>
+      <button id="btnRegWindOn"  class="button is-small" style="border-radius:0 8px 8px 0!important">50 % / 150 %</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <label class="label">Carénages</label>
+    <div class="buttons has-addons setbar-tog" style="margin-bottom:0">
+      <button id="spatsWith"    class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">Avec</button>
+      <button id="spatsWithout" class="button is-small" style="border-radius:0 8px 8px 0!important">Sans (+3 %)</button>
+    </div>
+  </div>
+</div>
 
-      <!-- DEP SECTION -->
-      <div id="colDep" class="p-4 lg:p-6 flex flex-col gap-6 max-w-5xl mx-auto">
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
+  <div id="tabDep" class="mobile-tab is-active" onclick="switchTab('dep')">✈ Départ</div>
+  <div id="tabArr" class="mobile-tab" onclick="switchTab('arr')">🛬 Arrivée</div>
+</div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- COLUMNS -->
+<div style="max-width:1200px;margin:0 auto;padding:16px">
+  <div class="columns is-variable is-4">
 
-          <!-- Station météo DEP -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">📡 Station météo</div>
-              <div class="flex gap-2 items-end">
-                <div class="flex-1">
-                  <label class="fld-lbl">ICAO départ</label>
-                  <input id="depIcao" class="input input-bordered input-sm w-full font-mono uppercase" type="text" maxlength="4" placeholder="LFOB" autocapitalize="characters" spellcheck="false"/>
-                </div>
-                <button id="btnDepMetar" class="btn btn-sm btn-outline btn-primary">METAR</button>
-              </div>
-              <div id="depMetarMsg" class="metar-box"></div>
+    <!-- DEP -->
+    <div id="colDep" class="column">
+
+      <div class="col-header dep">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="col-hd-badge">Départ</span>
+          <span id="depIcao_display" class="col-icao">—</span>
+        </div>
+        <span id="toChip" class="chip neutral">—</span>
+      </div>
+
+      <!-- Station -->
+      <div class="sec-card">
+        <div class="sec-head"><span>📡</span><span class="sec-head-title">Station météo</span></div>
+        <div class="sec-body">
+          <div class="field is-grouped">
+            <div class="control is-expanded">
+              <label class="label">ICAO départ</label>
+              <input id="depIcao" class="input is-small" type="text" maxlength="4" placeholder="LFOB" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
+            </div>
+            <div class="control" style="padding-top:20px">
+              <button id="btnDepMetar" class="button is-small is-link is-light" style="border-radius:8px;font-weight:700">METAR</button>
             </div>
           </div>
+          <div id="depMetarMsg" class="metar-box"></div>
+        </div>
+      </div>
 
-          <!-- Piste DEP -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">🛣 Piste</div>
-              <div class="grid grid-cols-3 gap-3">
-                <div>
-                  <label class="fld-lbl">QFU</label>
-                  <input id="depQfu" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="010"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">TODA (m)</label>
-                  <input id="depToda" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="2429"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Élév. (ft)</label>
-                  <input id="depAlt" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="359"/>
-                </div>
-              </div>
-              <div id="depRunwayPicker">
-                <div class="rwy-grid flex flex-wrap gap-2 mt-1"></div>
-              </div>
+      <!-- Piste -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number" placeholder="010"/></div>
+            <div class="column"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number" placeholder="2429"/></div>
+            <div class="column"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number" placeholder="359"/></div>
+          </div>
+          <div id="depRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
+        </div>
+      </div>
+
+      <!-- Conditions -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number" placeholder="15"/></div>
+            <div class="column">
+              <label class="label">Masse déco (kg)</label>
+              <input id="depTow" class="input is-small" type="number" value="900"/>
+              <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
             </div>
           </div>
+          <div class="field">
+            <label class="label">Facteur supplémentaire</label>
+            <input id="depExtraTO" class="input is-small" type="number" step="0.01" value="1.00"/>
+          </div>
         </div>
+      </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Vent -->
+      <div class="sec-card">
+        <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2 mb-2">
+            <div class="column"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text" placeholder="250 / VRB"/></div>
+            <div class="column"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number" placeholder="0"/></div>
+            <div class="column"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number" placeholder="—"/></div>
+          </div>
+          <div class="columns is-mobile is-variable is-2 mb-3">
+            <div class="column"><label class="label">VRB de</label><input id="depVrbFrom" class="input is-small" type="number" placeholder="220"/></div>
+            <div class="column"><label class="label">VRB à</label><input id="depVrbTo" class="input is-small" type="number" placeholder="300"/></div>
+            <div class="column"></div>
+          </div>
+          <div class="wind-strip mb-3">
+            <div class="wc"><div class="lbl">Face</div><div class="val" id="depHwFace">—</div><div class="unit">kt</div></div>
+            <div class="wc"><div class="lbl">Arrière</div><div class="val" id="depTw">—</div><div class="unit">kt</div></div>
+            <div id="depXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="depXw">—</div><div class="unit">kt</div></div>
+          </div>
+          <div id="depTwAssumeWrap" class="tw-wrap mb-2"><button id="depTwAssumeBtn" class="tw-btn"></button></div>
+          <div id="depExplain" class="explain-text"></div>
+        </div>
+      </div>
 
-          <!-- Conditions DEP -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">🌡 Conditions & Options</div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="fld-lbl">OAT (°C)</label>
-                  <input id="depOat" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="15"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Masse décollage (kg)</label>
-                  <input id="depTow" class="input input-bordered input-sm w-full font-mono" type="number" value="900"/>
-                </div>
-              </div>
-              <div id="depTowWarn" class="hidden text-xs text-warning font-medium">⚠ Hors plage manuelle</div>
-              <div>
-                <label class="fld-lbl">Facteur supplémentaire</label>
-                <input id="depExtraTO" class="input input-bordered input-sm w-full font-mono" type="number" step="0.01" value="1.00"/>
-              </div>
-              <div class="divider my-0 text-xs opacity-30">Surface</div>
-              <div>
-                <label class="fld-lbl">Type de piste</label>
-                <div class="join w-full">
-                  <button id="depSurfHard"  class="btn btn-sm join-item flex-1 tog-btn is-primary is-selected">Dur</button>
-                  <button id="depSurfGrass" class="btn btn-sm join-item flex-1 tog-btn btn-ghost">Herbe</button>
-                </div>
-              </div>
-              <div id="depWetWrap" style="display:none">
-                <label class="fld-lbl">État piste herbe</label>
-                <div class="join w-full flex-wrap">
-                  <button id="depGrassDry"      class="btn btn-xs join-item flex-1 tog-btn is-primary is-selected">Sèche</button>
-                  <button id="depGrassWet"      class="btn btn-xs join-item flex-1 tog-btn btn-ghost">Mouillée ×1,15</button>
-                  <button id="depGrassWetShort" class="btn btn-xs join-item flex-1 tog-btn btn-ghost">Très courte ×1,60</button>
-                </div>
-              </div>
+      <!-- Options surface DEP -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🛫</span><span class="sec-head-title">Surface piste</span></div>
+        <div class="sec-body">
+          <div class="field">
+            <label class="label">Type de piste</label>
+            <div class="buttons has-addons tog-group" style="margin-bottom:0">
+              <button id="depSurfHard"  class="button is-small tog-on">Revêtue (dur)</button>
+              <button id="depSurfGrass" class="button is-small">Herbe</button>
             </div>
           </div>
-
-          <!-- Vent DEP -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">💨 Vent</div>
-              <div class="grid grid-cols-3 gap-3">
-                <div>
-                  <label class="fld-lbl">Direction</label>
-                  <input id="depWindDir" class="input input-bordered input-sm w-full font-mono" type="text" placeholder="250 / VRB"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Vitesse (kt)</label>
-                  <input id="depWindKt" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="0"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Rafale (kt)</label>
-                  <input id="depWindGust" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="—"/>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="fld-lbl">VRB de</label>
-                  <input id="depVrbFrom" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="220"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">VRB à</label>
-                  <input id="depVrbTo" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="300"/>
-                </div>
-              </div>
-              <!-- Composantes vent -->
-              <div class="grid grid-cols-3 gap-2">
-                <div class="wc"><div class="lbl">Face</div><div class="val" id="depHwFace">—</div><div class="unit">kt</div></div>
-                <div class="wc"><div class="lbl">Arrière</div><div class="val" id="depTw">—</div><div class="unit">kt</div></div>
-                <div id="depXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="depXw">—</div><div class="unit">kt</div></div>
-              </div>
-              <div id="depTwAssumeWrap" class="tw-wrap">
-                <button id="depTwAssumeBtn" class="tw-btn"></button>
-              </div>
-              <div id="depExplain" class="text-xs opacity-40 leading-relaxed"></div>
+          <div id="depWetWrap" style="display:none;margin-top:10px">
+            <label class="label">État de la piste en herbe</label>
+            <div class="buttons has-addons tog-group" style="flex-wrap:wrap!important;margin-bottom:0">
+              <button id="depGrassDry"      class="button is-small tog-on">Herbe sèche</button>
+              <button id="depGrassWet"      class="button is-small">Herbe mouillée <span style="opacity:.6;font-size:.7em">×1,15</span></button>
+              <button id="depGrassWetShort" class="button is-small">Herbe courte mouillée <span style="opacity:.6;font-size:.7em">×1,60</span></button>
             </div>
+            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:6px">
+              Facteurs selon OMA Part C tableau 1.18 (AMC1 CAT.POL.A.305)
+            </p>
           </div>
         </div>
+      </div>
 
-        <!-- KPI + Detail DEP -->
-        <div class="kpi-bar" id="toKpi">
-          <div>
-            <div class="kpi-lbl">Requis — marge incluse</div>
-            <div class="kpi-val" id="toKpiVal">— m</div>
-            <div class="kpi-avail">TODA dispo : <span id="todaMini">—</span></div>
-          </div>
-          <span id="toChip" class="chip neutral">—</span>
-        </div>
-
-        <div id="depPerfDetail" class="hidden card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
-          <div class="card-body p-0">
-            <div class="px-4 py-3 border-b border-base-300 sec-lbl mb-0">📊 Détail du calcul</div>
-            <div class="divide-y divide-base-300">
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Roulement sans marge</span><span class="font-mono text-sm font-bold" id="toBaseRoll">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Passage 15 m sans marge</span><span class="font-mono text-sm font-bold" id="toBasePass">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Facteur vent</span><span class="font-mono text-sm font-bold" id="toWindF">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Carénages</span><span class="font-mono text-sm font-bold" id="toSpat">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Facteur supplémentaire</span><span class="font-mono text-sm font-bold" id="toExtra">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm font-semibold">Résultat sans marge</span><span class="font-mono text-sm font-bold" id="toRes">—</span></div>
-            </div>
-            <div id="toExplain" class="px-4 pb-3 text-xs opacity-40 leading-relaxed"></div>
-          </div>
-        </div>
-
-        <div class="pb-4">
-          <div id="depValidMsg" class="is-hidden valid-msg mb-2"></div>
-          <button id="btnCalcDep" class="btn btn-primary w-full btn-lg text-sm uppercase tracking-widest">Calculer les performances au décollage</button>
-        </div>
-
-      </div><!-- /colDep -->
-
-      <!-- ARR SECTION -->
-      <div id="colArr" class="p-4 lg:p-6 flex flex-col gap-6 max-w-5xl mx-auto" style="display:none">
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          <!-- Station + TAF ARR -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">📡 Station météo</div>
-              <div class="flex gap-2 items-end">
-                <div class="flex-1">
-                  <label class="fld-lbl">ICAO arrivée</label>
-                  <input id="arrIcao" class="input input-bordered input-sm w-full font-mono uppercase" type="text" maxlength="4" placeholder="LFLL" autocapitalize="characters" spellcheck="false"/>
-                </div>
-                <button id="btnArrMetar" class="btn btn-sm btn-outline btn-success">METAR</button>
-                <button id="btnArrTaf"   class="btn btn-sm btn-outline">TAF</button>
-              </div>
-              <div id="arrMetarMsg" class="metar-box"></div>
-              <!-- TAF -->
-              <div id="arrTafWrap" class="taf-wrap">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="fld-lbl mb-0">Prévision TAF</span>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs opacity-40">ETA</span>
-                    <select id="arrEta" class="select select-bordered select-xs font-mono">
-                      <option value="">Sélectionner…</option>
-                    </select>
-                  </div>
-                </div>
-                <div id="arrTafRaw" class="metar-box visible mb-3">—</div>
-                <div id="arrTafPeriods" class="flex flex-col gap-1.5"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Piste ARR -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">🛣 Piste</div>
-              <div class="grid grid-cols-3 gap-3">
-                <div>
-                  <label class="fld-lbl">QFU</label>
-                  <input id="arrQfu" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="010"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">LDA (m)</label>
-                  <input id="arrLda" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="900"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Élév. (ft)</label>
-                  <input id="arrAlt" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="328"/>
-                </div>
-              </div>
-              <div id="arrRunwayPicker">
-                <div class="rwy-grid flex flex-wrap gap-2 mt-1"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          <!-- Conditions ARR -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">🌡 Conditions & Options</div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="fld-lbl">OAT (°C)</label>
-                  <input id="arrOat" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="15"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Masse atterrissage (kg)</label>
-                  <input id="arrLdw" class="input input-bordered input-sm w-full font-mono" type="number" value="900"/>
-                </div>
-              </div>
-              <div id="arrLdwWarn" class="hidden text-xs text-warning font-medium">⚠ Hors plage manuelle</div>
-              <div>
-                <label class="fld-lbl">Facteur supplémentaire</label>
-                <input id="arrExtraLDG" class="input input-bordered input-sm w-full font-mono" type="number" step="0.01" value="1.00"/>
-              </div>
-              <div class="divider my-0 text-xs opacity-30">Surface & Freinage</div>
-              <div>
-                <label class="fld-lbl">Freinage</label>
-                <div class="join w-full">
-                  <button id="arrModerate" class="btn btn-sm join-item flex-1 tog-btn is-primary is-selected">Modéré</button>
-                  <button id="arrNoBrake"  class="btn btn-sm join-item flex-1 tog-btn btn-ghost">Sans frein (herbe)</button>
-                </div>
-              </div>
-              <div>
-                <label class="fld-lbl">État piste</label>
-                <div class="join w-full">
-                  <button id="arrGrassDry"      class="btn btn-xs join-item flex-1 tog-btn is-primary is-selected">Sèche</button>
-                  <button id="arrGrassWet"      class="btn btn-xs join-item flex-1 tog-btn btn-ghost">Mouillée ×1,15</button>
-                  <button id="arrGrassWetShort" class="btn btn-xs join-item flex-1 tog-btn btn-ghost" style="display:none">Très courte ×1,60</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Vent ARR -->
-          <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body p-4 gap-3">
-              <div class="sec-lbl">💨 Vent</div>
-              <div class="grid grid-cols-3 gap-3">
-                <div>
-                  <label class="fld-lbl">Direction</label>
-                  <input id="arrWindDir" class="input input-bordered input-sm w-full font-mono" type="text" placeholder="250 / VRB"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Vitesse (kt)</label>
-                  <input id="arrWindKt" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="0"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">Rafale (kt)</label>
-                  <input id="arrWindGust" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="—"/>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="fld-lbl">VRB de</label>
-                  <input id="arrVrbFrom" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="220"/>
-                </div>
-                <div>
-                  <label class="fld-lbl">VRB à</label>
-                  <input id="arrVrbTo" class="input input-bordered input-sm w-full font-mono" type="number" placeholder="300"/>
-                </div>
-              </div>
-              <div id="arrTafTwSuggest" class="mb-1"></div>
-              <div class="grid grid-cols-3 gap-2">
-                <div class="wc"><div class="lbl">Face</div><div class="val" id="arrHwFace">—</div><div class="unit">kt</div></div>
-                <div class="wc"><div class="lbl">Arrière</div><div class="val" id="arrTw">—</div><div class="unit">kt</div></div>
-                <div id="arrXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="arrXw">—</div><div class="unit">kt</div></div>
-              </div>
-              <div id="arrTwAssumeWrap" class="tw-wrap">
-                <button id="arrTwAssumeBtn" class="tw-btn"></button>
-              </div>
-              <div id="arrExplain" class="text-xs opacity-40 leading-relaxed"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- KPI + Detail ARR -->
-        <div class="kpi-bar" id="ldgKpi">
-          <div>
-            <div class="kpi-lbl">Requis — marge incluse</div>
-            <div class="kpi-val" id="ldgKpiVal">— m</div>
-            <div class="kpi-avail">LDA dispo : <span id="ldaMini">—</span></div>
-          </div>
-          <span id="ldgChip" class="chip neutral">—</span>
-        </div>
-
-        <div id="arrPerfDetail" class="hidden card bg-base-100 border border-base-300 shadow-sm overflow-hidden">
-          <div class="card-body p-0">
-            <div class="px-4 py-3 border-b border-base-300 sec-lbl mb-0">📊 Détail du calcul</div>
-            <div class="divide-y divide-base-300">
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Roulement sans marge</span><span class="font-mono text-sm font-bold" id="ldgBaseRoll">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Passage 15 m sans marge</span><span class="font-mono text-sm font-bold" id="ldgBasePass">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Facteur vent</span><span class="font-mono text-sm font-bold" id="ldgWindF">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm opacity-50">Facteur supplémentaire</span><span class="font-mono text-sm font-bold" id="ldgExtra">—</span></div>
-              <div class="flex justify-between items-center px-4 py-2.5"><span class="text-sm font-semibold">Résultat sans marge</span><span class="font-mono text-sm font-bold" id="ldgRes">—</span></div>
-            </div>
-            <div id="ldgExplain" class="px-4 pb-3 text-xs opacity-40 leading-relaxed"></div>
-          </div>
-        </div>
-
-        <div class="pb-4">
-          <div id="arrValidMsg" class="is-hidden valid-msg mb-2"></div>
-          <button id="btnCalcArr" class="btn btn-success w-full btn-lg text-sm uppercase tracking-widest">Calculer les performances à l'atterrissage</button>
-        </div>
-
-      </div><!-- /colArr -->
-
-    </div><!-- /scrollable -->
-  </div><!-- /drawer-content -->
-
-  <!-- ── SIDEBAR (LEFT) ─────────────────────────────── -->
-  <div class="drawer-side z-40">
-    <label for="mainDrawer" class="drawer-overlay"></label>
-    <aside class="flex flex-col w-64 lg:w-64 bg-base-100 border-r border-base-300 h-full">
-
-      <!-- Brand -->
-      <div class="flex items-center gap-3 px-5 py-4 border-b border-base-300">
-        <div class="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-primary-content text-xs font-bold font-mono flex-shrink-0">AC</div>
+      <!-- KPI -->
+      <div id="toKpi" class="kpi-box">
         <div>
-          <div class="font-bold text-sm">ACBT Performances</div>
-          <div class="text-xs opacity-40">Beauvais-Tillé · LFOB</div>
+          <div class="kpi-lbl">Requis — marge incluse</div>
+          <div class="kpi-val" id="toKpiVal">— m</div>
+          <div class="kpi-avail">TODA disponible : <span id="todaMini">—</span></div>
         </div>
       </div>
 
-      <!-- Module nav -->
-      <div class="px-3 py-4 border-b border-base-300">
-        <div class="text-xs font-bold opacity-30 uppercase tracking-widest px-2 mb-2">Modules</div>
-        <ul class="menu menu-sm gap-1 p-0">
-          <li>
-            <button id="sideNavDep" onclick="switchTab('dep')"
-              class="flex items-center gap-3 font-semibold text-sm menu-active bg-primary text-primary-content rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>
-              Décollage
-            </button>
-          </li>
-          <li>
-            <button id="sideNavArr" onclick="switchTab('arr')"
-              class="flex items-center gap-3 font-semibold text-sm rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.5 19h19v2h-19zm7.18-1.73l4.35 1.16 5.31 1.42c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-4.97-1.33-2.45-4.44-1.92-.51v3.96l-4.13-1.1-.86-2.05-1.43-.39v4.19z"/></svg>
-              Atterrissage
-            </button>
-          </li>
-          <li class="opacity-30">
-            <button class="flex items-center gap-3 font-semibold text-sm rounded-lg cursor-not-allowed" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20c4 0 4-2 8-2s4 2 8 2v-2c-4 0-4-2-8-2-1.13 0-1.9.16-2.53.33C14.28 12.55 16 10.07 17 8z"/></svg>
-              Masse & Centrage
-              <span class="badge badge-xs ml-auto">Soon</span>
-            </button>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Avion -->
-      <div class="px-3 py-4 border-b border-base-300">
-        <div class="text-xs font-bold opacity-30 uppercase tracking-widest px-2 mb-2">Avion</div>
-        <div class="px-2 flex flex-col gap-2">
-          <select id="aircraftSel" class="select select-bordered select-sm w-full font-mono">
-            <option value="">Chargement…</option>
-          </select>
-          <div id="propeller" class="font-mono text-xs opacity-30 px-1"></div>
+      <!-- Détail calcul DEP -->
+      <div class="sec-card" id="depPerfDetail" style="display:none">
+        <div class="sec-head"><span>📊</span><span class="sec-head-title">Détail du calcul</span></div>
+        <div class="sec-body pf-rows">
+          <div class="pf-row"><span class="pf-lbl">Roulement sans marge</span><span class="pf-val" id="toBaseRoll">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Passage 15 m sans marge</span><span class="pf-val" id="toBasePass">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Facteur vent</span><span class="pf-val" id="toWindF">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Carénages</span><span class="pf-val" id="toSpat">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Facteur supplémentaire</span><span class="pf-val" id="toExtra">—</span></div>
+          <div class="pf-row"><span class="pf-lbl" style="font-weight:600;color:#374151">Résultat sans marge</span><span class="pf-val" id="toRes">—</span></div>
+          <div id="toExplain" class="explain-text"></div>
         </div>
       </div>
 
-      <!-- Paramètres -->
-      <div class="px-3 py-4 border-b border-base-300 flex flex-col gap-4">
-        <div class="text-xs font-bold opacity-30 uppercase tracking-widest px-2">Paramètres</div>
+      <p id="depValidMsg" class="is-hidden valid-msg mb-2"></p>
+      <button id="btnCalcDep" class="button is-link is-fullwidth calc-btn">Calculer les performances au décollage</button>
 
-        <div class="px-2 flex items-center justify-between">
-          <span class="text-sm opacity-70">Marge sécurité</span>
-          <div class="flex items-center gap-1.5">
-            <input id="safety" type="number" value="30" min="0" class="input input-bordered input-xs w-16 font-mono text-center"/>
-            <span class="text-xs opacity-40">%</span>
+    </div><!-- /colDep -->
+
+    <!-- ARR -->
+    <div id="colArr" class="column">
+
+      <div class="col-header arr">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="col-hd-badge" style="background:var(--arr-border);color:var(--arr)">Arrivée</span>
+          <span id="arrIcao_display" class="col-icao">—</span>
+        </div>
+        <span id="ldgChip" class="chip neutral">—</span>
+      </div>
+
+      <!-- Station + TAF -->
+      <div class="sec-card">
+        <div class="sec-head"><span>📡</span><span class="sec-head-title">Station météo</span></div>
+        <div class="sec-body">
+          <div class="field is-grouped">
+            <div class="control is-expanded">
+              <label class="label">ICAO arrivée</label>
+              <input id="arrIcao" class="input is-small" type="text" maxlength="4" placeholder="LFLL" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
+            </div>
+            <div class="control" style="padding-top:20px;display:flex;gap:6px">
+              <button id="btnArrMetar" class="button is-small is-success is-light" style="border-radius:8px;font-weight:700">METAR</button>
+              <button id="btnArrTaf"   class="button is-small is-light" style="border-radius:8px;font-weight:700">TAF</button>
+            </div>
           </div>
-        </div>
-
-        <div class="px-2">
-          <div class="text-xs opacity-50 mb-2">Vent réglementaire</div>
-          <div class="join w-full">
-            <button id="btnRegWindOff" class="btn btn-xs join-item flex-1 btn-active">100 %</button>
-            <button id="btnRegWindOn"  class="btn btn-xs join-item flex-1 btn-ghost">50 / 150 %</button>
-          </div>
-        </div>
-
-        <div class="px-2">
-          <div class="text-xs opacity-50 mb-2">Carénages</div>
-          <div class="join w-full">
-            <button id="spatsWith"    class="btn btn-xs join-item flex-1 btn-active">Avec</button>
-            <button id="spatsWithout" class="btn btn-xs join-item flex-1 btn-ghost">Sans (+3 %)</button>
+          <div id="arrMetarMsg" class="metar-box"></div>
+          <!-- TAF -->
+          <div id="arrTafWrap" class="taf-wrap" style="margin-top:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <label class="label mb-0" style="margin-bottom:0!important">TAF arrivée</label>
+              <div style="display:flex;align-items:center;gap:6px">
+                <label class="label mb-0" style="margin-bottom:0!important;font-size:.7rem">ETA (UTC)</label>
+                <div class="select is-small">
+                  <select id="arrEta" style="font-family:'IBM Plex Mono',monospace;font-weight:600">
+                    <option value="">Sélectionner…</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="arrTafRaw" class="metar-box visible" style="margin-bottom:10px">—</div>
+            <div id="arrTafPeriods"></div>
           </div>
         </div>
       </div>
 
-      <div class="flex-1"></div>
-
-      <!-- PDF -->
-      <div class="p-3 border-t border-base-300">
-        <button id="btnPrint" class="btn btn-outline btn-sm w-full" disabled>📄 Exporter PDF</button>
+      <!-- Piste ARR -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number" placeholder="010"/></div>
+            <div class="column"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number" placeholder="900"/></div>
+            <div class="column"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number" placeholder="328"/></div>
+          </div>
+          <div id="arrRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
+        </div>
       </div>
 
-    </aside>
-  </div>
+      <!-- Conditions ARR -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number" placeholder="15"/></div>
+            <div class="column">
+              <label class="label">Masse att. (kg)</label>
+              <input id="arrLdw" class="input is-small" type="number" value="900"/>
+              <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Facteur supplémentaire</label>
+            <input id="arrExtraLDG" class="input is-small" type="number" step="0.01" value="1.00"/>
+          </div>
+        </div>
+      </div>
 
-</div><!-- /drawer -->
+      <!-- Vent ARR -->
+      <div class="sec-card">
+        <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
+        <div class="sec-body">
+          <div class="columns is-mobile is-variable is-2 mb-2">
+            <div class="column"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text" placeholder="250 / VRB"/></div>
+            <div class="column"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number" placeholder="0"/></div>
+            <div class="column"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number" placeholder="—"/></div>
+          </div>
+          <div class="columns is-mobile is-variable is-2 mb-3">
+            <div class="column"><label class="label">VRB de</label><input id="arrVrbFrom" class="input is-small" type="number" placeholder="220"/></div>
+            <div class="column"><label class="label">VRB à</label><input id="arrVrbTo" class="input is-small" type="number" placeholder="300"/></div>
+            <div class="column"></div>
+          </div>
+          <div id="arrTafTwSuggest" style="margin-bottom:8px"></div>
+          <div class="wind-strip mb-3">
+            <div class="wc"><div class="lbl">Face</div><div class="val" id="arrHwFace">—</div><div class="unit">kt</div></div>
+            <div class="wc"><div class="lbl">Arrière</div><div class="val" id="arrTw">—</div><div class="unit">kt</div></div>
+            <div id="arrXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="arrXw">—</div><div class="unit">kt</div></div>
+          </div>
+          <div id="arrTwAssumeWrap" class="tw-wrap mb-2"><button id="arrTwAssumeBtn" class="tw-btn"></button></div>
+          <div id="arrExplain" class="explain-text"></div>
+        </div>
+      </div>
 
-<!-- Hidden stubs requis par JS -->
-<div style="display:none">
-  <span id="depIcao_display"></span>
-  <span id="arrIcao_display"></span>
-  <span id="readmeBody"></span>
-  <span id="readmeArrow"></span>
+      <!-- Options ARR -->
+      <div class="sec-card">
+        <div class="sec-head"><span>🛬</span><span class="sec-head-title">État piste & Freinage</span></div>
+        <div class="sec-body">
+          <div class="field">
+            <label class="label">Type de freinage</label>
+            <div class="buttons has-addons tog-group" style="margin-bottom:0">
+              <button id="arrModerate" class="button is-small tog-on">Freinage normal (dur/herbe)</button>
+              <button id="arrNoBrake"  class="button is-small">Sans freins (herbe sèche)</button>
+            </div>
+            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:5px">
+              «Freinage normal» = piste dure sèche ou herbe sèche. «Sans freins» = herbe uniquement (tableau LDG no-brake AFM).
+            </p>
+          </div>
+          <div class="field mt-3">
+            <label class="label">État de la piste</label>
+            <div class="buttons has-addons tog-group" style="flex-wrap:wrap!important;margin-bottom:0">
+              <button id="arrGrassDry"      class="button is-small tog-on">Sèche</button>
+              <button id="arrGrassWet"      class="button is-small">Mouillée <span style="opacity:.6;font-size:.7em">×1,15</span></button>
+              <button id="arrGrassWetShort" class="button is-small" style="display:none">Herbe courte mouillée <span style="opacity:.6;font-size:.7em">×1,60</span></button>
+            </div>
+            <p style="font:400 10px system-ui;color:#9CA3AF;margin-top:5px">
+              Facteurs selon OMA Part C tableau 1.25.1. «Herbe courte mouillée ×1,60» : uniquement disponible en mode «Sans freins».
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI ARR -->
+      <div id="ldgKpi" class="kpi-box">
+        <div>
+          <div class="kpi-lbl">Requis — marge incluse</div>
+          <div class="kpi-val" id="ldgKpiVal">— m</div>
+          <div class="kpi-avail">LDA disponible : <span id="ldaMini">—</span></div>
+        </div>
+      </div>
+
+      <!-- Détail calcul ARR -->
+      <div class="sec-card" id="arrPerfDetail" style="display:none">
+        <div class="sec-head"><span>📊</span><span class="sec-head-title">Détail du calcul</span></div>
+        <div class="sec-body pf-rows">
+          <div class="pf-row"><span class="pf-lbl">Roulement sans marge</span><span class="pf-val" id="ldgBaseRoll">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Passage 15 m sans marge</span><span class="pf-val" id="ldgBasePass">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Facteur vent</span><span class="pf-val" id="ldgWindF">—</span></div>
+          <div class="pf-row"><span class="pf-lbl">Facteur supplémentaire</span><span class="pf-val" id="ldgExtra">—</span></div>
+          <div class="pf-row"><span class="pf-lbl" style="font-weight:600;color:#374151">Résultat sans marge</span><span class="pf-val" id="ldgRes">—</span></div>
+          <div id="ldgExplain" class="explain-text"></div>
+        </div>
+      </div>
+
+      <p id="arrValidMsg" class="is-hidden valid-msg mb-2"></p>
+      <button id="btnCalcArr" class="button is-success is-fullwidth calc-btn">Calculer les performances à l'atterrissage</button>
+
+    </div><!-- /colArr -->
+  </div><!-- /columns -->
 </div>
+
+<!-- README -->
+<div class="readme-wrap">
+  <div class="readme-toggle" onclick="toggleReadme()">
+    <span class="readme-toggle-lbl">📖 Documentation — Comment ça marche ?</span>
+    <span id="readmeArrow">▼</span>
+  </div>
+  <div id="readmeBody" class="readme-body">
+
+    <div class="rm-alert">
+      ⚠️ <strong>Avertissement</strong> — Cet outil est une aide à la préparation, pas un substitut au manuel de vol. Le pilote commandant de bord est seul responsable de ses décisions opérationnelles.
+    </div>
+
+    <div class="rm-sec">
+      <h3>1. Comment fonctionne le calcul ?</h3>
+      <p>Le calculateur lit les tables de performance du manuel de vol de chaque avion (AFM) et <strong>interpole</strong> entre les valeurs pour les conditions exactes du vol.</p>
+      <p>Trois paramètres sont interpolés simultanément :</p>
+      <ul>
+        <li><strong>Altitude-densité</strong> (élévation terrain en ft)</li>
+        <li><strong>Température OAT</strong> (°C)</li>
+        <li><strong>Masse</strong> (kg) — pour les DR400 uniquement</li>
+      </ul>
+      <p>La distance calculée est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), conformément à l'AFM. Le roulement est affiché à titre informatif.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>2. Profils avion disponibles</h3>
+      <ul>
+        <li><strong>DR400 — F-GCAL, F-BXEK</strong> (120 cv, hélice Sensenich) : tables 3 altitudes × 3 températures × 2 masses (700 / 900 kg). Tables séparées piste dure et herbe.</li>
+        <li><strong>DR300 — F-BTBS, F-BTXS, F-BTKG</strong> (120 cv, hélice Sensenich) : tables 4 altitudes × 4 températures. La masse est intégrée via un facteur d'échelle linéaire.</li>
+      </ul>
+      <p>Pour ajouter un avion, il suffit d'ajouter son fichier JSON dans <code>/aircraft/</code> dans le dépôt GitHub — aucune modification du code nécessaire.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>3. Marge de sécurité</h3>
+      <p>Une marge multiplicative est appliquée sur la distance calculée (30 % par défaut, réglable dans la barre en haut) :</p>
+      <p style="font-family:'IBM Plex Mono',monospace;background:#F1F5F9;padding:.5rem .8rem;border-radius:8px;font-size:.8rem">
+        Requis = Distance calculée × (1 + marge / 100)
+      </p>
+      <p>C'est cette valeur «Requis, marge incluse» qu'il faut comparer à la TODA ou LDA disponible. Si <strong>Requis ≤ TODA/LDA</strong> → <span class="tag-ok">OK</span>. Sinon → refus.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>4. Vent — composantes et facteurs</h3>
+      <p>Les composantes sont calculées trigonométriquement à partir du QFU et de la direction/vitesse vent :</p>
+      <ul>
+        <li><strong>Face</strong> = V × cos(angle QFU−vent)</li>
+        <li><strong>Arrière</strong> = max(0, −face)</li>
+        <li><strong>Travers</strong> = |V × sin(angle)|</li>
+      </ul>
+      <p>Le <strong>facteur vent</strong> est ensuite appliqué à la distance de base :</p>
+      <ul>
+        <li>Vent de face : interpolation linéaire entre 0 kt (×1,00), 10 kt (×0,78), 20 kt (×0,63), 30 kt (×0,52)</li>
+        <li>Vent arrière : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
+      </ul>
+      <p>Limite travers : <span class="tag-warn">Alerte à 18 kt</span>. Calcul bloqué à 22 kt (limite avion).</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>5. Vent variable (VRB)</h3>
+      <p><strong>Avec secteur</strong> (ex. 340V040 dans le METAR) : balayage degré par degré dans l'arc, vitesse moy. ET rafales — la composante la plus défavorable est retenue.</p>
+      <p><strong>VRB sans secteur</strong> (ex. VRB03KT) : direction inconnue → vent arrière pur appliqué. C'est l'hypothèse la plus conservative. Signalé dans les résultats.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>6. Vent réglementaire EASA (50 % / 150 %)</h3>
+      <p>Option activable dans la barre de paramètres. Conforme <strong>CAT.POL.A.305 / CAT.POL.A.205</strong> :</p>
+      <ul>
+        <li>Vent de face : seuls <strong>50 %</strong> de la composante sont créditée (conservateur)</li>
+        <li>Vent arrière : <strong>150 %</strong> sont appliqués (conservateur)</li>
+      </ul>
+    </div>
+
+    <div class="rm-sec">
+      <h3>7. Option «5 kt arrière»</h3>
+      <p>S'affiche quand le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Permet d'appliquer cette hypothèse conservatrice utilisée en opérations pour couvrir les erreurs de virement de bord ou les calmes trompeurs.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>8. METAR et pistes automatiques</h3>
+      <p>Le bouton <strong>METAR</strong> charge automatiquement : vent (direction, vitesse, rafales, VRB), OAT et élévation. Si la station exacte est indisponible, la plus proche est utilisée. Un groupe TEMPO avec vent plus défavorable remplace le vent principal.</p>
+      <p>Les <strong>pistes disponibles</strong> sont chargées via OpenAIP (QFU magnétique exact + TODA/LDA déclarées). Un clic sur une piste remplit les champs correspondants et remet les calculs à zéro.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>9. TAF arrivée — Sélection de période</h3>
+      <p>Le bouton <strong>TAF</strong> charge le TAF, les pistes et l'élévation en parallèle. Sélectionnez votre <strong>ETA en UTC</strong> pour voir quelles périodes TAF sont actives à votre heure d'arrivée.</p>
+      <p><strong>Code couleur des périodes :</strong></p>
+      <ul>
+        <li><span class="tag-ok">⚠ Retenir</span> — Période active à l'ETA avec la distance LDG la plus restrictive. C'est celle-ci à utiliser.</li>
+        <li><span style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px">✓ ETA</span> — Période également active mais moins restrictive.</li>
+        <li><span class="tag-warn">TEMPO</span> — Période temporaire active. Incluse dans la comparaison.</li>
+        <li><span class="tag-muted">Grisé</span> — Période non active à l'ETA sélectionné.</li>
+      </ul>
+      <p><strong>Règles OMA (AMC1 CAT.POL.A.335 / tableau 4.13.1) :</strong></p>
+      <ul>
+        <li><strong>PROB40 seul</strong> → inclus dans la comparaison (probabilité suffisante)</li>
+        <li><strong>PROB30 seul</strong> → <em>ignoré</em>, affiché en pointillé gris (probabilité trop faible)</li>
+        <li><strong>PROB30 TEMPO et PROB40 TEMPO</strong> → <em>ignorés</em> pour les performances (phénomène passager, non fiable)</li>
+      </ul>
+    </div>
+
+    <div class="rm-sec">
+      <h3>10. Comparaison METAR / TAF</h3>
+      <p>Si l'ETA tombe dans les <strong>2 heures suivant l'émission du METAR</strong>, les deux sources sont comparées. La comparaison porte sur la <strong>vraie distance LDG calculée</strong> avec chaque source :</p>
+      <ul>
+        <li>Si le METAR donne une distance plus longue → <strong>vent METAR appliqué automatiquement</strong> aux champs arrivée.</li>
+        <li>Si le TAF est plus restrictif → les champs restent sur le TAF, un message l'indique.</li>
+      </ul>
+      <p>Cliquer sur une période TAF réapplique le vent TAF (override manuel).</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>11. Surface piste et état mouillé</h3>
+      <p>Les facteurs de dégradation pour piste en herbe sont issus du <strong>tableau 1.18 (décollage) et 1.25.1 (atterrissage) de l'OMA Part C</strong> :</p>
+      <table style="width:100%;font-size:.78rem;border-collapse:collapse;margin-top:8px">
+        <thead><tr style="background:#F3F4F6">
+          <th style="padding:6px 10px;text-align:left;border:1px solid #E5E7EB;font-weight:700;color:#374151">Condition</th>
+          <th style="padding:6px 10px;text-align:center;border:1px solid #E5E7EB;font-weight:700;color:#374151">Facteur</th>
+          <th style="padding:6px 10px;text-align:left;border:1px solid #E5E7EB;font-weight:700;color:#374151">Application</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe sèche</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center">×1,00</td><td style="padding:6px 10px;border:1px solid #E5E7EB">Déco + Att.</td></tr>
+          <tr style="background:#FAFAFA"><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe mouillée</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center"><strong>×1,15</strong></td><td style="padding:6px 10px;border:1px solid #E5E7EB">Déco + Att.</td></tr>
+          <tr><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe courte mouillée</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center"><strong>×1,60</strong></td><td style="padding:6px 10px;border:1px solid #E5E7EB">Att. sans freins uniquement</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:8px">Aucun facteur spécifique n'est prévu par l'AFM pour une piste dure mouillée au décollage — la marge de 30 % couvre cette variabilité.</p>
+    </div>
+
+    <div class="rm-sec">
+      <h3>12. Export PDF</h3>
+      <p>Le bouton <strong>📄 PDF</strong> génère une fiche vectorielle incluant : paramètres, résultats, détail des facteurs, METAR brut, TAF brut (période retenue surlignée en bleu), source météo retenue, heure du coucher du soleil et de la nuit aéronautique (coucher + 30 min) calculées depuis les coordonnées de la station.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer class="app-foot">Manuels de vol DR400 et DR300 — Aéroclub de Beauvais-Tillé · LFOB</footer>
 
 <script>
-// ─── Disclaimer ───────────────────────────────────
+/* Disclaimer */
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('modalDisclaimer');
   document.getElementById('btnCloseDisclaimer').addEventListener('click', () => {
-    modal.classList.remove('modal-open');
-    setTimeout(() => { modal.style.display = 'none'; }, 300);
+    modal.classList.remove('is-active');
+    modal.style.display = 'none';
   });
-});
 
-// ─── switchTab ────────────────────────────────────
-window.switchTab = function(tab) {
-  const colDep = document.getElementById('colDep');
-  const colArr = document.getElementById('colArr');
-  if (!colDep || !colArr) return;
-
-  if (tab === 'dep') {
-    colDep.style.display = 'flex';
-    colArr.style.display = 'none';
-  } else {
-    colArr.style.display = 'flex';
-    colDep.style.display = 'none';
-  }
-
-  // Navbar tabs
-  const tDep = document.getElementById('tabDep');
-  const tArr = document.getElementById('tabArr');
-  if (tDep && tArr) {
-    tDep.classList.toggle('tab-active', tab === 'dep');
-    tArr.classList.toggle('tab-active', tab === 'arr');
-  }
-
-  // Sidebar nav
-  const sDep = document.getElementById('sideNavDep');
-  const sArr = document.getElementById('sideNavArr');
-  if (sDep) {
-    sDep.className = tab === 'dep'
-      ? 'flex items-center gap-3 font-semibold text-sm menu-active bg-primary text-primary-content rounded-lg w-full px-4 py-2'
-      : 'flex items-center gap-3 font-semibold text-sm rounded-lg w-full px-4 py-2 hover:bg-base-200 transition-colors';
-  }
-  if (sArr) {
-    sArr.className = tab === 'arr'
-      ? 'flex items-center gap-3 font-semibold text-sm menu-active bg-success text-success-content rounded-lg w-full px-4 py-2'
-      : 'flex items-center gap-3 font-semibold text-sm rounded-lg w-full px-4 py-2 hover:bg-base-200 transition-colors';
-  }
-
-  // Close mobile drawer
-  const drawer = document.getElementById('mainDrawer');
-  if (drawer && window.innerWidth < 1024) drawer.checked = false;
-
-  // Badge
-  const badge = document.getElementById('activeIcaoBadge');
-  if (badge) {
-    const icao = document.getElementById(tab === 'dep' ? 'depIcao' : 'arrIcao');
-    badge.textContent = icao?.value?.toUpperCase() || '—';
-  }
-};
-
-// ─── Misc DOM patches ─────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-
-  // ICAO badge update
-  ['depIcao','arrIcao'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', e => {
-      const badge = document.getElementById('activeIcaoBadge');
-      const isDep = id === 'depIcao';
-      const colActive = document.getElementById(isDep ? 'colDep' : 'colArr')?.style.display !== 'none';
-      if (badge && colActive) badge.textContent = e.target.value.toUpperCase() || '—';
+  /* ICAO display */
+  ['dep','arr'].forEach(side => {
+    const inp  = document.getElementById(side + 'Icao');
+    const disp = document.getElementById(side + 'Icao_display');
+    if (inp && disp) inp.addEventListener('input', () => {
+      disp.textContent = inp.value.toUpperCase() || '—';
     });
   });
 
-  // Calc button done states
-  new MutationObserver(() => {
-    ['dep','arr'].forEach(side => {
-      const kpiVal = document.getElementById(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal');
-      const detail = document.getElementById(side === 'dep' ? 'depPerfDetail' : 'arrPerfDetail');
-      const v = kpiVal?.textContent;
-      detail?.classList.toggle('hidden', !v || v === '— m');
-    });
-  }).observe(document.body, { childList: true, subtree: true, characterData: true });
-
-  // kpi-bar ok/bad sync
+  /* KPI box ok/bad sync */
   ['toChip','ldgChip'].forEach(id => {
     const chip = document.getElementById(id);
     const bar  = document.getElementById(id === 'toChip' ? 'toKpi' : 'ldgKpi');
@@ -786,106 +834,79 @@ document.addEventListener('DOMContentLoaded', () => {
     new MutationObserver(() => {
       bar.classList.toggle('is-ok',  chip.classList.contains('is-ok-chip'));
       bar.classList.toggle('is-bad', chip.classList.contains('is-bad-chip'));
-      if (chip.classList.contains('is-ok-chip'))  val.style.color = 'hsl(var(--su))';
-      else if (chip.classList.contains('is-bad-chip')) val.style.color = 'hsl(var(--er))';
-      else val.style.color = '';
+      val.style.color = chip.classList.contains('is-ok-chip') ? '#059669'
+                      : chip.classList.contains('is-bad-chip') ? '#DC2626' : '';
     }).observe(chip, { attributes: true });
   });
 
-  // rmHeader ok/bad → update modal card colors
+  /* Perf detail visibility */
+  new MutationObserver(() => {
+    ['dep','arr'].forEach(side => {
+      const v = document.getElementById(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal')?.textContent;
+      const d = document.getElementById(side === 'dep' ? 'depPerfDetail' : 'arrPerfDetail');
+      if (d) d.style.display = (v && v !== '— m') ? 'block' : 'none';
+    });
+  }).observe(document.body, { childList:true, subtree:true, characterData:true });
+
+  /* rmHeader ok/bad */
   const rmH = document.getElementById('rmHeader');
   if (rmH) new MutationObserver(() => {
     const ok  = rmH.classList.contains('is-ok');
     const bad = rmH.classList.contains('is-bad');
-    const kpiCard = document.getElementById('rmKpiCard');
-    const badge   = document.getElementById('rmBadge');
-    const kpiVal  = document.getElementById('rmKpiVal');
-    if (ok) {
-      kpiCard.style.cssText = 'background:hsl(var(--su)/.08);border-color:hsl(var(--su)/.3)';
-      badge.style.cssText = 'background:hsl(var(--su)/.15);color:hsl(var(--su));opacity:1';
-      kpiVal.style.color = 'hsl(var(--su))';
-    } else if (bad) {
-      kpiCard.style.cssText = 'background:hsl(var(--er)/.08);border-color:hsl(var(--er)/.3)';
-      badge.style.cssText = 'background:hsl(var(--er)/.15);color:hsl(var(--er));opacity:1';
-      kpiVal.style.color = 'hsl(var(--er))';
-    } else {
-      kpiCard.style.cssText = '';
-      badge.style.cssText = 'background:hsl(var(--b3));opacity:.5';
-      kpiVal.style.color = '';
-    }
+    const kpi = document.getElementById('rmKpiCard');
+    const bdg = document.getElementById('rmBadge');
+    const val = document.getElementById('rmKpiVal');
+    kpi.className = 'rm-kpi-card' + (ok ? ' is-ok' : bad ? ' is-bad' : '');
+    const base = 'font:700 16px \'IBM Plex Mono\';width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center';
+    bdg.style.cssText = ok  ? base + ';background:#ECFDF5;color:#059669'
+                      : bad ? base + ';background:#FEF2F2;color:#DC2626'
+                             : base + ';background:#F1F5F9;color:#9CA3AF';
+    val.style.color = ok ? '#059669' : bad ? '#DC2626' : '';
   }).observe(rmH, { attributes: true, attributeFilter: ['class'] });
 
-  // rmFill = progress bar
-  const origFill = document.getElementById('rmFill');
-  if (origFill) {
-    new MutationObserver(() => {
-      const w = origFill.style.width || '0%';
-      origFill.value = parseInt(w);
-    }).observe(origFill, { attributes: true, attributeStyle: true });
+  /* propeller span patch */
+  const p = document.getElementById('propeller');
+  if (p && p.tagName !== 'INPUT') {
+    Object.defineProperty(p, 'value', {
+      get() { return this.textContent; },
+      set(v) { this.textContent = v || ''; }
+    });
   }
-
-  // tog-btn (join buttons) → btn-active when is-selected/is-primary
-  document.querySelectorAll('.tog-btn').forEach(el => {
-    new MutationObserver(() => {
-      if (el.classList.contains('is-grass-selected')) {
-        el.classList.add('btn-active','btn-success');
-        el.classList.remove('btn-ghost','btn-primary');
-      } else if (el.classList.contains('is-selected') || el.classList.contains('is-primary')) {
-        el.classList.add('btn-active');
-        el.classList.remove('btn-ghost','btn-success');
-      } else {
-        el.classList.remove('btn-active','btn-success');
-        el.classList.add('btn-ghost');
-      }
-    }).observe(el, { attributes: true, attributeFilter: ['class'] });
-  });
-
-  // btnRegWindOff/On active state
-  ['btnRegWindOff','btnRegWindOn'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    new MutationObserver(() => {
-      const on = el.classList.contains('is-selected') || el.classList.contains('is-primary');
-      el.classList.toggle('btn-active', on);
-      el.classList.toggle('btn-ghost', !on);
-    }).observe(el, { attributes: true, attributeFilter: ['class'] });
-  });
-
-  // spatsWith/spatsWithout active state
-  ['spatsWith','spatsWithout'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    new MutationObserver(() => {
-      const on = el.classList.contains('is-selected') || el.classList.contains('is-primary');
-      el.classList.toggle('btn-active', on);
-      el.classList.toggle('btn-ghost', !on);
-    }).observe(el, { attributes: true, attributeFilter: ['class'] });
-  });
-
-  // Calc button done state CSS
-  ['btnCalcDep','btnCalcArr'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    new MutationObserver(() => {
-      const isDep = id === 'btnCalcDep';
-      if (el.classList.contains('done-dep') || el.classList.contains('done-arr')) {
-        el.classList.remove('btn-primary','btn-success','btn-lg');
-        el.classList.add('btn-outline', isDep ? 'btn-primary' : 'btn-success');
-      } else {
-        el.classList.remove('btn-outline');
-        el.classList.add(isDep ? 'btn-primary' : 'btn-success', 'btn-lg');
-      }
-    }).observe(el, { attributes: true, attributeFilter: ['class'] });
-  });
 });
 
-function toggleReadme() {}
+/* switchTab */
+function switchTab(tab) {
+  const colDep = document.getElementById('colDep');
+  const colArr = document.getElementById('colArr');
+  const btnDep = document.getElementById('tabDep');
+  const btnArr = document.getElementById('tabArr');
+  if (tab === 'dep') {
+    colDep.classList.remove('is-hidden-mobile');
+    colArr.classList.add('is-hidden-mobile');
+    btnDep.classList.add('is-active');
+    btnArr.classList.remove('is-active');
+  } else {
+    colArr.classList.remove('is-hidden-mobile');
+    colDep.classList.add('is-hidden-mobile');
+    btnArr.classList.add('is-active');
+    btnDep.classList.remove('is-active');
+  }
+}
+
+function toggleReadme() {
+  const b = document.getElementById('readmeBody');
+  const a = document.getElementById('readmeArrow');
+  const o = b.style.display !== 'block';
+  b.style.display = o ? 'block' : 'none';
+  a.textContent   = o ? '▲' : '▼';
+}
 
 if ('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
 </script>
 
 <script>
+
 
 // ── Patch minor class references for new CSS ────────────────
 // JS uses 'is-hidden' for valid-msg → already styled
@@ -901,35 +922,47 @@ if ('serviceWorker' in navigator)
 /* ===================== DONNÉES AVIONS (chargées depuis /aircraft/*.json) ===================== */
 
 // Liste des immatriculations à charger (ordre d'affichage)
-const AIRCRAFT_LIST = ['F-GCAL', 'F-BXEK', 'F-BTBS', 'F-BTXS', 'F-BTKG'];
+// Données avions embarquées directement (pas de fetch nécessaire)
+const _AIRCRAFT_EMBEDDED = {"F-GCAL": {"immat": "F-GCAL", "puissance": "120cv", "helice": "Sensenich", "profil": "DR400", "to": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "hard": {"kg700": {"roll": [130, 145, 165], "pass": [285, 315, 345]}, "kg900": {"roll": [225, 235, 285], "pass": [480, 535, 590]}}, "grass": {"kg700": {"roll": [165, 185, 215], "pass": [320, 355, 395]}, "kg900": {"roll": [315, 360, 410], "pass": [570, 640, 715]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "hard": {"kg700": {"roll": [175, 195, 220], "pass": [375, 415, 460]}, "kg900": {"roll": [305, 345, 390], "pass": [645, 720, 800]}}, "grass": {"kg700": {"roll": [230, 265, 300], "pass": [430, 485, 540]}, "kg900": {"roll": [460, 530, 615], "pass": [800, 905, 1025]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "hard": {"kg700": {"roll": [235, 265, 300], "pass": [500, 560, 620]}, "kg900": {"roll": [425, 475, 535], "pass": [890, 1000, 1125]}}, "grass": {"kg700": {"roll": [330, 380, 440], "pass": [595, 675, 760]}, "kg900": {"roll": [700, 820, 960], "pass": [1165, 1350, 1550]}}}}, "ldg": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "moderate": {"kg700": {"roll": [145, 155, 165], "pass": [365, 385, 400]}, "kg900": {"roll": [185, 200, 210], "pass": [435, 460, 485]}}, "nobrake_grass": {"kg700": {"roll": [215, 230, 250], "pass": [435, 460, 485]}, "kg900": {"roll": [280, 300, 325], "pass": [530, 560, 590]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "moderate": {"kg700": {"roll": [160, 175, 185], "pass": [395, 420, 440]}, "kg900": {"roll": [205, 225, 240], "pass": [475, 505, 535]}}, "nobrake_grass": {"kg700": {"roll": [240, 260, 285], "pass": [475, 505, 530]}, "kg900": {"roll": [310, 335, 360], "pass": [580, 615, 655]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "moderate": {"kg700": {"roll": [180, 195, 210], "pass": [430, 460, 485]}, "kg900": {"roll": [235, 250, 270], "pass": [525, 555, 590]}}, "nobrake_grass": {"kg700": {"roll": [275, 290, 315], "pass": [525, 555, 590]}, "kg900": {"roll": [350, 375, 405], "pass": [640, 680, 725]}}}}}, "F-BXEK": {"immat": "F-BXEK", "puissance": "120cv", "helice": "Sensenich", "profil": "DR400", "to": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "hard": {"kg700": {"roll": [130, 145, 165], "pass": [285, 315, 345]}, "kg900": {"roll": [225, 235, 285], "pass": [480, 535, 590]}}, "grass": {"kg700": {"roll": [165, 185, 215], "pass": [320, 355, 395]}, "kg900": {"roll": [315, 360, 410], "pass": [570, 640, 715]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "hard": {"kg700": {"roll": [175, 195, 220], "pass": [375, 415, 460]}, "kg900": {"roll": [305, 345, 390], "pass": [645, 720, 800]}}, "grass": {"kg700": {"roll": [230, 265, 300], "pass": [430, 485, 540]}, "kg900": {"roll": [460, 530, 615], "pass": [800, 905, 1025]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "hard": {"kg700": {"roll": [235, 265, 300], "pass": [500, 560, 620]}, "kg900": {"roll": [425, 475, 535], "pass": [890, 1000, 1125]}}, "grass": {"kg700": {"roll": [330, 380, 440], "pass": [595, 675, 760]}, "kg900": {"roll": [700, 820, 960], "pass": [1165, 1350, 1550]}}}}, "ldg": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "moderate": {"kg700": {"roll": [145, 155, 165], "pass": [365, 385, 400]}, "kg900": {"roll": [185, 200, 210], "pass": [435, 460, 485]}}, "nobrake_grass": {"kg700": {"roll": [215, 230, 250], "pass": [435, 460, 485]}, "kg900": {"roll": [280, 300, 325], "pass": [530, 560, 590]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "moderate": {"kg700": {"roll": [160, 175, 185], "pass": [395, 420, 440]}, "kg900": {"roll": [205, 225, 240], "pass": [475, 505, 535]}}, "nobrake_grass": {"kg700": {"roll": [240, 260, 285], "pass": [475, 505, 530]}, "kg900": {"roll": [310, 335, 360], "pass": [580, 615, 655]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "moderate": {"kg700": {"roll": [180, 195, 210], "pass": [430, 460, 485]}, "kg900": {"roll": [235, 250, 270], "pass": [525, 555, 590]}}, "nobrake_grass": {"kg700": {"roll": [275, 290, 315], "pass": [525, 555, 590]}, "kg900": {"roll": [350, 375, 405], "pass": [640, 680, 725]}}}}}, "F-BTBS": {"immat": "F-BTBS", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}, "F-BTXS": {"immat": "F-BTXS", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}, "F-BTKG": {"immat": "F-BTKG", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}};
 
-// Stockage des données chargées : { 'F-GCAL': { ...json... }, ... }
 const aircraftData = {};
 
-// Tables DR400 et DR300 extraites de l'avion sélectionné
 let TO_DR400  = null;
 let LDG_DR400 = null;
 let TO_DR300  = null;
-const DR300_TEMPS = [0, 15, 30, 45]; // Températures de référence DR300
+const DR300_TEMPS = [0, 15, 30, 45];
 
 async function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
-  const results = await Promise.allSettled(
-    AIRCRAFT_LIST.map(immat =>
-      fetch('/aircraft/' + immat + '.json').then(r => r.json()).then(d => ({ immat, d }))
-    )
-  );
-
   sel.innerHTML = '';
-  results.forEach(res => {
-    if (res.status !== 'fulfilled') return;
-    const { immat, d } = res.value;
-    aircraftData[immat] = d;
-    const label = immat + ' (' + d.puissance + ')';
-    sel.innerHTML += `<option value="${immat}">${label}</option>`;
-  });
 
-  // Charger le premier avion par défaut
+  // Essayer d'abord de charger depuis /aircraft/*.json (pour les nouvelles immat ajoutées)
+  const AIRCRAFT_LIST = Object.keys(_AIRCRAFT_EMBEDDED);
+
+  // Tenter le fetch pour détecter de nouveaux avions
+  let serverList = null;
+  try {
+    const r = await fetch('/aircraft/index.json');
+    if (r.ok) serverList = await r.json();
+  } catch(_) {}
+
+  const allImmat = serverList ? serverList : AIRCRAFT_LIST;
+
+  // Charger les données
+  for (const immat of allImmat) {
+    let d = _AIRCRAFT_EMBEDDED[immat];
+    if (!d) {
+      try {
+        const r = await fetch('/aircraft/' + immat + '.json');
+        if (r.ok) d = await r.json();
+      } catch(_) {}
+    }
+    if (!d) continue;
+    aircraftData[immat] = d;
+    const label = immat + ' — ' + (d.profil || 'DR?') + ' ' + (d.puissance || '') + ' · ' + (d.helice || '');
+    sel.innerHTML += `<option value="${immat}">${label}</option>`;
+  }
+
   if (sel.options.length > 0) applyAircraftData(sel.value);
 }
 
@@ -1008,14 +1041,16 @@ const sind      = d => Math.sin(toRad(d));
 
 /* ===================== UI helpers ===================== */
 function setToggleActive(activeEl, ...otherEls) {
-  activeEl.classList.add('is-selected', 'is-primary');
-  activeEl.classList.remove('is-grass-selected');
-  otherEls.forEach(el => { el.classList.remove('is-selected', 'is-primary', 'is-grass-selected'); });
+  if (!activeEl) return;
+  activeEl.classList.add('is-selected', 'is-primary', 'tog-on');
+  activeEl.classList.remove('is-grass-selected', 'tog-grass');
+  otherEls.forEach(el => { if(el) el.classList.remove('is-selected', 'is-primary', 'is-grass-selected', 'tog-on', 'tog-grass'); });
 }
 function setToggleGrass(activeEl, ...otherEls) {
-  activeEl.classList.add('is-selected', 'is-grass-selected');
+  if (!activeEl) return;
+  activeEl.classList.add('is-selected', 'is-grass-selected', 'tog-on', 'tog-grass');
   activeEl.classList.remove('is-primary');
-  otherEls.forEach(el => { el.classList.remove('is-selected', 'is-primary', 'is-grass-selected'); });
+  otherEls.forEach(el => { if(el) el.classList.remove('is-selected', 'is-primary', 'is-grass-selected', 'tog-on', 'tog-grass'); });
 }
 
 function setChip(el, state) {
@@ -2301,6 +2336,30 @@ function summarizeTafExtra(tokens) {
   return filtered.join(' ');
 }
 
+// ── Classification du phénomène TEMPO selon l'OMA Bartolini (tableau 4.13.1) ──
+// Retourne 'transient' (passager, peut être ignoré) ou 'persistent' (persistant, à prendre en compte)
+// Retourne 'unknown' si aucun phénomène météo identifiable
+function classifyTempoPhenomenon(tokens) {
+  // Phénomènes passagers (convectifs / averses)
+  // TS=orage, SH=averses, GR=grêle, PL=grésil
+  const TRANSIENT_RX = /\b(?:TS(?:RA|SN|GR|GS)?|(?:-|\+)?SH(?:RA|SN|GR|GS|PL)?|TSRA|TSGR|TSPL|TSGS|SHSN|SHRA|FU|VA|PO|FC|SS|DS)\b/i;
+
+  // Phénomènes persistants (réduction de visibilité durable)
+  // FG=brouillard, BR=brume, RA=pluie, SN=neige, DZ=bruine, FZRA=pluie verglaçante,
+  // FZDZ, FZ=givrant, HZ=brume sèche, MIFG=brouillard bas, BCFG=brouillard bancs
+  const PERSISTENT_RX = /\b(?:FG|BR|RA|SN|DZ|FZRA|FZDZ|FZFG|MIFG|BCFG|PRFG|HZ|BLSN|BLDU|BLSA|IC|PL|GS|RASN|SNRA|DZSN)\b/i;
+
+  const wx = tokens.join(' ');
+
+  // Si contient un phénomène passager sans phénomène persistant → passager
+  const hasTransient  = TRANSIENT_RX.test(wx);
+  const hasPersistent = PERSISTENT_RX.test(wx);
+
+  if (hasPersistent) return 'persistent';   // persistant prime
+  if (hasTransient)  return 'transient';    // passager si seulement convectif
+  return 'unknown'; // pas de phénomène météo identifié (peut-être juste vent)
+}
+
 function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
   if (!raw) return [];
   const tokens = raw.trim().split(/\s+/);
@@ -2420,6 +2479,8 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
       if (!validity_tok || !/^\d{4}\/\d{4}$/.test(validity_tok)) continue;
       const [s, e] = validity_tok.split('/');
       const eff = parsedWind || prevailingWind;
+      // Stocker le vent précédent pour la règle OMA BECMG
+      const prevWind = prevailingWind;
       if (parsedWind) prevailingWind = parsedWind;
       periods.push({
         type: 'BECMG', type_label: 'BECMG',
@@ -2428,6 +2489,7 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
         wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
         wind_speed:     eff ? { value: eff.speed } : null,
         wind_gust:      eff?.gust ? { value: eff.gust } : null,
+        prevWind,  // vent précédent, utilisé par periodContainsEta pour règle OMA
       });
       continue;
     }
@@ -2437,8 +2499,8 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
       const validity_tok = stoks[0];
       if (!validity_tok || !/^\d{4}\/\d{4}$/.test(validity_tok)) continue;
       const [s, e] = validity_tok.split('/');
-      // TEMPO hérite du vent ambiant si pas son propre vent
       const eff = parsedWind || prevailingWind;
+      const wxType = classifyTempoPhenomenon(stoks.slice(1));
       periods.push({
         type: 'TEMPO', type_label: 'TEMPO',
         start_time: isoFromRepr(s), end_time: isoFromRepr(e),
@@ -2446,6 +2508,7 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
         wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
         wind_speed:     eff ? { value: eff.speed } : null,
         wind_gust:      eff?.gust ? { value: eff.gust } : null,
+        wx_type: wxType,  // 'transient' | 'persistent' | 'unknown'
       });
       continue;
     }
@@ -2459,6 +2522,7 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
       const isTempo = stype.includes('TEMPO');
       const label = prob + (isTempo ? ' TEMPO' : '');
       const eff = parsedWind || prevailingWind;
+      const wxType = isTempo ? classifyTempoPhenomenon(stoks.slice(1)) : null;
       periods.push({
         type: prob, type_label: label,
         start_time: isoFromRepr(s), end_time: isoFromRepr(e),
@@ -2466,6 +2530,7 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
         wind_direction: eff ? { repr: eff.dir, value: eff.dirValue } : null,
         wind_speed:     eff ? { value: eff.speed } : null,
         wind_gust:      eff?.gust ? { value: eff.gust } : null,
+        wx_type: wxType,
       });
     }
   }
@@ -2487,6 +2552,30 @@ function periodContainsEta(period, etaHour) {
   let eta = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
   // Si avant le début du TAF, essayer le lendemain
   if (eta < startDt) eta = new Date(eta.getTime() + 86400000);
+
+  // ── Règle OMA Bartolini tableau 4.13.1 pour BECMG ──────────────────────
+  // Comparer le vent BECMG avec le vent FROM précédent (prevWind)
+  // Dégradation (vent arrière ou de travers augmente) → actif dès start_time
+  // Amélioration (vent moins défavorable)              → actif seulement dès end_time
+  if (period.type === 'BECMG' && period.prevWind && period.wind) {
+    const prevSpd  = period.prevWind.speed  ?? 0;
+    const curSpd   = period.wind.speed      ?? 0;
+    const prevGust = period.prevWind.gust   ?? prevSpd;
+    const curGust  = period.wind.gust       ?? curSpd;
+    // Utiliser la vitesse maxi (avec rafales)
+    const isDegradation = curGust >= prevGust; // vent égal ou plus fort = dégradation ou neutre
+    if (isDegradation) {
+      // Dégradation → actif dès start_time (comme actuellement)
+      return eta >= startDt && eta < endDt;
+    } else {
+      // Amélioration → actif seulement depuis end_time (la transition est terminée)
+      // La période amélioration est donc : [end_time, prochaine_fin[
+      // On ne peut pas connaître la prochaine fin ici, donc on utilise end_time
+      // comme point de début : l'ETA doit être >= end_time
+      return eta >= endDt;
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────
 
   return eta >= startDt && eta < endDt;
 }
@@ -2590,10 +2679,26 @@ function renderTafPicker(tafData) {
     // Classifier les périodes selon les règles OMA
     const isExcluded = (p) => {
       const t = (p.type_label || p.type || '').toUpperCase();
-      // PROB30 seul → exclure de la comparaison (affiché grisé)
+
+      // ── Règle OMA Bartolini tableau 4.13.1 ──────────────────────────────
+
+      // PROB30 seul → toujours ignoré (probabilité trop faible)
       if (t === 'PROB30') return true;
-      // PROB30 TEMPO et PROB40 TEMPO → exclure (aléatoire, non fiable pour les perf)
+
+      // PROB30 TEMPO et PROB40 TEMPO → ignorés pour les perf (phénomène passager)
       if (/PROB(?:30|40).*TEMPO/.test(t)) return true;
+
+      // TEMPO seul : distinguer phénomène passager vs persistant
+      if (t === 'TEMPO') {
+        const wx = p.wx_type;
+        // Passager (TS, SH, orage, averse) → ignoré
+        if (wx === 'transient') return true;
+        // Persistant (FG, RA, SN, BR...) → pris en compte → ne pas exclure
+        if (wx === 'persistent') return false;
+        // Inconnu (ex: TEMPO vent seul sans phénomène) → pris en compte par défaut
+        return false;
+      }
+
       return false;
     };
 
@@ -2680,10 +2785,12 @@ function renderTafPicker(tafData) {
       if (!isActive) {
         applyLabel = '↙ appliquer';
       } else if (excluded) {
-        // Période active mais exclue de la comparaison (PROB30, PROB TEMPO)
+        // Période active mais exclue de la comparaison
         const t = type.toUpperCase();
-        if (t === 'PROB30') applyLabel = '⚠ ignoré (< 30 %)';
-        else applyLabel = '⚠ ignoré (PROB TEMPO)';
+        if (t === 'PROB30') applyLabel = '⚠ ignoré (PROB < 30 %)';
+        else if (/PROB(?:30|40).*TEMPO/.test(t)) applyLabel = '⚠ ignoré (PROB TEMPO)';
+        else if (t === 'TEMPO' && p.wx_type === 'transient') applyLabel = '⚠ ignoré (phénomène passager)';
+        else applyLabel = '⚠ ignoré';
       } else if (compareablePeriods.length === 1) {
         applyLabel = '✓ ETA';
       } else {
@@ -2699,10 +2806,28 @@ function renderTafPicker(tafData) {
         inactive  ? 'is-inactive' : '',
       ].filter(Boolean).join(' ');
 
+      // Indications OMA (BECMG et TEMPO)
+      let becmgHint = '';
+      if (p.type === 'BECMG' && p.prevWind && p.wind) {
+        const prevGust = p.prevWind.gust ?? p.prevWind.speed ?? 0;
+        const curGust  = p.wind.gust    ?? p.wind.speed     ?? 0;
+        if (curGust >= prevGust) {
+          becmgHint = '<div class="tp-extra" style="color:#D97706">⬆ Dégradation — appliqué dès début transition (OMA 4.13.1)</div>';
+        } else {
+          becmgHint = '<div class="tp-extra" style="color:#059669">⬇ Amélioration — appliqué dès fin transition (OMA 4.13.1)</div>';
+        }
+      }
+      if (p.type === 'TEMPO') {
+        if (p.wx_type === 'transient')
+          becmgHint = '<div class="tp-extra" style="color:#9CA3AF">⚡ Phénomène passager (TS/SH) — ignoré pour les perf (OMA 4.13.1)</div>';
+        else if (p.wx_type === 'persistent')
+          becmgHint = '<div class="tp-extra" style="color:#D97706">🌧 Phénomène persistant (FG/RA/SN…) — pris en compte (OMA 4.13.1)</div>';
+      }
+
       return `<div class="${cls}" onclick="applyTafPeriodImpl(${i})">
         <span class="tp-type">${type}</span>
         <span class="tp-time">${t1}→${t2}</span>
-        <span class="tp-wind">${wind}${extra}</span>
+        <div style="flex:1"><span class="tp-wind">${wind}</span>${extra}${becmgHint}</div>
         <span class="tp-apply">${applyLabel}</span>
       </div>`;
     }).join('');
@@ -3502,6 +3627,22 @@ if ('serviceWorker' in navigator) {
     const card = document.getElementById(side + 'XwCard');
     if (card) {
       card.classList.remove('warn-yellow', 'warn-red');
+      if (xwVal !== null) {
+        if (xwVal >= 22) card.classList.add('warn-red');
+        else if (xwVal >= 18) card.classList.add('warn-yellow');
+      }
+    }
+  };
+})();
+
+/* crosswindLimitColor patch */
+(function() {
+  const orig = window.crosswindLimitColor;
+  if (!orig) return;
+  window.crosswindLimitColor = function(side, xwVal) {
+    const card = document.getElementById(side + 'XwCard');
+    if (card) {
+      card.classList.remove('warn-yellow','warn-red');
       if (xwVal !== null) {
         if (xwVal >= 22) card.classList.add('warn-red');
         else if (xwVal >= 18) card.classList.add('warn-yellow');
