@@ -389,7 +389,7 @@
           <div class="field is-grouped">
             <div class="control is-expanded">
               <label class="label">ICAO départ</label>
-              <input id="depIcao" class="input is-small" type="text" maxlength="4" placeholder="LFOB" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
+              <input id="depIcao" class="input is-small" type="text" maxlength="4" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
             </div>
             <div class="control" style="padding-top:20px">
               <button id="btnDepMetar" class="button is-small is-link is-light" style="border-radius:8px;font-weight:700">METAR</button>
@@ -404,9 +404,9 @@
         <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number" placeholder="010"/></div>
-            <div class="column"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number" placeholder="2429"/></div>
-            <div class="column"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number" placeholder="359"/></div>
+            <div class="column"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number"/></div>
           </div>
           <div id="depRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
         </div>
@@ -417,7 +417,7 @@
         <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number" placeholder="15"/></div>
+            <div class="column"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number"/></div>
             <div class="column">
               <label class="label">Masse déco (kg)</label>
               <input id="depTow" class="input is-small" type="number" value="900"/>
@@ -436,13 +436,13 @@
         <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2 mb-2">
-            <div class="column"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text" placeholder="250 / VRB"/></div>
-            <div class="column"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number" placeholder="0"/></div>
-            <div class="column"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number" placeholder="—"/></div>
+            <div class="column"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text"/></div>
+            <div class="column"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number"/></div>
           </div>
           <div class="columns is-mobile is-variable is-2 mb-3">
-            <div class="column"><label class="label">VRB de</label><input id="depVrbFrom" class="input is-small" type="number" placeholder="220"/></div>
-            <div class="column"><label class="label">VRB à</label><input id="depVrbTo" class="input is-small" type="number" placeholder="300"/></div>
+            <div class="column"><label class="label">VRB de</label><input id="depVrbFrom" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">VRB à</label><input id="depVrbTo" class="input is-small" type="number"/></div>
             <div class="column"></div>
           </div>
           <div class="wind-strip mb-3">
@@ -526,7 +526,7 @@
           <div class="field is-grouped">
             <div class="control is-expanded">
               <label class="label">ICAO arrivée</label>
-              <input id="arrIcao" class="input is-small" type="text" maxlength="4" placeholder="LFLL" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
+              <input id="arrIcao" class="input is-small" type="text" maxlength="4" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
             </div>
             <div class="control" style="padding-top:20px;display:flex;gap:6px">
               <button id="btnArrMetar" class="button is-small is-success is-light" style="border-radius:8px;font-weight:700">METAR</button>
@@ -558,9 +558,9 @@
         <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number" placeholder="010"/></div>
-            <div class="column"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number" placeholder="900"/></div>
-            <div class="column"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number" placeholder="328"/></div>
+            <div class="column"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number"/></div>
           </div>
           <div id="arrRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
         </div>
@@ -571,7 +571,7 @@
         <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number" placeholder="15"/></div>
+            <div class="column"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number"/></div>
             <div class="column">
               <label class="label">Masse att. (kg)</label>
               <input id="arrLdw" class="input is-small" type="number" value="900"/>
@@ -590,13 +590,13 @@
         <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
         <div class="sec-body">
           <div class="columns is-mobile is-variable is-2 mb-2">
-            <div class="column"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text" placeholder="250 / VRB"/></div>
-            <div class="column"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number" placeholder="0"/></div>
-            <div class="column"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number" placeholder="—"/></div>
+            <div class="column"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text"/></div>
+            <div class="column"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number"/></div>
           </div>
           <div class="columns is-mobile is-variable is-2 mb-3">
-            <div class="column"><label class="label">VRB de</label><input id="arrVrbFrom" class="input is-small" type="number" placeholder="220"/></div>
-            <div class="column"><label class="label">VRB à</label><input id="arrVrbTo" class="input is-small" type="number" placeholder="300"/></div>
+            <div class="column"><label class="label">VRB de</label><input id="arrVrbFrom" class="input is-small" type="number"/></div>
+            <div class="column"><label class="label">VRB à</label><input id="arrVrbTo" class="input is-small" type="number"/></div>
             <div class="column"></div>
           </div>
           <div id="arrTafTwSuggest" style="margin-bottom:8px"></div>
@@ -922,9 +922,6 @@ if ('serviceWorker' in navigator)
 /* ===================== DONNÉES AVIONS (chargées depuis /aircraft/*.json) ===================== */
 
 // Liste des immatriculations à charger (ordre d'affichage)
-// Données avions embarquées directement (pas de fetch nécessaire)
-const _AIRCRAFT_EMBEDDED = {"F-GCAL": {"immat": "F-GCAL", "puissance": "120cv", "helice": "Sensenich", "profil": "DR400", "to": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "hard": {"kg700": {"roll": [130, 145, 165], "pass": [285, 315, 345]}, "kg900": {"roll": [225, 235, 285], "pass": [480, 535, 590]}}, "grass": {"kg700": {"roll": [165, 185, 215], "pass": [320, 355, 395]}, "kg900": {"roll": [315, 360, 410], "pass": [570, 640, 715]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "hard": {"kg700": {"roll": [175, 195, 220], "pass": [375, 415, 460]}, "kg900": {"roll": [305, 345, 390], "pass": [645, 720, 800]}}, "grass": {"kg700": {"roll": [230, 265, 300], "pass": [430, 485, 540]}, "kg900": {"roll": [460, 530, 615], "pass": [800, 905, 1025]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "hard": {"kg700": {"roll": [235, 265, 300], "pass": [500, 560, 620]}, "kg900": {"roll": [425, 475, 535], "pass": [890, 1000, 1125]}}, "grass": {"kg700": {"roll": [330, 380, 440], "pass": [595, 675, 760]}, "kg900": {"roll": [700, 820, 960], "pass": [1165, 1350, 1550]}}}}, "ldg": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "moderate": {"kg700": {"roll": [145, 155, 165], "pass": [365, 385, 400]}, "kg900": {"roll": [185, 200, 210], "pass": [435, 460, 485]}}, "nobrake_grass": {"kg700": {"roll": [215, 230, 250], "pass": [435, 460, 485]}, "kg900": {"roll": [280, 300, 325], "pass": [530, 560, 590]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "moderate": {"kg700": {"roll": [160, 175, 185], "pass": [395, 420, 440]}, "kg900": {"roll": [205, 225, 240], "pass": [475, 505, 535]}}, "nobrake_grass": {"kg700": {"roll": [240, 260, 285], "pass": [475, 505, 530]}, "kg900": {"roll": [310, 335, 360], "pass": [580, 615, 655]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "moderate": {"kg700": {"roll": [180, 195, 210], "pass": [430, 460, 485]}, "kg900": {"roll": [235, 250, 270], "pass": [525, 555, 590]}}, "nobrake_grass": {"kg700": {"roll": [275, 290, 315], "pass": [525, 555, 590]}, "kg900": {"roll": [350, 375, 405], "pass": [640, 680, 725]}}}}}, "F-BXEK": {"immat": "F-BXEK", "puissance": "120cv", "helice": "Sensenich", "profil": "DR400", "to": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "hard": {"kg700": {"roll": [130, 145, 165], "pass": [285, 315, 345]}, "kg900": {"roll": [225, 235, 285], "pass": [480, 535, 590]}}, "grass": {"kg700": {"roll": [165, 185, 215], "pass": [320, 355, 395]}, "kg900": {"roll": [315, 360, 410], "pass": [570, 640, 715]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "hard": {"kg700": {"roll": [175, 195, 220], "pass": [375, 415, 460]}, "kg900": {"roll": [305, 345, 390], "pass": [645, 720, 800]}}, "grass": {"kg700": {"roll": [230, 265, 300], "pass": [430, 485, 540]}, "kg900": {"roll": [460, 530, 615], "pass": [800, 905, 1025]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "hard": {"kg700": {"roll": [235, 265, 300], "pass": [500, 560, 620]}, "kg900": {"roll": [425, 475, 535], "pass": [890, 1000, 1125]}}, "grass": {"kg700": {"roll": [330, 380, 440], "pass": [595, 675, 760]}, "kg900": {"roll": [700, 820, 960], "pass": [1165, 1350, 1550]}}}}, "ldg": {"0": {"temps": {"minus20": -5, "isa": 15, "plus20": 35}, "moderate": {"kg700": {"roll": [145, 155, 165], "pass": [365, 385, 400]}, "kg900": {"roll": [185, 200, 210], "pass": [435, 460, 485]}}, "nobrake_grass": {"kg700": {"roll": [215, 230, 250], "pass": [435, 460, 485]}, "kg900": {"roll": [280, 300, 325], "pass": [530, 560, 590]}}}, "4000": {"temps": {"minus20": -13, "isa": 7, "plus20": 27}, "moderate": {"kg700": {"roll": [160, 175, 185], "pass": [395, 420, 440]}, "kg900": {"roll": [205, 225, 240], "pass": [475, 505, 535]}}, "nobrake_grass": {"kg700": {"roll": [240, 260, 285], "pass": [475, 505, 530]}, "kg900": {"roll": [310, 335, 360], "pass": [580, 615, 655]}}}, "8000": {"temps": {"minus20": -21, "isa": -1, "plus20": 19}, "moderate": {"kg700": {"roll": [180, 195, 210], "pass": [430, 460, 485]}, "kg900": {"roll": [235, 250, 270], "pass": [525, 555, 590]}}, "nobrake_grass": {"kg700": {"roll": [275, 290, 315], "pass": [525, 555, 590]}, "kg900": {"roll": [350, 375, 405], "pass": [640, 680, 725]}}}}}, "F-BTBS": {"immat": "F-BTBS", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}, "F-BTXS": {"immat": "F-BTXS", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}, "F-BTKG": {"immat": "F-BTKG", "puissance": "120cv", "helice": "Sensenich", "profil": "DR300", "to": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[315, 350, 390, 430], [330, 360, 400, 460], [385, 430, 475, 520], [430, 480, 520, 560]], "pass": [[530, 590, 655, 720], [605, 675, 745, 820], [685, 765, 845, 920], [760, 845, 935, 1020]]}, "grass": {"alts": [0, 1500, 3000, 4600], "roll": [[380, 420, 470, 515], [420, 470, 515, 575], [455, 510, 570, 625], [510, 575, 635, 695]], "pass": [[595, 660, 735, 805], [675, 745, 820, 895], [760, 850, 935, 1025], [845, 940, 1040, 1135]]}}, "ldg": {"temps": [0, 15, 30, 45], "hard": {"alts": [0, 1500, 3000, 4500], "roll": [[145, 155, 165, 175], [160, 175, 185, 195], [180, 195, 210, 220], [195, 210, 230, 240]], "pass": [[365, 385, 400, 415], [395, 420, 440, 460], [430, 460, 485, 510], [465, 495, 520, 545]]}, "grass": {"alts": [0, 1500, 3000, 4500], "roll": [[215, 230, 250, 265], [240, 260, 285, 300], [275, 290, 315, 335], [300, 325, 355, 375]], "pass": [[435, 460, 485, 510], [475, 505, 530, 555], [525, 555, 590, 620], [575, 610, 645, 680]]}}}};
-
 const aircraftData = {};
 
 let TO_DR400  = null;
@@ -934,37 +931,54 @@ const DR300_TEMPS = [0, 15, 30, 45];
 
 async function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
-  sel.innerHTML = '';
+  sel.innerHTML = '<option value="" disabled selected>Chargement…</option>';
 
-  // Essayer d'abord de charger depuis /aircraft/*.json (pour les nouvelles immat ajoutées)
-  const AIRCRAFT_LIST = Object.keys(_AIRCRAFT_EMBEDDED);
-
-  // Tenter le fetch pour détecter de nouveaux avions
-  let serverList = null;
+  // 1. Charger la liste des immatriculations depuis /aircraft/index.json
+  let immatList = [];
   try {
     const r = await fetch('/aircraft/index.json');
-    if (r.ok) serverList = await r.json();
-  } catch(_) {}
-
-  const allImmat = serverList ? serverList : AIRCRAFT_LIST;
-
-  // Charger les données
-  for (const immat of allImmat) {
-    let d = _AIRCRAFT_EMBEDDED[immat];
-    if (!d) {
-      try {
-        const r = await fetch('/aircraft/' + immat + '.json');
-        if (r.ok) d = await r.json();
-      } catch(_) {}
-    }
-    if (!d) continue;
-    aircraftData[immat] = d;
-    const label = immat + ' — ' + (d.profil || 'DR?') + ' ' + (d.puissance || '') + ' · ' + (d.helice || '');
-    sel.innerHTML += `<option value="${immat}">${label}</option>`;
+    if (!r.ok) throw new Error('index.json non disponible (' + r.status + ')');
+    immatList = await r.json();
+  } catch (err) {
+    sel.innerHTML = '<option value="" disabled selected>⚠ /aircraft/index.json introuvable</option>';
+    console.error('[Aircraft] Impossible de charger index.json :', err.message);
+    return;
   }
 
-  if (sel.options.length > 0) applyAircraftData(sel.value);
+  // 2. Charger chaque fichier JSON individuellement
+  sel.innerHTML = '';
+  let loaded = 0;
+  await Promise.all(immatList.map(async immat => {
+    try {
+      const r = await fetch('/aircraft/' + immat + '.json');
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      aircraftData[immat] = d;
+      loaded++;
+    } catch (err) {
+      console.warn('[Aircraft] ' + immat + '.json non chargé :', err.message);
+    }
+  }));
+
+  // 3. Peupler le select dans l'ordre de l'index
+  immatList.forEach(immat => {
+    const d = aircraftData[immat];
+    if (!d) return;
+    const label = immat + ' — ' + (d.profil || '') + ' ' + (d.puissance || '') + ' · ' + (d.helice || '');
+    const opt = document.createElement('option');
+    opt.value = immat;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+
+  if (sel.options.length === 0) {
+    sel.innerHTML = '<option value="" disabled selected>⚠ Aucun avion chargé</option>';
+    return;
+  }
+
+  applyAircraftData(sel.value);
 }
+
 
 function applyAircraftData(immat) {
   const d = aircraftData[immat];
