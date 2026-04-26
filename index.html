@@ -84,8 +84,7 @@
   .col-icao { font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:800;color:#111827; }
 
   /* Section card */
-  .sec-card { background:#fff;border:1px solid #E5E7EB;border-radius:10px;
-    overflow:hidden;margin-bottom:12px; }
+  /* sec-card défini dans layout responsive */
   .sec-head { padding:8px 14px;background:#F9FAFB;border-bottom:1px solid #F0F0F0;
     display:flex;align-items:center;gap:7px; }
   .sec-head-title { font-size:.7rem;font-weight:700;text-transform:uppercase;
@@ -105,6 +104,44 @@
     padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#64748B;
     white-space:pre-wrap;word-break:break-word;line-height:1.65;margin-top:10px; }
   .metar-box.visible { display:block; }
+
+  /* ── Layout principal responsive ── */
+  .perf-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  @media (min-width: 960px) {
+    .perf-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+  }
+  .perf-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px 0;
+  }
+
+  /* ── Grids de champs internes ── */
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 0;
+  }
+  .field-cell { min-width: 0; }
+
+  /* ── Sec-card ── */
+  .sec-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .is-hidden { display:none!important; }
 
   /* Runway picker */
   #depRunwayPicker,#arrRunwayPicker { display:none; }
@@ -413,11 +450,11 @@
 </div>
 
 <!-- COLUMNS -->
-<div style="max-width:1200px;margin:0 auto;padding:16px">
-  <div class="columns is-variable is-4">
+<div style="max-width:1200px;margin:0 auto;padding:12px">
+  <div class="perf-grid">
 
     <!-- DEP -->
-    <div id="colDep" class="column">
+    <div id="colDep" class="perf-col">
 
       <div class="col-header dep">
         <div style="display:flex;align-items:center;gap:10px">
@@ -448,10 +485,10 @@
       <div class="sec-card">
         <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number"/></div>
+          <div class="field-row">
+            <div class="field-cell"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number"/></div>
           </div>
           <div id="depRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
         </div>
@@ -461,9 +498,9 @@
       <div class="sec-card">
         <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number"/></div>
-            <div class="column">
+          <div class="field-row">
+            <div class="field-cell"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number"/></div>
+            <div class="field-cell">
               <label class="label">Masse déco (kg)</label>
               <input id="depTow" class="input is-small" type="number" value="900"/>
               <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
@@ -477,13 +514,13 @@
       <div class="sec-card">
         <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2 mb-2">
-            <div class="column"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text"/></div>
-            <div class="column"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number"/></div>
+          <div class="field-row">
+            <div class="field-cell"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text"/></div>
+            <div class="field-cell"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number"/></div>
           </div>
-          <div id="depVrbRow" class="columns is-mobile is-variable is-2 mb-3" style="display:none;align-items:flex-end">
-            <div class="column is-narrow"><label class="label">Secteur variable</label>
+          <div id="depVrbRow" class="field-row" style="display:none;align-items:flex-end">
+            <div class="field-cell"><label class="label">Secteur variable</label>
               <div class="field has-addons">
                 <div class="control"><input id="depVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
                 <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
@@ -552,7 +589,7 @@
     </div><!-- /colDep -->
 
     <!-- ARR -->
-    <div id="colArr" class="column">
+    <div id="colArr" class="perf-col">
 
       <div class="col-header arr">
         <div style="display:flex;align-items:center;gap:10px">
@@ -600,10 +637,10 @@
       <div class="sec-card">
         <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number"/></div>
+          <div class="field-row">
+            <div class="field-cell"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number"/></div>
           </div>
           <div id="arrRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
         </div>
@@ -613,9 +650,9 @@
       <div class="sec-card">
         <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2">
-            <div class="column"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number"/></div>
-            <div class="column">
+          <div class="field-row">
+            <div class="field-cell"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number"/></div>
+            <div class="field-cell">
               <label class="label">Masse att. (kg)</label>
               <input id="arrLdw" class="input is-small" type="number" value="900"/>
               <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
@@ -629,13 +666,13 @@
       <div class="sec-card">
         <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
         <div class="sec-body">
-          <div class="columns is-mobile is-variable is-2 mb-2">
-            <div class="column"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text"/></div>
-            <div class="column"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number"/></div>
-            <div class="column"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number"/></div>
+          <div class="field-row">
+            <div class="field-cell"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text"/></div>
+            <div class="field-cell"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number"/></div>
+            <div class="field-cell"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number"/></div>
           </div>
-          <div id="arrVrbRow" class="columns is-mobile is-variable is-2 mb-3" style="display:none;align-items:flex-end">
-            <div class="column is-narrow"><label class="label">Secteur variable</label>
+          <div id="arrVrbRow" class="field-row" style="display:none;align-items:flex-end">
+            <div class="field-cell"><label class="label">Secteur variable</label>
               <div class="field has-addons">
                 <div class="control"><input id="arrVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
                 <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
@@ -702,7 +739,7 @@
       <button id="btnCalcArr" class="button is-success is-fullwidth calc-btn">Calculer les performances à l'atterrissage</button>
 
     </div><!-- /colArr -->
-  </div><!-- /columns -->
+  </div><!-- /perf-grid -->
 </div>
 
 <!-- README -->
@@ -1712,7 +1749,7 @@ function computeDepPerf() {
   const depAlt  = +(document.getElementById('depAlt').value  || 0);
   const depOat  = +(document.getElementById('depOat').value  || 0);
   const depTow  = +(document.getElementById('depTow').value  || 900);
-  const depExtra= +(document.getElementById('depExtraTO').value || 1);
+  const depExtra = 1.0;
   const depToda = +(document.getElementById('depToda').value || 0);
   const safety  = Math.max(0, +(document.getElementById('safety').value || 30));
 
@@ -1764,7 +1801,7 @@ function computeArrPerf() {
   const arrAlt  = +(document.getElementById('arrAlt').value  || 0);
   const arrOat  = +(document.getElementById('arrOat').value  || 0);
   const arrLdw  = +(document.getElementById('arrLdw').value  || 900);
-  const arrExtra= +(document.getElementById('arrExtraLDG').value || 1);
+  const arrExtra = 1.0;
   const arrLda  = +(document.getElementById('arrLda').value  || 0);
   const safety  = Math.max(0, +(document.getElementById('safety').value || 30));
 
@@ -1809,8 +1846,8 @@ const lastSnapshot = { dep: null, arr: null };
 
 function getInputSnapshot(side) {
   const ids = side === 'dep'
-    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','depExtraTO','safety']
-    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','arrExtraLDG','safety'];
+    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','safety']
+    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','safety'];
   const snap = {};
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -1870,8 +1907,8 @@ function updateCalcButton(side) {
 // Surveiller les changements d'inputs pour réinitialiser l'état calculé
 ['dep','arr'].forEach(side => {
   const ids = side === 'dep'
-    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','depExtraTO','safety','spatsWith','spatsWithout','depSurfHard','depSurfGrass']
-    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','arrExtraLDG','safety','arrModerate','arrNoBrake'];
+    ? ['depQfu','depToda','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo','depOat','depAlt','depTow','safety','spatsWith','spatsWithout','depSurfHard','depSurfGrass']
+    : ['arrQfu','arrLda','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo','arrOat','arrAlt','arrLdw','safety','arrModerate','arrNoBrake'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -1956,8 +1993,12 @@ function openResultsModal(side, computeFn) {
     // Lancer le calcul à mi-chemin (600ms)
     if (!calcDone && elapsed >= 600) {
       calcDone = true;
-      computeFn();
-      lastSnapshot[side] = getInputSnapshot(side);
+      try {
+        computeFn();
+        lastSnapshot[side] = getInputSnapshot(side);
+      } catch(err) {
+        console.error('[Calcul]', err);
+      }
     }
     if (progress < 1) requestAnimationFrame(tick);
     else setTimeout(() => {
@@ -2761,7 +2802,7 @@ function renderTafPicker(tafData) {
     const arrAlt  = +(document.getElementById('arrAlt').value  || 0);
     const arrOat  = +(document.getElementById('arrOat').value  || 0);
     const arrLdw  = +(document.getElementById('arrLdw').value  || 900);
-    const arrExtra = +(document.getElementById('arrExtraLDG').value || 1);
+    const arrExtra = 1.0;
 
     const dir = period.wind.dirValue ?? 0;
     const kt  = Math.max(period.wind.speed || 0, period.wind.gust || 0);
