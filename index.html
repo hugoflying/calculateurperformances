@@ -1,381 +1,1551 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#485fc7"/>
-<title>Perfs ACBT</title>
-<link rel="manifest" href="/manifest.json"/>
-<link rel="apple-touch-icon" href="/icons/icon-180.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<style>
-  :root {
-    --dep:#2563EB; --dep-bg:#EFF6FF; --dep-border:#BFDBFE;
-    --arr:#059669; --arr-bg:#ECFDF5; --arr-border:#A7F3D0;
-  }
-  body { font-family: system-ui, sans-serif; background: #F3F4F6; }
-  .mono { font-family:'IBM Plex Mono',monospace !important; }
-  input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; }
-  input[type=number] { -moz-appearance:textfield; }
-
-  /* Navbar */
-  .navbar { border-bottom:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-  .ac-logo { width:30px;height:30px;border-radius:8px;background:var(--dep);
-    display:flex;align-items:center;justify-content:center;color:#fff;
-    font:700 11px 'IBM Plex Mono',monospace;flex-shrink:0; }
-
-  /* Settings bar */
-  .settings-bar { background:#fff;border-bottom:1px solid #E5E7EB;
-    padding:8px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap; }
-  .settings-bar .label { margin-bottom:0!important;font-size:.72rem;font-weight:700;
-    text-transform:uppercase;letter-spacing:.04em;color:#6B7280;white-space:nowrap; }
-  .settings-bar .input { max-width:60px;font-family:'IBM Plex Mono',monospace;
-    font-weight:700;text-align:center;border-radius:7px; }
-
-  /* Toggle buttons — modern pill full-width */
-  .tog-group-wrap { display:block; width:100%; }
-  .tog-group {
-    display:flex!important;width:100%;
-    background:#F3F4F6;border-radius:12px!important;
-    padding:3px;gap:3px;border:none!important;
-    box-shadow:none!important;
-  }
-  .tog-group .button {
-    flex:1;border:none!important;border-radius:9px!important;
-    font-size:.76rem;font-weight:600;height:auto!important;
-    padding:8px 6px!important;line-height:1.2;
-    transition:all .18s;box-shadow:none!important;
-    white-space:normal;text-align:center;
-  }
-  .tog-group .button:not(.tog-on) {
-    background:transparent;color:#6B7280;
-  }
-  .tog-group .button:not(.tog-on):hover { background:#E5E7EB;color:#374151; }
-  .tog-group .button.tog-on:not(.tog-grass) {
-    background:#fff!important;color:var(--dep)!important;
-    box-shadow:0 1px 4px rgba(0,0,0,.12)!important;font-weight:700!important;
-  }
-  .tog-group .button.tog-on.tog-grass {
-    background:#fff!important;color:#065F46!important;
-    box-shadow:0 1px 4px rgba(0,0,0,.12)!important;font-weight:700!important;
-  }
-
-  /* Settings bar toggles (btnRegWind, spats) */
-  .setbar-tog { display:inline-flex;gap:0; }
-  .setbar-tog .button { font-size:.72rem;font-weight:600; }
-  .setbar-tog .button:not(.tog-on) { background:#F9FAFB;border-color:#D1D5DB;color:#6B7280; }
-  .setbar-tog .button.tog-on { background:var(--dep)!important;border-color:var(--dep)!important;color:#fff!important; }
-
-  /* Col header */
-  .col-header { border-radius:10px;padding:12px 16px;
-    display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
-  .col-header.dep { background:var(--dep-bg);border:1px solid var(--dep-border); }
-  .col-header.arr { background:var(--arr-bg);border:1px solid var(--arr-border); }
-  .col-hd-badge { font-size:.65rem;font-weight:700;text-transform:uppercase;
-    letter-spacing:.08em;padding:2px 8px;border-radius:4px; }
-  .dep .col-hd-badge { background:var(--dep-border);color:var(--dep); }
-  .arr .col-hd-badge { background:var(--arr-border);color:var(--arr); }
-  .col-icao { font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:800;color:#111827; }
-
-  /* Section card */
-  /* sec-card défini dans layout responsive */
-  .sec-head { padding:8px 14px;background:#F9FAFB;border-bottom:1px solid #F0F0F0;
-    display:flex;align-items:center;gap:7px; }
-  .sec-head-title { font-size:.7rem;font-weight:700;text-transform:uppercase;
-    letter-spacing:.08em;color:#9CA3AF; }
-  .sec-body { padding:14px; }
-  .sec-body .label { font-size:.7rem;font-weight:700;text-transform:uppercase;
-    letter-spacing:.06em;color:#6B7280;margin-bottom:4px!important; }
-  .sec-body .input,.sec-body .select select {
-    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:.85rem;
-    border-color:#D1D5DB;border-radius:8px; }
-  .sec-body .input:focus,.sec-body .select select:focus {
-    border-color:var(--dep);box-shadow:0 0 0 2px rgba(37,99,235,.12); }
-  .sec-body .input::placeholder { color:#CBD5E1;font-weight:400; }
-
-  /* Metar box */
-  .metar-box { display:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;
-    padding:10px 12px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#64748B;
-    white-space:pre-wrap;word-break:break-word;line-height:1.65;margin-top:10px; }
-  .metar-box.visible { display:block; }
-
-  /* ── Layout principal responsive ── */
-  .perf-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .perf-col {
-    display: none; /* caché par défaut sur mobile, géré par switchTab */
-    flex-direction: column;
-    gap: 12px;
-    padding: 4px 0;
-  }
-  .perf-col.is-visible { display: flex; }
-
-  @media (min-width: 960px) {
-    .mobile-tabs { display: none !important; }
-    .perf-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
-    /* Sur desktop : toujours afficher les deux colonnes */
-    .perf-col { display: flex !important; }
-  }
-
-  /* ── Grids de champs internes ── */
-  .field-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
-    margin-bottom: 0;
-  }
-  .field-cell { min-width: 0; }
-
-  /* ── Sec-card ── */
-  .sec-card {
-    background: #fff;
-    border: 1px solid #E5E7EB;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .is-hidden { display:none!important; }
-
-  /* Runway picker */
-  #depRunwayPicker,#arrRunwayPicker { display:none; }
-  #depRunwayPicker.visible,#arrRunwayPicker.visible { display:block; }
-  .rwy-tag {
-    display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:2px;padding:10px 14px;
-    background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:12px;
-    cursor:pointer;transition:all .15s;text-align:center;min-width:80px;
-    font-family:system-ui,sans-serif;
-  }
-  .rwy-tag:hover { border-color:var(--dep);background:var(--dep-bg);transform:translateY(-1px);box-shadow:0 2px 8px rgba(37,99,235,.12); }
-  .rwy-tag.active { background:var(--dep-bg);border-color:var(--dep);box-shadow:0 0 0 3px rgba(37,99,235,.12); }
-  .rwy-tag strong { font:700 18px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
-  .rwy-tag span { font:500 10px system-ui;color:#6B7280; }
-  .rwy-surf-badge {
-    font:600 9px system-ui;text-transform:uppercase;letter-spacing:.04em;
-    padding:1px 5px;border-radius:4px;margin-top:2px;
-    background:#F1F5F9;color:#64748B;
-  }
-  .rwy-tag.active .rwy-surf-badge { background:rgba(37,99,235,.1);color:var(--dep); }
-  .tags { display:flex;flex-wrap:wrap;gap:8px; }
-
-  /* Wind strip */
-  .wind-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px; }
-  .wc { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;
-    padding:14px 10px;text-align:center;transition:all .2s; }
-  .wc.warn-yellow { border-color:#F59E0B;background:rgba(245,158,11,.06); }
-  .wc.warn-red    { border-color:#EF4444;background:rgba(239,68,68,.06); }
-  .wc .lbl { font:700 8px system-ui;letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:5px; }
-  .wc .val { font:700 22px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
-  .wc.warn-yellow .val { color:#D97706; }
-  .wc.warn-red    .val { color:#DC2626; }
-  .wc .unit { font:400 9px system-ui;color:#9CA3AF;margin-top:3px; }
-
-  /* KPI box */
-  .kpi-box { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;
-    padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:12px;transition:all .25s; }
-  .kpi-box.is-ok  { background:rgba(5,150,105,.06);border-color:rgba(5,150,105,.3); }
-  .kpi-box.is-bad { background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.3); }
-  .kpi-lbl { font:700 9px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px; }
-  .kpi-val { font:800 28px 'IBM Plex Mono',monospace;color:#111827; }
-  .kpi-box.is-ok  .kpi-val { color:#059669; }
-  .kpi-box.is-bad .kpi-val { color:#DC2626; }
-  .kpi-avail { font:400 10px system-ui;color:#9CA3AF;margin-top:2px; }
-
-  /* Chip */
-  .chip { display:inline-flex;align-items:center;font:700 10px 'IBM Plex Mono',monospace;
-    padding:3px 10px;border-radius:20px; }
-  .chip.neutral    { background:#F1F5F9;color:#94A3B8; }
-  .chip.is-ok-chip  { background:#ECFDF5;color:#059669;border:1px solid #A7F3D0; }
-  .chip.is-bad-chip { background:#FEF2F2;color:#DC2626;border:1px solid #FECACA; }
-
-  /* TAF */
-  .taf-wrap { display:none; }
-  .taf-wrap.visible { display:block; }
-  .taf-period {
-    display:flex;align-items:stretch;gap:0;
-    background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:10px;
-    cursor:pointer;transition:all .15s;margin-bottom:5px;overflow:hidden;
-  }
-  .taf-period:hover { border-color:#D1D5DB;background:#F3F4F6; }
-  .taf-period.is-current   { background:#ECFDF5;border-color:rgba(5,150,105,.4); }
-  .taf-period.is-eta-other { background:#EFF6FF;border-color:rgba(37,99,235,.35); }
-  .taf-period.is-tempo     { border-style:dashed;border-color:#F59E0B;background:#FFFBEB; }
-  .taf-period.is-inactive  { opacity:.3; }
-  .taf-period.is-excluded  { opacity:.45;border-style:dotted;border-color:#CBD5E1; }
-
-  /* Colonne gauche type */
-  .tp-type-col {
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    flex-shrink:0;width:52px;
-    background:rgba(0,0,0,.03);border-right:1px solid rgba(0,0,0,.06);
-    padding:10px 4px;gap:3px;
-  }
-  .taf-period.is-current   .tp-type-col { background:rgba(5,150,105,.08); }
-  .taf-period.is-eta-other .tp-type-col { background:rgba(37,99,235,.06); }
-  .taf-period.is-tempo     .tp-type-col { background:rgba(245,158,11,.08); }
-
-  .tp-type { font:800 10px system-ui;letter-spacing:.03em;text-transform:uppercase;color:#6B7280;text-align:center; }
-  .tp-time { font:400 8px 'IBM Plex Mono',monospace;color:#9CA3AF;text-align:center;line-height:1.4; }
-
-  /* Corps principal */
-  .tp-main { flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:10px 12px; }
-  .tp-wind { font:700 16px 'IBM Plex Mono',monospace;color:#111827;line-height:1; }
-  .tp-extra { font:400 10px system-ui;color:#9CA3AF; }
-
-  /* Colonne droite apply */
-  .tp-apply { flex-shrink:0;font:700 9px system-ui;color:#9CA3AF;padding:10px 10px;
-    display:flex;align-items:center;text-align:right; }
-
-  .taf-period.is-current .tp-apply   { color:#059669; }
-  .taf-period.is-current .tp-type    { color:#059669; }
-  .taf-period.is-eta-other .tp-apply { color:var(--dep); }
-  .taf-period.is-eta-other .tp-type  { color:var(--dep); }
-  .taf-period.is-tempo .tp-type      { color:#D97706; }
-  .taf-period.is-excluded .tp-apply  { font-style:italic; }
-
-  /* tw-wrap */
-  .tw-wrap { display:none; }
-  .tw-wrap.visible { display:block; }
-  .tw-btn,.taf-tw-suggest {
-    width:100%;display:block;text-align:left;cursor:pointer;
-    background:rgba(245,158,11,.06);border:1px dashed rgba(245,158,11,.5);
-    border-radius:8px;color:#D97706;font:600 11px system-ui;padding:9px 12px;transition:all .13s; }
-  .tw-btn.active,.taf-tw-suggest.active { border-style:solid;background:rgba(245,158,11,.1); }
-
-  /* Calc button */
-  .calc-btn { border-radius:10px!important;font-weight:700!important;
-    text-transform:uppercase;letter-spacing:.05em;height:auto!important;padding:14px!important; }
-  .calc-btn.done-dep { background:#EFF6FF!important;color:var(--dep)!important;
-    border:1px solid #BFDBFE!important;box-shadow:none!important; }
-  .calc-btn.done-arr { background:#ECFDF5!important;color:var(--arr)!important;
-    border:1px solid #A7F3D0!important;box-shadow:none!important; }
-
-  .valid-msg { font-size:.72rem;font-weight:500;color:#DC2626;text-align:center;min-height:14px; }
-  .mass-warn { font-size:.7rem;color:#D97706;margin-top:3px;display:none; }
-  .is-hidden { display:none!important; }
-  .explain-text { font:400 10px system-ui;color:#9CA3AF;line-height:1.5;margin-top:6px; }
-
-  /* Perf detail */
-  .pf-rows { display:flex;flex-direction:column; }
-  .pf-row { display:flex;justify-content:space-between;align-items:center;
-    padding:7px 0;border-bottom:1px solid #F1F5F9; }
-  .pf-row:last-child { border-bottom:none; }
-  .pf-lbl { font:400 11px system-ui;color:#64748B; }
-  .pf-val { font:700 11px 'IBM Plex Mono',monospace;color:#111827; }
-
-  /* Results modal */
-  .results-modal { position:fixed;inset:0;z-index:500;background:#fff;
-    display:flex;flex-direction:column;transform:translateY(100%);
-    transition:transform .38s cubic-bezier(.32,1,.58,1);pointer-events:none; }
-  .results-modal.is-open { transform:translateY(0);pointer-events:auto; }
-  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)} }
-  .rm-plane { animation:bob 2s ease-in-out infinite;display:inline-block; }
-  .rm-loading { flex:1;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:16px;padding:40px; }
-  .rm-bar-track { width:200px;height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden; }
-  .rm-bar-fill  { height:100%;border-radius:2px;width:0%;transition:width .08s linear; }
-  .rm-bar-fill.dep { background:var(--dep); }
-  .rm-bar-fill.arr { background:var(--arr); }
-  .rm-content { flex:1;display:flex;flex-direction:column;overflow:hidden; }
-  .rm-header  { padding:16px 20px;border-bottom:1px solid #E5E7EB;
-    display:flex;align-items:center;justify-content:space-between;flex-shrink:0; }
-  .rm-header.is-ok  { background:#ECFDF5;border-color:rgba(5,150,105,.2); }
-  .rm-header.is-bad { background:#FEF2F2;border-color:rgba(239,68,68,.2); }
-  .rm-body { flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px; }
-  .rm-kpi-card { background:#F8FAFC;border:1px solid #E2E8F0;border-radius:16px;
-    padding:24px;text-align:center; }
-  .rm-kpi-card.is-ok  { background:rgba(5,150,105,.06);border-color:rgba(5,150,105,.25); }
-  .rm-kpi-card.is-bad { background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25); }
-  .rm-kpi-lbl { font:700 9px 'IBM Plex Mono';letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;margin-bottom:8px; }
-  .rm-kpi-val { font:800 52px 'IBM Plex Mono',monospace;line-height:1;color:#111827; }
-  .rm-kpi-card.is-ok  .rm-kpi-val { color:#059669; }
-  .rm-kpi-card.is-bad .rm-kpi-val { color:#DC2626; }
-  .rm-rows { background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden; }
-  .rm-row { display:flex;justify-content:space-between;align-items:center;
-    padding:10px 16px;border-bottom:1px solid #F1F5F9; }
-  .rm-row:last-child { border-bottom:none; }
-  .rm-row-label { font:400 12px system-ui;color:#64748B; }
-  .rm-row-value { font:700 12px 'IBM Plex Mono',monospace;color:#111827; }
-  .rm-foot { padding:16px 20px;border-top:1px solid #E5E7EB;background:#F9FAFB;flex-shrink:0;
-    padding-bottom:calc(16px + env(safe-area-inset-bottom,0px)); }
-
-  /* Mobile tabs */
-  .mobile-tabs { display:none; }
-  @media(max-width:768px){
-    .mobile-tabs { display:flex;border-bottom:2px solid #E5E7EB;background:#fff; }
-    .mobile-tab { flex:1;padding:10px;text-align:center;font-size:.72rem;font-weight:700;
-      text-transform:uppercase;letter-spacing:.05em;color:#9CA3AF;
-      border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all .2s; }
-    #tabDep.is-active { color:var(--dep);border-color:var(--dep); }
-    #tabArr.is-active { color:var(--arr);border-color:var(--arr); }
-    .is-hidden-mobile { display:none!important; }
-  }
-
-  /* Disclaimer */
-  .disc-overlay { position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.6);
-    backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center; }
-  .disc-overlay:not(.is-active) { display:none; }
-  .disc-box { background:#fff;border-radius:16px 16px 0 0;padding:24px 20px;
-    max-width:520px;width:100%;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px)); }
-  @media(min-width:580px) { .disc-overlay{align-items:center} .disc-box{border-radius:16px} }
-
-  /* Readme */
-  .readme-wrap { max-width:1200px;margin:0 auto;padding:16px 16px 40px; }
-  .readme-toggle { background:#fff;border:1px solid #E5E7EB;border-radius:10px;
-    padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer; }
-  .readme-toggle:hover { border-color:#CBD5E1; }
-  .readme-toggle-lbl { font:700 11px system-ui;text-transform:uppercase;letter-spacing:.06em;color:#64748B; }
-  .readme-body { background:#fff;border:1px solid #E5E7EB;border-top:none;
-    border-radius:0 0 10px 10px;padding:20px;display:none; }
-  .rm-sec { margin-bottom:20px; }
-  .rm-sec:last-child { margin-bottom:0; }
-  .rm-sec h3 { font:700 11px system-ui;text-transform:uppercase;letter-spacing:.07em;
-    color:var(--dep);border-bottom:1px solid #E5E7EB;padding-bottom:6px;margin-bottom:10px; }
-  .rm-sec p,.rm-sec li { font:400 13px system-ui;color:#374151;line-height:1.7;margin-bottom:6px; }
-  .rm-sec strong { color:#111827; }
-  .rm-sec ul,.rm-sec ol { padding-left:16px;margin-bottom:8px; }
-  .rm-sec li { margin-bottom:4px; }
-  .rm-sec .tag-ok   { background:#ECFDF5;color:#059669;border:1px solid #A7F3D0;
-    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
-  .rm-sec .tag-warn { background:#FFFBEB;color:#D97706;border:1px solid #FDE68A;
-    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
-  .rm-sec .tag-muted { background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;
-    font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px; }
-  .rm-alert { background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;
-    padding:10px 14px;font:600 12px system-ui;color:#DC2626;line-height:1.5;margin-bottom:14px; }
-
-  .app-foot { text-align:center;padding:12px;font:400 10px system-ui;color:#9CA3AF;
-    border-top:1px solid #E5E7EB; }
-</style>
-</head>
-<body>
-
-<!-- DISCLAIMER -->
-<div id="modalDisclaimer" class="disc-overlay is-active">
-  <div class="disc-box">
-    <div style="font-size:26px;margin-bottom:10px">⚠️</div>
-    <h2 style="font:700 16px system-ui;color:#111827;margin-bottom:10px">Document opérationnel — ACBT</h2>
-    <p style="font:400 12px system-ui;color:#64748B;line-height:1.6;margin-bottom:14px">
-      Outil d'aide à la préparation du vol basé sur les manuels officiels des avions de l'aéroclub. Ne remplace pas le manuel de vol.
-    </p>
-    <div class="rm-alert">
-      Le commandant de bord est seul responsable du vol qu'il entreprend.<br/>En cas de doute, le manuel de vol de l'avion fait foi.
-    </div>
-    <button id="btnCloseDisclaimer" class="button is-link is-fullwidth" style="border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;height:auto;padding:13px">
-      J'ai compris — Accéder au calculateur
-    </button>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculateur de Performances — ACBT</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0e3070" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  
+<!-- Éléments requis par le JS (nouvelles features) -->
+<div style="display:none">
+  <div id="depWetWrap">
+    <button id="depGrassDry"></button>
+    <button id="depGrassWet"></button>
+    <button id="depGrassWetShort"></button>
   </div>
+  <button id="arrGrassDry"></button>
+  <button id="arrGrassWet"></button>
+  <button id="arrGrassWetShort"></button>
+  <div id="arrTafTwSuggest"></div>
 </div>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* ══════════════════ FONDATIONS ══════════════════ */
+    :root {
+      --navy:        #0e3070;
+      --navy-dark:   #0a2458;
+      --navy-light:  #e8eef8;
+      --dep:         #1d4ed8;
+      --dep-light:   #eff6ff;
+      --dep-border:  #93c5fd;
+      --arr:         #059669;
+      --arr-light:   #ecfdf5;
+      --arr-border:  #6ee7b7;
+      --green-ok:    #059669;
+      --green-light: #ecfdf5;
+      --green-border:#6ee7b7;
+      --red-bad:     #dc2626;
+      --red-light:   #fef2f2;
+      --red-border:  #fecaca;
+      --warn-bg:     #fffbeb;
+      --warn-border: #f59e0b;
+      --danger-bg:   #fef2f2;
+      --danger-border:#ef4444;
+      --bg:          #edf1f7;
+      --card:        #ffffff;
+      --border:      #e2e8f0;
+      --text:        #0f172a;
+      --muted:       #64748b;
+      --radius:      12px;
+    }
+
+    html, body {
+      background: var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text);
+    }
+
+    /* ── Spinner remove ── */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── datalist arrow ── */
+    input[list]::-webkit-calendar-picker-indicator { display: none !important; opacity: 0; }
+    input[list] { -webkit-appearance: none; appearance: none; }
+
+    /* ══════════════════ BANNIÈRE ══════════════════ */
+    .app-banner {
+      background: linear-gradient(135deg, var(--navy) 0%, #1a4fa0 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 1.4rem 1.8rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 8px 24px rgba(14,48,112,.22);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .app-banner h1 {
+      font-size: clamp(1.1rem, 3vw, 1.65rem);
+      font-weight: 800;
+      letter-spacing: .06em;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .app-banner .subtitle-line {
+      font-size: .78rem;
+      opacity: .65;
+      margin-top: .2rem;
+      letter-spacing: .04em;
+    }
+    .banner-badge {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      padding: .4rem .85rem;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      color: rgba(255,255,255,.85);
+      white-space: nowrap;
+    }
+
+    /* ══════════════════ CARDS ══════════════════ */
+    .card {
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .card-content { padding: 1.25rem; }
+
+    /* Carte Départ — trait bleu en haut */
+    .card-dep { border-top: 3px solid var(--dep) !important; }
+    /* Carte Arrivée — trait vert en haut */
+    .card-arr { border-top: 3px solid var(--arr) !important; }
+
+    /* ── Titre de section ── */
+    .card-title {
+      font-size: .72rem !important;
+      font-weight: 700 !important;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 1rem !important;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card-title .ct-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      padding: .2rem .6rem;
+      border-radius: 99px;
+    }
+    .ct-badge.dep { background: var(--dep-light); color: var(--dep); }
+    .ct-badge.arr { background: var(--arr-light); color: var(--arr); }
+
+    /* ── Toolbar paramètres généraux ── */
+    .toolbar-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.1rem;
+    }
+    .toolbar-label {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: .3rem;
+      display: block;
+    }
+
+    /* ══════════════════ INPUTS & CONTRÔLES ══════════════════ */
+    .label {
+      color: #374151;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .label.is-small {
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .input, .select select {
+      border-radius: 8px !important;
+      border: 1.5px solid #cbd5e1 !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem !important;
+      color: var(--text) !important;
+      background: #f8fafc !important;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .input:focus, .select select:focus {
+      border-color: var(--navy) !important;
+      box-shadow: 0 0 0 3px rgba(14,48,112,.1) !important;
+      background: #fff !important;
+      outline: none;
+    }
+    .input[readonly] { background: #f1f5f9 !important; color: var(--muted) !important; cursor: default; }
+
+    /* ══════════════════ BOUTONS ══════════════════ */
+    .button {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      border-radius: 8px !important;
+      transition: all .15s;
+    }
+    .button.is-primary {
+      background-color: var(--navy) !important;
+      border-color: var(--navy) !important;
+      color: #fff !important;
+    }
+    .button.is-primary:hover { background-color: var(--navy-dark) !important; box-shadow: 0 4px 12px rgba(14,48,112,.25); }
+    .button.is-primary.is-selected { background-color: var(--navy) !important; color: #fff !important; }
+    .button.is-grass-selected { background-color: var(--arr) !important; border-color: var(--arr) !important; color: #fff !important; }
+
+    /* Bouton Calculer — pleine largeur, arrondi, accent */
+    #btnCalcDep, #btnCalcArr {
+      border-radius: 10px !important;
+      font-size: .95rem !important;
+      font-weight: 700 !important;
+      letter-spacing: .02em;
+      padding: .75em 1em !important;
+      height: auto !important;
+    }
+    #btnCalcDep { background: linear-gradient(135deg, var(--navy) 0%, var(--dep) 100%) !important; border: none !important; }
+    #btnCalcArr { background: linear-gradient(135deg, #047857 0%, var(--arr) 100%) !important; border: none !important; }
+    #btnCalcDep:hover { opacity: .92; box-shadow: 0 4px 16px rgba(29,78,216,.3); }
+    #btnCalcArr:hover { opacity: .92; box-shadow: 0 4px 16px rgba(5,150,105,.3); }
+
+    /* Bouton Exporter PDF */
+    #btnPrint {
+      background: var(--text) !important;
+      border-color: var(--text) !important;
+      border-radius: 9px !important;
+      font-weight: 700 !important;
+      letter-spacing: .01em;
+    }
+    #btnPrint:hover { background: #1e293b !important; box-shadow: 0 3px 10px rgba(0,0,0,.18); }
+
+    /* Bouton METAR */
+    #btnDepMetar, #btnArrMetar {
+      border-radius: 8px !important;
+      font-weight: 600 !important;
+      font-size: .8rem !important;
+    }
+
+    /* Addons toggle (carénages, surface...) */
+    .buttons.has-addons .button {
+      border-radius: 0 !important;
+      font-size: .82rem !important;
+      font-weight: 600 !important;
+    }
+    .buttons.has-addons .button:first-child { border-radius: 8px 0 0 8px !important; }
+    .buttons.has-addons .button:last-child  { border-radius: 0 8px 8px 0 !important; }
+    .buttons.has-addons .button:not(.is-primary):not(.is-selected) {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: var(--muted) !important;
+    }
+
+    /* ══════════════════ CHIPS / TAGS ══════════════════ */
+    .tag.is-ok-chip      { background: var(--green-light); color: #065f46; border: 1.5px solid var(--green-border); font-weight: 800; border-radius: 6px; }
+    .tag.is-bad-chip     { background: var(--red-light);   color: #7f1d1d; border: 1.5px solid var(--red-border);   font-weight: 800; border-radius: 6px; }
+    .tag.is-neutral-chip { background: #f1f5f9;            color: var(--muted); border: 1.5px solid #e2e8f0;        font-weight: 700; border-radius: 6px; }
+
+    /* ══════════════════ CELLULES VENT ══════════════════ */
+    .wind-row {
+      display: flex;
+      gap: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      margin: .75rem 0 .25rem;
+    }
+    .wind-cell {
+      flex: 1;
+      padding: .55rem .6rem;
+      border-right: 1.5px solid #e2e8f0;
+      background: transparent;
+      transition: background .2s, border-color .2s;
+    }
+    .wind-cell:last-child { border-right: none; }
+    .wind-cell .wc-label {
+      font-size: .6rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 700;
+    }
+    .wind-cell .wc-value {
+      font-weight: 700;
+      font-size: .9rem;
+      color: var(--text);
+      margin-top: 2px;
+      white-space: pre-line;
+    }
+    .wind-cell.warn-yellow { background: var(--warn-bg) !important; border-color: var(--warn-border) !important; }
+    .wind-cell.warn-red    { background: var(--danger-bg) !important; border-color: var(--danger-border) !important; }
+
+    /* ══════════════════ KPI RÉSULTATS ══════════════════ */
+    .kpi-box {
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin: .6rem 0;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .kpi-box.is-ok  { background: var(--green-light); border-color: var(--green-border); }
+    .kpi-box.is-bad { background: var(--red-light);   border-color: var(--red-border);   }
+    .kpi-box .kpi-icon { font-size: 1.6rem; line-height: 1; flex-shrink: 0; }
+    .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+    .kpi-label { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .kpi-sub   { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── Résultat header avec chip ── */
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .6rem;
+      padding-bottom: .6rem;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .result-header .rh-title {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    /* ══════════════════ PERF FIELDS ══════════════════ */
+    .perf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .5rem;
+      margin-top: .5rem;
+    }
+    .perf-field {
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .55rem .75rem;
+    }
+    .perf-field .pf-label { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+    .perf-field .pf-value { font-weight: 700; font-size: .88rem; margin-top: 2px; color: var(--text); font-family: 'DM Mono', monospace; }
+
+    /* ══════════════════ MASS WARN ══════════════════ */
+    .mass-warn { font-size: .72rem; color: #b45309; margin-top: 4px; display: none; }
+    .mass-warn.visible { display: block; }
+
+    /* ══════════════════ VALID MSG ══════════════════ */
+    .valid-msg { font-size: .82rem; border-radius: 8px; }
+
+    /* ══════════════════ VRB ══════════════════ */
+    .vrb-wrap { display: flex; gap: 8px; align-items: center; }
+    .vrb-sep  { font-weight: 800; color: var(--muted); flex-shrink: 0; font-size: .9rem; }
+    .input.is-invalid { border-color: var(--red-bad) !important; }
+
+    /* ══════════════════ MOBILE TABS ══════════════════ */
+    .tab-toggle {
+      display: flex;
+      background: #dde3ef;
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 1rem;
+    }
+    .tab-toggle button {
+      flex: 1;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      padding: .6rem 1rem;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      transition: background .2s, color .2s, box-shadow .2s;
+      letter-spacing: .03em;
+    }
+    .tab-toggle button.active     { background: #fff; color: var(--dep); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .tab-toggle button.active.arr { color: var(--arr); }
+    @media (min-width: 1024px) {
+      .mobile-tab-toggle          { display: none !important; }
+      .column.tab-col             { display: block !important; }
+    }
+    @media (max-width: 1023px) {
+      .column.tab-col.hidden-mobile { display: none !important; }
+    }
+
+    /* ══════════════════ RUNWAY PICKER ══════════════════ */
+    .runway-picker { margin-bottom: .6rem; margin-top: .6rem; }
+    .runway-picker-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted); margin-bottom: .35rem;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .rwy-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .rwy-btn {
+      display: flex; flex-direction: column; align-items: center;
+      background: #f1f5f9; border: 1.5px solid var(--border);
+      border-radius: 9px; padding: .4rem .75rem; cursor: pointer;
+      transition: all .15s; font-family: 'DM Sans', sans-serif;
+      min-width: 70px;
+    }
+    .rwy-btn:hover { border-color: var(--navy); background: var(--navy-light); }
+    .rwy-btn.active { background: var(--navy-light); border-color: var(--navy); }
+    .rwy-btn .rwy-desig { font-size: .95rem; font-weight: 800; color: var(--navy); font-family: 'DM Mono', monospace; }
+    .rwy-btn .rwy-len   { font-size: .62rem; color: var(--muted); font-weight: 600; margin-top: 1px; }
+    .rwy-btn .rwy-hdg   { font-size: .58rem; color: #94a3b8; }
+
+    /* ══════════════════ TAF PICKER ══════════════════ */
+    .taf-wrap { margin-top: .6rem; display: none; margin-bottom: .75rem; }
+    .taf-wrap.visible { display: block; }
+    .taf-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .4rem;
+    }
+    .taf-header-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+    }
+    .taf-eta-wrap { display: flex; align-items: center; gap: .4rem; }
+    .taf-eta-label { font-size: .6rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
+    .taf-eta-input {
+      width: 76px; font-size: .78rem !important; padding: .25em .4em !important;
+      min-height: unset !important; height: 28px !important;
+      border-radius: 6px !important;
+    }
+    .taf-raw {
+      background: #f4f4f5; border: 1px solid #d4d4d8; border-radius: 8px;
+      padding: .5rem .7rem; font-size: .68rem; font-family: 'DM Mono', monospace;
+      color: #3f3f46; white-space: pre-wrap; word-break: break-all;
+      margin-bottom: .5rem; line-height: 1.5;
+    }
+    .taf-periods { display: flex; flex-direction: column; gap: .3rem; }
+    .taf-period {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f8fafc; border: 1.5px solid var(--border);
+      border-radius: 9px; padding: .45rem .75rem; cursor: pointer;
+      transition: all .15s; gap: .5rem;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .taf-period:hover { border-color: var(--arr); background: var(--arr-light); }
+    .taf-period.is-current { border-color: var(--arr); background: var(--arr-light); }
+    .taf-period.is-tempo { border-style: dashed; border-color: var(--warn-border); background: var(--warn-bg); }
+    .taf-period.is-tempo:hover { background: #fef3c7; }
+    .taf-period .tp-type { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); min-width: 42px; }
+    .taf-period.is-tempo .tp-type { color: #b45309; }
+    .taf-period.is-current .tp-type { color: var(--arr); }
+    .taf-period .tp-time { font-size: .68rem; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; }
+    .taf-period .tp-wind { font-size: .85rem; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; flex: 1; text-align: right; }
+    .taf-period .tp-apply { font-size: .65rem; font-weight: 700; color: var(--arr); white-space: nowrap; }
+    .taf-period.is-tempo .tp-apply { color: #b45309; }
+
+    /* ══════════════════ VENT ARRIÈRE HYPOTHÈSE ══════════════════ */
+    .tw-assume-wrap { display: none; margin-top: .6rem; }
+    .tw-assume-wrap.visible { display: block; }
+    .tw-assume-btn {
+      width: 100%; border: 1.5px dashed #d97706; border-radius: 10px;
+      background: var(--warn-bg); color: #92400e;
+      font-size: .78rem; font-weight: 700;
+      padding: .5rem .75rem; cursor: pointer;
+      text-align: center; font-family: 'DM Sans', sans-serif;
+      transition: background .15s, border-color .15s;
+    }
+    .tw-assume-btn.active { background: #fef3c7; border-color: #b45309; border-style: solid; }
+    .tw-assume-btn .tw-check { margin-right: .4rem; }
+
+    /* ══════════════════ MOBILE RESPONSIVE ══════════════════ */
+    @media (max-width: 1023px) {
+      html, body { font-size: 14px; }
+      .card-content { padding: .9rem; }
+      .label.is-small { font-size: .62rem; }
+      .input, .select select, .button { font-size: .82rem !important; padding: .45em .65em; min-height: 36px; }
+      .kpi-value { font-size: 1.65rem; }
+      .wind-cell .wc-value { font-size: .82rem; }
+      .perf-field .pf-value { font-size: .8rem; }
+      .columns.is-variable.is-2 { --columnGap: .35rem; }
+      .app-banner { flex-direction: column; align-items: flex-start; gap: .5rem; }
+      .banner-badge { align-self: flex-start; }
+    }
+
+    /* ══════════════════ NAV LOG TABLE ══════════════════ */
+    .log-leg-row td {
+      border: 2px solid #374151;
+      padding: .3rem .4rem;
+      vertical-align: middle;
+      background: #e2e8f0;
+      height: 60px;
+      font-size: .9rem;
+    }
+    .log-leg-row td.log-fork-leg {
+      background: #fff; border: none; padding: 0;
+      width: 36px; position: relative; overflow: visible;
+    }
+    .log-leg-row td.log-right-blank { background: #fff; border-color: #94a3b8; }
+    .log-leg-main  { font-weight: 900; font-size: 1.05rem; text-align: center; color: var(--text); line-height: 1.1; }
+    .log-leg-sub   { font-size: .68rem; color: #64748b; font-style: italic; text-align: center; line-height: 1.2; }
+    .log-report    { font-weight: 900; font-size: 1rem; text-align: center; }
+    .log-he        { text-align: center; font-weight: 800; color: var(--navy); font-size: 1.05rem; }
+    .navlog-table input.nl-input {
+      width: 100%; border: none; background: transparent;
+      font-size: 1rem; font-weight: 900;
+      text-align: center; min-width: 0; padding: .3rem .2rem;
+      -webkit-appearance: none; appearance: none;
+    }
+    .navlog-table input.nl-input:focus { outline: 2px solid var(--navy); border-radius: 4px; background: #fff; }
+    .navlog-table tr.total-row td {
+      background: #1e293b; color: #fff; font-weight: 800;
+      border-color: #1e293b; padding: .5rem .4rem; font-size: .9rem;
+    }
+
+    /* ══════════════════ README ACCORDÉON ══════════════════ */
+    .readme-wrap { max-width: 860px; margin: 0 auto; }
+    .readme-toggle {
+      width: 100%; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: 12px;
+      padding: .85rem 1.2rem; font-size: .85rem; font-weight: 700;
+      color: var(--text); cursor: pointer; text-align: left;
+      letter-spacing: .02em; font-family: 'DM Sans', sans-serif;
+      transition: background .15s, border-color .15s;
+    }
+    .readme-toggle:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .readme-body {
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin-top: .5rem;
+    }
+    .readme-section { margin-bottom: 1.4rem; }
+    .readme-section:last-child { margin-bottom: 0; }
+    .readme-section h3 {
+      font-size: .8rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--navy);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: .35rem; margin-bottom: .6rem;
+    }
+    .readme-section p, .readme-section li {
+      font-size: .82rem; color: #374151;
+      line-height: 1.65; margin-bottom: .4rem;
+    }
+    .readme-section ul, .readme-section ol { padding-left: 1.2rem; margin-bottom: .4rem; }
+    .readme-section li { margin-bottom: .2rem; }
+    @media print { .readme-wrap { display: none !important; } }
+
+    /* ══════════════════ RESULTS MODAL ══════════════════ */
+    .results-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; flex-direction: column;
+      background: #f0f4f8;
+      transform: translateY(100%);
+      transition: transform .38s cubic-bezier(.32,0,.67,0);
+    }
+    .results-modal.is-open {
+      transform: translateY(0);
+      transition: transform .38s cubic-bezier(.33,1,.68,1);
+    }
+
+    /* ── Loading ── */
+    .rm-loading {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1.2rem; padding: 2rem; background: var(--navy);
+    }
+    .rm-plane {
+      font-size: 3rem; line-height: 1;
+      animation: rmFloat 2s ease-in-out infinite;
+    }
+    @keyframes rmFloat {
+      0%,100% { transform: translateY(0) rotate(-5deg); }
+      50%      { transform: translateY(-10px) rotate(5deg); }
+    }
+    .rm-loading-title {
+      font-size: 1.3rem; font-weight: 800; color: #fff;
+      letter-spacing: .04em; text-align: center;
+    }
+    .rm-loading-sub {
+      font-size: .82rem; color: rgba(255,255,255,.6);
+      letter-spacing: .03em; text-align: center; min-height: 1.2em;
+      transition: opacity .3s;
+    }
+    .rm-progress-track {
+      width: min(320px, 80vw); height: 6px;
+      background: rgba(255,255,255,.15); border-radius: 99px; overflow: hidden;
+    }
+    .rm-progress-fill {
+      height: 100%; border-radius: 99px; width: 0%;
+      background: linear-gradient(90deg, #60a5fa, #fff);
+      transition: width .15s linear;
+    }
+    .rm-pct {
+      font-size: .75rem; color: rgba(255,255,255,.5);
+      font-family: 'DM Mono', monospace; font-weight: 500;
+    }
+
+    /* ── Results content ── */
+    .rm-content {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .rm-header {
+      padding: .8rem 1rem .75rem;
+      display: flex; align-items: center; gap: .6rem;
+      flex-shrink: 0;
+    }
+    .rm-header.is-ok  { background: linear-gradient(135deg, #047857, var(--arr)); }
+    .rm-header.is-bad { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+    .rm-header.is-neutral { background: linear-gradient(135deg, var(--navy-dark), var(--navy)); }
+    .rm-close-btn {
+      background: rgba(255,255,255,.15); border: none; border-radius: 50%;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #fff; font-size: 1.1rem; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .rm-close-btn:hover { background: rgba(255,255,255,.25); }
+    .rm-header-info { flex: 1; min-width: 0; }
+    .rm-header-type {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: rgba(255,255,255,.7);
+    }
+    .rm-header-verdict {
+      font-size: 1rem; font-weight: 800; color: #fff; line-height: 1.2;
+    }
+    .rm-verdict-badge {
+      flex-shrink: 0; background: rgba(255,255,255,.2);
+      border: 2px solid rgba(255,255,255,.4);
+      border-radius: 10px; padding: .3rem .7rem;
+      font-size: .8rem; font-weight: 800; color: #fff;
+      white-space: nowrap;
+    }
+
+    /* ── KPI ── */
+    .rm-body {
+      flex: 1; overflow-y: auto; padding: .85rem 1rem;
+      display: flex; flex-direction: column; gap: .6rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .rm-kpi-card {
+      border-radius: 12px; padding: .85rem 1rem;
+      border: 1.5px solid var(--border); background: #fff;
+    }
+    .rm-kpi-card.is-ok  { background: var(--arr-light); border-color: var(--arr-border); }
+    .rm-kpi-card.is-bad { background: var(--red-light);  border-color: var(--red-border); }
+    .rm-kpi-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+    }
+    .rm-kpi-value {
+      font-size: 2.4rem; font-weight: 900; line-height: 1.05;
+      color: var(--text); font-variant-numeric: tabular-nums;
+      letter-spacing: -.02em; margin: .05rem 0 .15rem;
+    }
+    .rm-kpi-avail {
+      font-size: .75rem; color: var(--muted); font-weight: 600;
+    }
+
+    /* ── Rows ── */
+    .rm-rows {
+      background: #fff; border-radius: 12px;
+      border: 1.5px solid var(--border); overflow: hidden;
+    }
+    .rm-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .6rem .9rem; border-bottom: 1px solid #f1f5f9;
+      gap: .5rem;
+    }
+    .rm-row:last-child { border-bottom: none; }
+    .rm-row-label {
+      font-size: .78rem; color: var(--muted); font-weight: 600; flex: 1;
+    }
+    .rm-row-value {
+      font-size: .85rem; font-weight: 700; color: var(--text);
+      font-family: 'DM Mono', monospace; text-align: right;
+    }
+
+    /* ── Footer ── */
+    .rm-footer {
+      padding: .9rem 1.25rem calc(.9rem + env(safe-area-inset-bottom));
+      background: #fff; border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .rm-back-btn {
+      width: 100%; padding: .85rem; border-radius: 12px;
+      background: var(--navy); color: #fff; border: none;
+      font-size: .95rem; font-weight: 700; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; letter-spacing: .02em;
+      transition: opacity .15s;
+    }
+    .rm-back-btn:hover { opacity: .9; }
+
+    @media (min-width: 768px) {
+      .results-modal {
+        align-items: center; justify-content: center;
+        background: rgba(0,0,0,.5); backdrop-filter: blur(4px);
+        transform: none; opacity: 0; transition: opacity .25s;
+      }
+      .results-modal.is-open { opacity: 1; }
+      .rm-content {
+        width: min(480px, 90vw); max-height: 90vh;
+        border-radius: 20px; overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+      }
+      .rm-loading {
+        width: min(480px, 90vw); border-radius: 20px;
+        box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        min-height: 360px; flex: none;
+      }
+    }
+    #printRaw { display: none; }
+    .printWrap {
+      color: #111;
+      font: 10.5pt/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #fff;
+    }
+    .page {
+      padding: 13mm 15mm 10mm 15mm;
+      box-sizing: border-box;
+      width: 794px;
+      background: #fff;
+      page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+    .print-header {
+      background: var(--navy);
+      color: #fff; border-radius: 10px;
+      padding: 10px 16px 11px; margin-bottom: 7mm;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .print-header .ph-title { font-size: 14pt; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .print-header .ph-club  { font-size: 8.5pt; opacity: .7; margin-top: 2px; }
+    .print-header .ph-meta  { text-align: right; font-size: 8pt; opacity: .75; line-height: 1.5; }
+    .ptitle {
+      display: block; font-size: 9.5pt; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--navy); border-left: 4px solid var(--navy);
+      padding: 3px 0 3px 9px; margin: 5mm 0 3mm 0;
+    }
+    .psection { margin: 0 0 5mm 0; }
+    .kv { display: grid; grid-template-columns: 46% 54%; gap: 4px 10px; align-items: baseline; }
+    .kv .k { color: #52525b; font-size: 10pt; }
+    .kv .v { font-weight: 700; font-size: 10pt; color: #111; }
+    .kv-result { border-radius: 5px; padding: 3px 8px; margin-top: 1px; }
+    .kv-result.ok  { background: #dcfce7; color: #14532d; }
+    .kv-result.bad { background: #fee2e2; color: #7f1d1d; }
+    .kv-result.b   { font-weight: 800; font-size: 10.5pt; }
+    .subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin-top: 4px; }
+    .metar-raw {
+      background: #f4f4f5; border: 1px solid #d4d4d8; border-radius: 6px;
+      padding: 5px 8px; white-space: pre-wrap; word-break: break-word;
+      font-size: 8.5pt; font-family: monospace; margin-top: 4px; color: #3f3f46;
+    }
+    .psection + .psection { border-top: 1px solid #e4e4e7; padding-top: 4mm; }
+    @media print {
+      @page { size: A4; margin: 0; }
+      #appRoot { display: none !important; }
+      #printRaw { display: block !important; }
+      body { background: #fff; }
+      .page { width: 100%; padding: 13mm 15mm 10mm; }
+    }
+  </style>
+</head>
+<style>
+  /* ── Additions nouvelles features ── */
+  /* Surface piste toggle */
+  .tog-group-wrap { display: block; width: 100%; }
+  .tog-group { display: flex !important; width: 100%; background: #F3F4F6; border-radius: 12px !important; padding: 3px; gap: 3px; border: none !important; box-shadow: none !important; }
+  .tog-group .button { flex: 1; border: none !important; border-radius: 9px !important; font-size: .76rem; font-weight: 600; height: auto !important; padding: 8px 6px !important; line-height: 1.2; transition: all .18s; box-shadow: none !important; white-space: normal; text-align: center; background: transparent; color: #6B7280; }
+  .tog-group .button:hover { background: #E5E7EB; color: #374151; }
+  .tog-group .button.tog-on:not(.tog-grass) { background: #fff !important; color: var(--dep) !important; box-shadow: 0 1px 4px rgba(0,0,0,.12) !important; font-weight: 700 !important; }
+  .tog-group .button.tog-on.tog-grass { background: #fff !important; color: #065F46 !important; box-shadow: 0 1px 4px rgba(0,0,0,.12) !important; font-weight: 700 !important; }
+  /* Setbar toggles */
+  .setbar-tog .button.tog-on { background: var(--dep) !important; border-color: var(--dep) !important; color: #fff !important; }
+  /* TAF period column layout */
+  .taf-period { display: flex; align-items: stretch; gap: 0; overflow: hidden; margin-bottom: 5px; border-radius: 10px; cursor: pointer; transition: all .15s; }
+  .taf-period:hover { opacity: .85; }
+  .tp-type-col { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; width: 52px; background: rgba(0,0,0,.03); border-right: 1px solid rgba(0,0,0,.06); padding: 10px 4px; gap: 3px; }
+  .taf-period.is-current .tp-type-col { background: rgba(5,150,105,.08); }
+  .taf-period.is-eta-other .tp-type-col { background: rgba(37,99,235,.06); }
+  .taf-period.is-tempo .tp-type-col { background: rgba(245,158,11,.08); }
+  .tp-type { font: 800 10px system-ui; letter-spacing: .03em; text-transform: uppercase; color: #6B7280; text-align: center; }
+  .tp-time { font: 400 8px 'IBM Plex Mono', monospace; color: #9CA3AF; text-align: center; line-height: 1.4; }
+  .tp-main { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 12px; }
+  .tp-wind { font: 700 16px 'IBM Plex Mono', monospace; color: #111827; line-height: 1; }
+  .tp-extra { font: 400 10px system-ui; color: #9CA3AF; }
+  .tp-apply { flex-shrink: 0; font: 700 9px system-ui; color: #9CA3AF; padding: 10px 10px; display: flex; align-items: center; }
+  .taf-period.is-current .tp-apply { color: #059669; }
+  .taf-period.is-current .tp-type { color: #059669; }
+  .taf-period.is-eta-other .tp-apply { color: #2563EB; }
+  .taf-period.is-eta-other .tp-type { color: #2563EB; }
+  .taf-period.is-tempo .tp-type { color: #D97706; }
+  .taf-period.is-inactive { opacity: .3; }
+  .taf-period.is-excluded { opacity: .4; border-style: dotted; }
+  /* Runway tags */
+  .rwy-tag { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px 14px; background: #F9FAFB; border: 1.5px solid #E5E7EB; border-radius: 12px; cursor: pointer; transition: all .15s; text-align: center; min-width: 80px; }
+  .rwy-tag:hover { border-color: #2563EB; background: #EFF6FF; transform: translateY(-1px); }
+  .rwy-tag.active { background: #EFF6FF; border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .rwy-tag strong { font: 700 18px 'IBM Plex Mono', monospace; color: #111827; line-height: 1; }
+  .rwy-tag span { font: 500 10px system-ui; color: #6B7280; }
+  .rwy-surf-badge { font: 600 9px system-ui; text-transform: uppercase; letter-spacing: .04em; padding: 1px 5px; border-radius: 4px; margin-top: 2px; background: #F1F5F9; color: #64748B; }
+  /* Results modal */
+  .results-modal { position: fixed; inset: 0; z-index: 500; background: #fff; display: flex; flex-direction: column; transform: translateY(100%); transition: transform .38s cubic-bezier(.32,1,.58,1); pointer-events: none; }
+  .results-modal.is-open { transform: translateY(0); pointer-events: auto; }
+  @keyframes bob { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)} }
+  .rm-plane { animation: bob 2s ease-in-out infinite; display: inline-block; }
+  .rm-loading { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px; }
+  .rm-bar-track { width: 200px; height: 3px; background: #E5E7EB; border-radius: 2px; overflow: hidden; }
+  .rm-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width .08s linear; }
+  .rm-bar-fill.dep { background: #2563EB; }
+  .rm-bar-fill.arr { background: #059669; }
+  .rm-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .rm-header { padding: 16px 20px; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .rm-header.is-ok  { background: #ECFDF5; border-color: rgba(5,150,105,.2); }
+  .rm-header.is-bad { background: #FEF2F2; border-color: rgba(239,68,68,.2); }
+  .rm-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .rm-kpi-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 24px; text-align: center; }
+  .rm-kpi-card.is-ok  { background: rgba(5,150,105,.06); border-color: rgba(5,150,105,.25); }
+  .rm-kpi-card.is-bad { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.25); }
+  .rm-kpi-lbl { font: 700 9px 'IBM Plex Mono'; letter-spacing: .1em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 8px; }
+  .rm-kpi-val { font: 800 52px 'IBM Plex Mono', monospace; line-height: 1; color: #111827; }
+  .rm-kpi-card.is-ok  .rm-kpi-val { color: #059669; }
+  .rm-kpi-card.is-bad .rm-kpi-val { color: #DC2626; }
+  .rm-rows { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden; }
+  .rm-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid #F1F5F9; }
+  .rm-row:last-child { border-bottom: none; }
+  .rm-row-label { font: 400 12px system-ui; color: #64748B; }
+  .rm-row-value { font: 700 12px 'IBM Plex Mono', monospace; color: #111827; }
+  .rm-foot { padding: 16px 20px; border-top: 1px solid #E5E7EB; background: #F9FAFB; flex-shrink: 0; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+</style>
+<body>
+<div class="container px-4 py-4" id="appRoot" style="max-width:1100px">
+
+  <!-- Banner -->
+  <div class="app-banner">
+    <div>
+      <h1>Calculateur de Performances</h1>
+      <div class="subtitle-line">Aéroclub de Beauvais-Tillé</div>
+    </div>
+    <div class="banner-badge">✈ ACBT</div>
+  </div>
+
+
+
+  <!-- Paramètres généraux -->
+  <div class="card mb-4">
+    <div class="card-content">
+      <p class="card-title">Paramètres généraux</p>
+      <div class="columns is-mobile is-multiline is-variable is-3">
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <div class="field">
+            <label class="label is-small">Avion</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select id="aircraftSel">
+                  <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
+                  <option value="F-BXEK (120cv)">F-BXEK (120cv)</option>
+                  <option value="F-BTKG (120cv)">F-BTKG (120cv)</option>
+                  <option value="F-BTXS (120cv)">F-BTXS (120cv)</option>
+                  <option value="F-BTBS (120cv)">F-BTBS (120cv)</option>
+                  <option value="F-BTBJ (108cv)">F-BTBJ (108cv)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <div class="field">
+            <label class="label is-small">Hélice</label>
+            <div class="control">
+              <input id="propeller" class="input" value="Sensenich" readonly style="background:#f5f7fa;cursor:default" />
+            </div>
+          </div>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <div class="field">
+            <label class="label is-small">Marge sécurité (%)</label>
+            <div class="control">
+              <input id="safety" class="input" type="number" inputmode="numeric" value="30" min="0" />
+            </div>
+          </div>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <p class="label is-small mb-1">Vent réglementaire</p>
+          <div class="buttons has-addons setbar-tog" style="margin-bottom:0">
+            <button id="btnRegWindOff" class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">100 % réel</button>
+            <button id="btnRegWindOn"  class="button is-small" style="border-radius:0 8px 8px 0!important">50 / 150 %</button>
+          </div>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop is-flex is-align-items-flex-end">
+          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700">📄 Exporter PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle mobile départ / arrivée (masqué sur desktop) -->
+  <div class="mobile-tab-toggle tab-toggle my-3">
+    <button id="tabDep" class="active" onclick="switchTab('dep')">Départ</button>
+    <button id="tabArr" class="arr"    onclick="switchTab('arr')">Arrivée</button>
+  </div>
+
+  <!-- Grille principale (2 colonnes sur desktop) -->
+  <div class="columns is-desktop">
+
+    <!-- ══════════════════════════ DÉPART ══════════════════════════ -->
+    <div class="column tab-col" id="colDep">
+
+      <!-- Terrain départ -->
+      <div class="card mb-3 card-dep" id="cardDep">
+        <div class="card-content">
+          <p class="card-title"><span class="ct-badge dep">✈ Départ</span></p>
+
+          <!-- ICAO + Élévation + METAR -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">ICAO départ</label>
+                <div class="control">
+                  <input id="depIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Élévation (ft)</label>
+                <div class="control">
+                  <input id="depAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column is-narrow is-flex is-align-items-flex-end">
+              <button id="btnDepMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
+            </div>
+          </div>
+          <p id="depMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="depRunwayPicker" class="runway-picker" style="display:none"></div>
+
+          <!-- QFU + TODA + ASDA -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">QFU départ (°)</label>
+                <div class="control">
+                  <input id="depQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">TODA (m)</label>
+                <div class="control">
+                  <input id="depToda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vent -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Direction</label>
+                <div class="control">
+                  <input id="depWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Vitesse (kt)</label>
+                <div class="control">
+                  <input id="depWindKt" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Rafales (kt)</label>
+                <div class="control">
+                  <input id="depWindGust" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secteur VRB + OAT -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Secteur VRB (optionnel)</label>
+                <div class="vrb-wrap">
+                  <input id="depVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM" />
+                  <span class="vrb-sep">V</span>
+                  <input id="depVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">OAT (°C)</label>
+                <div class="control">
+                  <input id="depOat" class="input" type="number" inputmode="numeric" value="15" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affichage composantes vent -->
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="depHwFace">—</span> kt</div>
+            </div>
+            <div id="depXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="depXw">—</div>
+            </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="depTw">—</span> kt</div>
+            </div>
+          </div>
+
+          <!-- Assumption vent arrière 5kt — départ -->
+          <div id="depTwAssumeWrap" class="tw-assume-wrap">
+            <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            </button>
+          </div>
+
+          <!-- Toggles carénages + surface -->
+          <div class="columns is-mobile mt-3">
+            <div class="column has-text-centered">
+              <p class="label is-small mb-1">Carénages de roues</p>
+              <div class="buttons has-addons is-centered">
+                <button id="spatsWith" class="button is-primary is-selected">Avec</button>
+                <button id="spatsWithout" class="button">Sans (+3%)</button>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <p class="label is-small mb-1">Surface piste</p>
+              <div class="buttons has-addons is-centered">
+                <button id="depSurfHard" class="button is-primary is-selected">Dur</button>
+                <button id="depSurfGrass" class="button">Herbe</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Masse + facteur suppl -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Masse au décollage (kg)</label>
+                <div class="control">
+                  <input id="depTow" class="input" type="number" inputmode="numeric" value="900" min="1" />
+                </div>
+                <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg) — valeurs limites utilisées</p>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Facteur suppl. décollage</label>
+                <div class="control">
+                  <input id="depExtraTO" class="input" type="number" inputmode="numeric" step="0.01" value="1.00" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message de validation -->
+          <div id="depValidMsg" class="notification is-danger is-light valid-msg is-hidden py-2 px-3"></div>
+
+          <button id="btnCalcDep" class="button is-primary is-fullwidth mt-3" style="font-weight:700;font-size:1rem">
+            Calculer les performances décollage
+          </button>
+        </div>
+      </div>
+
+      <!-- Résultats décollage -->
+      <div class="card card-dep" id="cardDepPerf" style="display:none">
+        <div class="card-content">
+          <div class="result-header">
+            <span class="rh-title">Décollage — Résultats</span>
+            <span id="toChip" class="tag is-medium is-neutral-chip">—</span>
+          </div>
+
+          <div id="toKpi" class="kpi-box">
+            <div class="kpi-icon">🛫</div>
+            <div>
+              <div class="kpi-label">Requis (marge incluse)</div>
+              <div class="kpi-value" id="toKpiVal">— m</div>
+              <div class="kpi-sub">TODA dispo : <span id="todaMini">—</span></div>
+            </div>
+          </div>
+
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="toBaseRoll" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="toBasePass" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="toWindF" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Carénages</div>
+              <div id="toSpat" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="toExtra" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="toRes" class="pf-value">—</div>
+            </div>
+          </div>
+          <p id="toExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
+        </div>
+      </div>
+    </div><!-- fin colonne gauche -->
+
+    <!-- ══════════════════════════ ARRIVÉE ══════════════════════════ -->
+    <div class="column tab-col hidden-mobile" id="colArr">
+
+      <!-- Terrain arrivée -->
+      <div class="card mb-3 card-arr" id="cardArr">
+        <div class="card-content">
+          <p class="card-title"><span class="ct-badge arr">🛬 Arrivée</span></p>
+
+          <!-- ICAO + Élévation + METAR -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">ICAO arrivée</label>
+                <div class="control">
+                  <input id="arrIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Élévation (ft)</label>
+                <div class="control">
+                  <input id="arrAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column is-narrow is-flex is-align-items-flex-end" style="gap:.4rem">
+              <button id="btnArrMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
+              <button id="btnArrTaf"   class="button is-success is-outlined is-small" style="white-space:nowrap;font-weight:700">TAF</button>
+            </div>
+          </div>
+          <p id="arrMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="arrRunwayPicker" class="runway-picker" style="display:none"></div>
+          <!-- TAF arrivée -->
+          <div id="arrTafWrap" class="taf-wrap">
+            <div class="taf-header">
+              <span class="taf-header-label">📋 TAF — choisir une période</span>
+              <div class="taf-eta-wrap">
+                <span class="taf-eta-label">ETA (UTC) :</span>
+                <input id="arrEta" type="time" class="input taf-eta-input" placeholder="--:--" />
+              </div>
+            </div>
+            <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
+            <div id="arrTafPeriods" class="taf-periods"></div>
+          </div>
+
+          <!-- QFU + LDA -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">QFU arrivée (°)</label>
+                <div class="control">
+                  <input id="arrQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">LDA (m)</label>
+                <div class="control">
+                  <input id="arrLda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vent -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Direction</label>
+                <div class="control">
+                  <input id="arrWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Vitesse (kt)</label>
+                <div class="control">
+                  <input id="arrWindKt" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Rafales (kt)</label>
+                <div class="control">
+                  <input id="arrWindGust" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secteur VRB + OAT -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Secteur VRB (optionnel)</label>
+                <div class="vrb-wrap">
+                  <input id="arrVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM" />
+                  <span class="vrb-sep">V</span>
+                  <input id="arrVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">OAT (°C)</label>
+                <div class="control">
+                  <input id="arrOat" class="input" type="number" inputmode="numeric" value="15" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affichage composantes vent -->
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="arrHwFace">—</span> kt</div>
+            </div>
+            <div id="arrXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="arrXw">—</div>
+            </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="arrTw">—</span> kt</div>
+            </div>
+          </div>
+
+          <!-- Assumption vent arrière 5kt — arrivée -->
+          <div id="arrTwAssumeWrap" class="tw-assume-wrap">
+            <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            </button>
+          </div>
+
+          <!-- Toggle freinage -->
+          <div class="has-text-centered mt-3">
+            <p class="label is-small mb-1">Type de freinage</p>
+            <div class="buttons has-addons is-centered">
+              <button id="arrModerate" class="button is-primary is-selected">Freinage modéré (dur/herbe)</button>
+              <button id="arrNoBrake" class="button">Sans frein sur herbe</button>
+            </div>
+          </div>
+
+          <!-- Masse + facteur suppl -->
+          <div class="columns is-mobile is-variable is-2 mt-3">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Masse à l'atterrissage (kg)</label>
+                <div class="control">
+                  <input id="arrLdw" class="input" type="number" inputmode="numeric" value="900" min="1" />
+                </div>
+                <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg) — valeurs limites utilisées</p>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Facteur suppl. atterrissage</label>
+                <div class="control">
+                  <input id="arrExtraLDG" class="input" type="number" inputmode="numeric" step="0.01" value="1.00" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message de validation -->
+          <div id="arrValidMsg" class="notification is-danger is-light valid-msg is-hidden py-2 px-3"></div>
+
+          <button id="btnCalcArr" class="button is-primary is-fullwidth mt-3" style="font-weight:700;font-size:1rem">
+            Calculer les performances atterrissage
+          </button>
+        </div>
+      </div>
+
+      <!-- Résultats atterrissage -->
+      <div class="card card-arr" id="cardArrPerf" style="display:none">
+        <div class="card-content">
+          <div class="result-header">
+            <span class="rh-title">Atterrissage — Résultats</span>
+            <span id="ldgChip" class="tag is-medium is-neutral-chip">—</span>
+          </div>
+
+          <div id="ldgKpi" class="kpi-box">
+            <div class="kpi-icon">🛬</div>
+            <div>
+              <div class="kpi-label">Requis (marge incluse)</div>
+              <div class="kpi-value" id="ldgKpiVal">— m</div>
+              <div class="kpi-sub">LDA dispo : <span id="ldaMini">—</span></div>
+            </div>
+          </div>
+
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="ldgBaseRoll" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="ldgBasePass" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="ldgWindF" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="ldgExtra" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="ldgRes" class="pf-value">—</div>
+            </div>
+          </div>
+          <p id="ldgExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
+        </div>
+      </div>
+    </div><!-- fin colonne droite -->
+
+  </div><!-- fin columns -->
+
+
+
+  <!-- README accordéon -->
+  <div class="readme-wrap mt-4 mb-5">
+    <button class="readme-toggle" onclick="toggleReadme()" id="readmeBtn">
+      <span id="readmeArrow">▸</span> Documentation — comment fonctionnent les calculs ?
+    </button>
+    <div id="readmeBody" class="readme-body" style="display:none">
+
+      <div class="readme-section">
+        <h3>Vue d'ensemble</h3>
+        <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes et ne sont jamais modifiées — seule l'interpolation entre les points du tableau varie selon les paramètres saisis.</p>
+        <p style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:.65rem .9rem;color:#7f1d1d;font-weight:600">
+          ⚠ Cet outil est une aide à la préparation du vol. La <strong>source officielle reste le manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.<br><br>
+          Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
+        </p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Profils avion</h3>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK, F-BTBS, F-BTBJ) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
+        <p><strong>DR300</strong> (F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
+        <p>L'hélice associée à chaque avion (Sensenich ou Mac Cauley) est renseignée automatiquement à titre informatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Interpolation des performances</h3>
+        <p>Les performances sont calculées par <strong>interpolation linéaire triple</strong> : altitude-densité × température × masse.</p>
+        <ol>
+          <li><strong>Température</strong> : interpolation entre les 3 colonnes du manuel (ISA−20, ISA, ISA+20) selon l'OAT saisie.</li>
+          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes (ex. 2 000 ft → interpolation entre 0 et 4 000 ft).</li>
+          <li><strong>Masse</strong> : interpolation linéaire entre 700 kg et 900 kg. Si la masse est hors de cette plage, les valeurs limites du manuel sont utilisées (comportement conservateur). Un avertissement s'affiche dans ce cas.</li>
+        </ol>
+        <p>La distance de référence utilisée pour le calcul est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), pas le simple roulement. Le roulement est affiché à titre indicatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Composantes vent</h3>
+        <p>Pour un QFU donné et une direction de vent, les composantes sont calculées trigonométriquement :</p>
+        <ul>
+          <li><strong>Vent de face</strong> = V × cos(angle) — positif si face, négatif si arrière</li>
+          <li><strong>Vent de travers</strong> = |V × sin(angle)|</li>
+          <li><strong>Vent arrière</strong> = max(0, −vent de face)</li>
+        </ul>
+        <p>où <em>angle</em> est la différence entre la direction du vent et le cap de la piste (QFU), ramenée à [0°, 180°].</p>
+        <p>Une alerte <span style="color:#b45309;font-weight:700">orange</span> s'affiche si le vent de travers atteint 18 kt, et <span style="color:#dc2626;font-weight:700">rouge</span> à partir de 22 kt.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Vent variable (secteur VRB)</h3>
+        <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
+        <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
+        <p>L'affichage dans la cellule "Vent de travers" indique le travers moyen et, si un secteur est actif, le travers maximal sur l'ensemble du secteur avec la direction qui le produit.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>METAR et pistes automatiques</h3>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
+        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
+        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée. Le QFU est calculé à partir du cap vrai OpenAIP corrigé de la déclinaison magnétique locale.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>TAF arrivée</h3>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Chaque période du TAF (FM, TEMPO, BECMG…) s'affiche avec son vent synthétique. En saisissant une <strong>heure ETA en UTC (Zulu)</strong>, la période correspondant à l'heure d'arrivée estimée est automatiquement surlignée. Un clic sur une période applique son vent aux champs arrivée pour le calcul de performances.</p>
+        <p>Les pistes et l'élévation sont également chargées automatiquement au clic TAF.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur vent</h3>
+        <p>Le vent de face réduit la distance requise ; le vent arrière l'augmente. Le facteur est calculé à partir d'une table issue du manuel :</p>
+        <ul>
+          <li><strong>Vent de face</strong> : interpolation linéaire entre les points (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
+          <li><strong>Vent arrière</strong> : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
+        </ul>
+        <p>Le facteur vent est appliqué à la distance de passage des 15 m avant l'application de la marge de sécurité.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Hypothèse 5 kt arrière</h3>
+        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Carénages de roues</h3>
+        <p>Sans carénages, un coefficient de <strong>+3 %</strong> est appliqué à la distance de décollage (passage des 15 m). Ce facteur n'est appliqué qu'au décollage, pas à l'atterrissage.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Surface de piste</h3>
+        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe. Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Marge de sécurité</h3>
+        <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
+        <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
+        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur supplémentaire</h3>
+        <p>Ce multiplicateur (1,00 par défaut) est appliqué avant la marge de sécurité. Il permet d'intégrer tout coefficient non couvert par les autres paramètres : piste contaminée, pilote en formation, procédure d'exploitation particulière, etc.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Export PDF</h3>
+        <p>Le bouton <strong>"Exporter PDF"</strong> génère une fiche A4 en 2 pages (départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. Conçu pour être utilisé directement depuis mobile.</p>
+      </div>
+
+    </div><!-- /readme-body -->
+  </div><!-- /readme-wrap -->
+
+  <!-- Footer -->
+  <footer class="has-text-centered pb-5 pt-2" style="font-size:.72rem;color:#94a3b8;line-height:1.8">
+    <div>Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé</div>
+    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+  </footer>
+
+  <!-- Modal disclaimer (affiché au chargement) -->
+  <div id="modalDisclaimer" class="modal is-active">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="max-width:480px;width:calc(100% - 2rem);border-radius:14px;overflow:hidden">
+      <header class="modal-card-head" style="background:#0b3b86;border-bottom:none;padding:1.1rem 1.4rem">
+        <p class="modal-card-title" style="color:#fff;font-size:1rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase">
+          ⚠️ Avertissement
+        </p>
+      </header>
+      <section class="modal-card-body" style="padding:1.4rem">
+        <p style="font-size:.9rem;line-height:1.65;color:#1e293b">
+          Cet outil est une <strong>aide à la préparation du vol</strong>. La source officielle reste le <strong>manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.
+        </p>
+        <p style="font-size:.9rem;line-height:1.65;color:#1e293b;margin-top:.85rem">
+          Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
+        </p>
+        <p style="font-size:.75rem;color:#94a3b8;margin-top:1rem">
+          Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé
+        </p>
+      </section>
+      <footer class="modal-card-foot" style="border-top:1px solid #e2e8f0;padding:.9rem 1.4rem;justify-content:flex-end">
+        <button class="button is-primary" id="btnCloseDisclaimer" style="font-weight:700;min-width:140px">
+          J'ai compris
+        </button>
+      </footer>
+    </div>
+  </div>
+
+<datalist id="dirOptions"><option value="VRB"></option></datalist>
+
+<!-- ══════════ RESULTS MODAL ══════════ -->
+<div id="resultsModal" class="results-modal" style="display:none">
+
+  <!-- Loading -->
+  <div id="rmLoading" class="rm-loading">
+    <div class="rm-plane">✈</div>
+    <div class="rm-loading-title">Calculs en cours…</div>
+    <div class="rm-loading-sub" id="rmSub">Initialisation</div>
+    <div class="rm-progress-track">
+      <div class="rm-progress-fill" id="rmFill"></div>
+    </div>
+    <div class="rm-pct" id="rmPct">0 %</div>
+  </div>
+
+  <!-- Results -->
+  <div id="rmContent" class="rm-content" style="display:none">
+    <div class="rm-header is-neutral" id="rmHeader">
+      <button class="rm-close-btn" onclick="closeResultsModal()">✕</button>
+      <div class="rm-header-info">
+        <div class="rm-header-type" id="rmType"></div>
+        <div class="rm-header-verdict" id="rmVerdict"></div>
+      </div>
+      <div class="rm-verdict-badge" id="rmBadge">—</div>
+    </div>
+    <div class="rm-body">
+      <div class="rm-kpi-card" id="rmKpiCard">
+        <div class="rm-kpi-label">Requis (marge incluse)</div>
+        <div class="rm-kpi-value" id="rmKpiVal">—</div>
+        <div class="rm-kpi-avail" id="rmKpiAvail"></div>
+      </div>
+      <div class="rm-rows" id="rmRows"></div>
+    </div>
+    <div class="rm-footer">
+      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
+    </div>
+  </div>
+
+</div>
+<section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
+
 
 <!-- RESULTS MODAL -->
 <div id="resultsModal" class="results-modal" style="display:none">
@@ -408,581 +1578,687 @@
   </div>
 </div>
 
-<!-- NAVBAR -->
-<nav class="navbar" role="navigation">
-  <div class="navbar-brand" style="padding:0 16px;gap:10px;align-items:center;min-height:52px">
-    <div class="ac-logo">AC</div>
-    <span style="font:700 13px system-ui;color:#111827">ACBT Performances</span>
-    <div style="flex:1;display:flex;align-items:center;gap:8px">
-      <select id="aircraftSel" class="select is-small" style="font-family:'IBM Plex Mono',monospace;font-weight:600;border-radius:8px;max-width:240px">
-        <option value="">Chargement…</option>
-      </select>
-      <span id="propeller" style="font:500 10px 'IBM Plex Mono',monospace;color:#9CA3AF"></span>
+
+
+<div class="container px-4 py-4" id="appRoot" style="max-width:1100px">
+
+  <!-- Banner -->
+  <div class="app-banner">
+    <div>
+      <h1>Calculateur de Performances</h1>
+      <div class="subtitle-line">Aéroclub de Beauvais-Tillé</div>
     </div>
-    <button id="btnPrint" class="button is-dark is-small" style="border-radius:8px;font-weight:700;opacity:.4;flex-shrink:0" disabled>📄 PDF</button>
+    <div class="banner-badge">✈ ACBT</div>
   </div>
-</nav>
 
-<!-- SETTINGS BAR -->
-<div class="settings-bar">
-  <div style="display:flex;align-items:center;gap:8px">
-    <label class="label">Marge</label>
-    <input id="safety" class="input is-small" type="number" value="30" min="0" style="border-radius:8px"/>
-    <span style="font-size:.8rem;color:#9CA3AF">%</span>
-  </div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <label class="label">Vent réglementaire</label>
-    <div class="buttons has-addons setbar-tog">
-      <button id="btnRegWindOff" class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">100 % réel</button>
-      <button id="btnRegWindOn"  class="button is-small" style="border-radius:0 8px 8px 0!important">50 % / 150 %</button>
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <label class="label">Carénages</label>
-    <div class="buttons has-addons setbar-tog">
-      <button id="spatsWith"    class="button is-small tog-on" style="border-radius:8px 0 0 8px!important">Avec</button>
-      <button id="spatsWithout" class="button is-small" style="border-radius:0 8px 8px 0!important">Sans (+3 %)</button>
-    </div>
-  </div>
-</div>
 
-<!-- MOBILE TABS -->
-<div class="mobile-tabs">
-  <div id="tabDep" class="mobile-tab is-active" onclick="switchTab('dep')">✈ Départ</div>
-  <div id="tabArr" class="mobile-tab" onclick="switchTab('arr')">🛬 Arrivée</div>
-</div>
 
-<!-- COLUMNS -->
-<div style="max-width:1200px;margin:0 auto;padding:12px">
-  <div class="perf-grid">
-
-    <!-- DEP -->
-    <div id="colDep" class="perf-col is-visible">
-
-      <div class="col-header dep">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="col-hd-badge">Départ</span>
-          <span id="depIcao_display" class="col-icao">—</span>
-        </div>
-        <span id="toChip" class="chip neutral">—</span>
-      </div>
-
-      <!-- Station -->
-      <div class="sec-card">
-        <div class="sec-head"><span>📡</span><span class="sec-head-title">Station météo</span></div>
-        <div class="sec-body">
-          <div class="field is-grouped">
-            <div class="control is-expanded">
-              <label class="label">ICAO départ</label>
-              <input id="depIcao" class="input is-small" type="text" maxlength="4" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
-            </div>
-            <div class="control" style="padding-top:20px">
-              <button id="btnDepMetar" class="button is-small is-link is-light" style="border-radius:8px;font-weight:700">METAR</button>
-            </div>
-          </div>
-          <div id="depMetarMsg" class="metar-box"></div>
-        </div>
-      </div>
-
-      <!-- Piste -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">QFU</label><input id="depQfu" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">TODA (m)</label><input id="depToda" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">Élév. (ft)</label><input id="depAlt" class="input is-small" type="number"/></div>
-          </div>
-          <div id="depRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
-        </div>
-      </div>
-
-      <!-- Conditions -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">OAT (°C)</label><input id="depOat" class="input is-small" type="number"/></div>
-            <div class="field-cell">
-              <label class="label">Masse déco (kg)</label>
-              <input id="depTow" class="input is-small" type="number" value="900"/>
-              <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Vent -->
-      <div class="sec-card">
-        <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">Direction</label><input id="depWindDir" class="input is-small" type="text"/></div>
-            <div class="field-cell"><label class="label">Vitesse (kt)</label><input id="depWindKt" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">Rafale (kt)</label><input id="depWindGust" class="input is-small" type="number"/></div>
-          </div>
-          <div id="depVrbRow" class="field-row" style="display:none;align-items:flex-end">
-            <div class="field-cell"><label class="label">Secteur variable</label>
-              <div class="field has-addons">
-                <div class="control"><input id="depVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
-                <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
-                <div class="control"><input id="depVrbTo" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+  <!-- Paramètres généraux -->
+  <div class="card mb-4">
+    <div class="card-content">
+      <p class="card-title">Paramètres généraux</p>
+      <div class="columns is-mobile is-multiline is-variable is-3">
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <div class="field">
+            <label class="label is-small">Avion</label>
+            <div class="control">
+              <div class="select is-fullwidth">
+                <select id="aircraftSel">
+                  <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
+                  <option value="F-BXEK (120cv)">F-BXEK (120cv)</option>
+                  <option value="F-BTKG (120cv)">F-BTKG (120cv)</option>
+                  <option value="F-BTXS (120cv)">F-BTXS (120cv)</option>
+                  <option value="F-BTBS (120cv)">F-BTBS (120cv)</option>
+                  <option value="F-BTBJ (108cv)">F-BTBJ (108cv)</option>
+                </select>
               </div>
             </div>
           </div>
-          <div class="wind-strip mb-3">
-            <div class="wc"><div class="lbl">Face</div><div class="val" id="depHwFace">—</div><div class="unit">kt</div></div>
-            <div class="wc"><div class="lbl">Arrière</div><div class="val" id="depTw">—</div><div class="unit">kt</div></div>
-            <div id="depXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="depXw">—</div><div class="unit">kt</div></div>
-          </div>
-          <div id="depTwAssumeWrap" class="tw-wrap mb-2"><button id="depTwAssumeBtn" class="tw-btn"></button></div>
-          <div id="depExplain" class="explain-text"></div>
         </div>
-      </div>
-
-      <!-- Options surface DEP -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🛫</span><span class="sec-head-title">Surface piste</span></div>
-        <div class="sec-body">
+        <div class="column is-half-mobile is-one-quarter-desktop">
           <div class="field">
-            <label class="label">Type de piste</label>
-            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
-              <button id="depSurfHard"  class="button is-small tog-on">Revêtue (dur)</button>
-              <button id="depSurfGrass" class="button is-small">Herbe</button>
-            </div></div>
-          </div>
-          <div id="depWetWrap" style="display:none;margin-top:10px">
-            <label class="label">État de la piste en herbe</label>
-            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
-              <button id="depGrassDry"      class="button is-small tog-on">Herbe sèche</button>
-              <button id="depGrassWet"      class="button is-small">Herbe mouillée</button>
-              <button id="depGrassWetShort" class="button is-small">Herbe courte mouillée</button>
-            </div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- KPI -->
-      <div id="toKpi" class="kpi-box">
-        <div>
-          <div class="kpi-lbl">Requis — marge incluse</div>
-          <div class="kpi-val" id="toKpiVal">— m</div>
-          <div class="kpi-avail">TODA disponible : <span id="todaMini">—</span></div>
-        </div>
-      </div>
-
-      <!-- Détail calcul DEP -->
-      <div class="sec-card" id="depPerfDetail" style="display:none">
-        <div class="sec-head"><span>📊</span><span class="sec-head-title">Détail du calcul</span></div>
-        <div class="sec-body pf-rows">
-          <div class="pf-row"><span class="pf-lbl">Roulement sans marge</span><span class="pf-val" id="toBaseRoll">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Passage 15 m sans marge</span><span class="pf-val" id="toBasePass">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Facteur vent</span><span class="pf-val" id="toWindF">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Carénages</span><span class="pf-val" id="toSpat">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Facteur supplémentaire</span><span class="pf-val" id="toExtra">—</span></div>
-          <div class="pf-row"><span class="pf-lbl" style="font-weight:600;color:#374151">Résultat sans marge</span><span class="pf-val" id="toRes">—</span></div>
-          <div id="toExplain" class="explain-text"></div>
-        </div>
-      </div>
-
-      <p id="depValidMsg" class="is-hidden valid-msg mb-2"></p>
-      <button id="btnCalcDep" class="button is-link is-fullwidth calc-btn">Calculer les performances au décollage</button>
-
-    </div><!-- /colDep -->
-
-    <!-- ARR -->
-    <div id="colArr" class="perf-col">
-
-      <div class="col-header arr">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="col-hd-badge" style="background:var(--arr-border);color:var(--arr)">Arrivée</span>
-          <span id="arrIcao_display" class="col-icao">—</span>
-        </div>
-        <span id="ldgChip" class="chip neutral">—</span>
-      </div>
-
-      <!-- Station + TAF -->
-      <div class="sec-card">
-        <div class="sec-head"><span>📡</span><span class="sec-head-title">Station météo</span></div>
-        <div class="sec-body">
-          <div class="field is-grouped">
-            <div class="control is-expanded">
-              <label class="label">ICAO arrivée</label>
-              <input id="arrIcao" class="input is-small" type="text" maxlength="4" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase"/>
-            </div>
-            <div class="control" style="padding-top:20px;display:flex;gap:6px">
-              <button id="btnArrMetar" class="button is-small is-success is-light" style="border-radius:8px;font-weight:700">METAR</button>
-              <button id="btnArrTaf"   class="button is-small is-light" style="border-radius:8px;font-weight:700">TAF</button>
+            <label class="label is-small">Hélice</label>
+            <div class="control">
+              <input id="propeller" class="input" value="Sensenich" readonly style="background:#f5f7fa;cursor:default" />
             </div>
           </div>
-          <div id="arrMetarMsg" class="metar-box"></div>
-          <!-- TAF -->
-          <div id="arrTafWrap" class="taf-wrap" style="margin-top:10px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-              <label class="label mb-0" style="margin-bottom:0!important">TAF arrivée</label>
-              <div style="display:flex;align-items:center;gap:6px">
-                <label class="label mb-0" style="margin-bottom:0!important;font-size:.7rem">ETA (UTC)</label>
-                <div class="select is-small">
-                  <select id="arrEta" style="font-family:'IBM Plex Mono',monospace;font-weight:600">
-                    <option value="">Sélectionner…</option>
-                  </select>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop">
+          <div class="field">
+            <label class="label is-small">Marge sécurité (%)</label>
+            <div class="control">
+              <input id="safety" class="input" type="number" inputmode="numeric" value="30" min="0" />
+            </div>
+          </div>
+        </div>
+        <div class="column is-half-mobile is-one-quarter-desktop is-flex is-align-items-flex-end">
+          <button id="btnPrint" class="button is-dark is-fullwidth" style="font-weight:700">📄 Exporter PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle mobile départ / arrivée (masqué sur desktop) -->
+  <div class="mobile-tab-toggle tab-toggle my-3">
+    <button id="tabDep" class="active" onclick="switchTab('dep')">Départ</button>
+    <button id="tabArr" class="arr"    onclick="switchTab('arr')">Arrivée</button>
+  </div>
+
+  <!-- Grille principale (2 colonnes sur desktop) -->
+  <div class="columns is-desktop">
+
+    <!-- ══════════════════════════ DÉPART ══════════════════════════ -->
+    <div class="column tab-col" id="colDep">
+
+      <!-- Terrain départ -->
+      <div class="card mb-3 card-dep" id="cardDep">
+        <div class="card-content">
+          <p class="card-title"><span class="ct-badge dep">✈ Départ</span></p>
+
+          <!-- ICAO + Élévation + METAR -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">ICAO départ</label>
+                <div class="control">
+                  <input id="depIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
                 </div>
               </div>
             </div>
-            <div id="arrTafRaw" class="metar-box visible" style="margin-bottom:10px">—</div>
-            <div id="arrTafPeriods"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Piste ARR -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🛣</span><span class="sec-head-title">Piste</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">QFU</label><input id="arrQfu" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">LDA (m)</label><input id="arrLda" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">Élév. (ft)</label><input id="arrAlt" class="input is-small" type="number"/></div>
-          </div>
-          <div id="arrRunwayPicker"><div class="rwy-grid" style="margin-top:8px"></div></div>
-        </div>
-      </div>
-
-      <!-- Conditions ARR -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🌡</span><span class="sec-head-title">Conditions & Masse</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">OAT (°C)</label><input id="arrOat" class="input is-small" type="number"/></div>
-            <div class="field-cell">
-              <label class="label">Masse att. (kg)</label>
-              <input id="arrLdw" class="input is-small" type="number" value="900"/>
-              <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg)</p>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Élévation (ft)</label>
+                <div class="control">
+                  <input id="depAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column is-narrow is-flex is-align-items-flex-end">
+              <button id="btnDepMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
             </div>
           </div>
+          <p id="depMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="depRunwayPicker" class="runway-picker" style="display:none"></div>
 
-        </div>
-      </div>
-
-      <!-- Vent ARR -->
-      <div class="sec-card">
-        <div class="sec-head"><span>💨</span><span class="sec-head-title">Vent</span></div>
-        <div class="sec-body">
-          <div class="field-row">
-            <div class="field-cell"><label class="label">Direction</label><input id="arrWindDir" class="input is-small" type="text"/></div>
-            <div class="field-cell"><label class="label">Vitesse (kt)</label><input id="arrWindKt" class="input is-small" type="number"/></div>
-            <div class="field-cell"><label class="label">Rafale (kt)</label><input id="arrWindGust" class="input is-small" type="number"/></div>
-          </div>
-          <div id="arrVrbRow" class="field-row" style="display:none;align-items:flex-end">
-            <div class="field-cell"><label class="label">Secteur variable</label>
-              <div class="field has-addons">
-                <div class="control"><input id="arrVrbFrom" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
-                <div class="control"><a class="button is-small is-static" style="font-weight:700;padding:0 8px">V</a></div>
-                <div class="control"><input id="arrVrbTo" class="input is-small" type="number" style="width:64px;text-align:center"/></div>
+          <!-- QFU + TODA + ASDA -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">QFU départ (°)</label>
+                <div class="control">
+                  <input id="depQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">TODA (m)</label>
+                <div class="control">
+                  <input id="depToda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                </div>
               </div>
             </div>
           </div>
-          <div id="arrTafTwSuggest" style="margin-bottom:8px"></div>
-          <div class="wind-strip mb-3">
-            <div class="wc"><div class="lbl">Face</div><div class="val" id="arrHwFace">—</div><div class="unit">kt</div></div>
-            <div class="wc"><div class="lbl">Arrière</div><div class="val" id="arrTw">—</div><div class="unit">kt</div></div>
-            <div id="arrXwCard" class="wc"><div class="lbl">Travers</div><div class="val" id="arrXw">—</div><div class="unit">kt</div></div>
+
+          <!-- Vent -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Direction</label>
+                <div class="control">
+                  <input id="depWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Vitesse (kt)</label>
+                <div class="control">
+                  <input id="depWindKt" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Rafales (kt)</label>
+                <div class="control">
+                  <input id="depWindGust" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
           </div>
-          <div id="arrTwAssumeWrap" class="tw-wrap mb-2"><button id="arrTwAssumeBtn" class="tw-btn"></button></div>
-          <div id="arrExplain" class="explain-text"></div>
-        </div>
-      </div>
 
-      <!-- Options ARR -->
-      <div class="sec-card">
-        <div class="sec-head"><span>🛬</span><span class="sec-head-title">État piste & Freinage</span></div>
-        <div class="sec-body">
-          <div class="field">
-            <label class="label">Type de freinage</label>
-            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
-              <button id="arrModerate" class="button is-small tog-on">Freinage normal (dur/herbe)</button>
-              <button id="arrNoBrake"  class="button is-small">Sans freins (herbe sèche)</button>
-            </div></div>
+          <!-- Secteur VRB + OAT -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Secteur VRB (optionnel)</label>
+                <div class="vrb-wrap">
+                  <input id="depVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM" />
+                  <span class="vrb-sep">V</span>
+                  <input id="depVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">OAT (°C)</label>
+                <div class="control">
+                  <input id="depOat" class="input" type="number" inputmode="numeric" value="15" />
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="field mt-3">
-            <label class="label">État de la piste</label>
-            <div class="tog-group-wrap"><div class="buttons has-addons tog-group">
-              <button id="arrGrassDry"      class="button is-small tog-on">Sèche</button>
-              <button id="arrGrassWet"      class="button is-small">Mouillée</button>
-              <button id="arrGrassWetShort" class="button is-small" style="display:none">Herbe courte mouillée</button>
-            </div></div>
+
+          <!-- Affichage composantes vent -->
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="depHwFace">—</span> kt</div>
+            </div>
+            <div id="depXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="depXw">—</div>
+            </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="depTw">—</span> kt</div>
+            </div>
           </div>
+
+          <!-- Assumption vent arrière 5kt — départ -->
+          <div id="depTwAssumeWrap" class="tw-assume-wrap">
+            <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            </button>
+          </div>
+
+          <!-- Toggles carénages + surface -->
+          <div class="columns is-mobile mt-3">
+            <div class="column has-text-centered">
+              <p class="label is-small mb-1">Carénages de roues</p>
+              <div class="buttons has-addons is-centered">
+                <button id="spatsWith" class="button is-primary is-selected">Avec</button>
+                <button id="spatsWithout" class="button">Sans (+3%)</button>
+              </div>
+            </div>
+            <div class="column has-text-centered">
+              <p class="label is-small mb-1">Surface piste</p>
+              <div class="buttons has-addons is-centered">
+                <button id="depSurfHard" class="button is-primary is-selected">Dur</button>
+                <button id="depSurfGrass" class="button">Herbe</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Masse + facteur suppl -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Masse au décollage (kg)</label>
+                <div class="control">
+                  <input id="depTow" class="input" type="number" inputmode="numeric" value="900" min="1" />
+                </div>
+                <p id="depTowWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg) — valeurs limites utilisées</p>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Facteur suppl. décollage</label>
+                <div class="control">
+                  <input id="depExtraTO" class="input" type="number" inputmode="numeric" step="0.01" value="1.00" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message de validation -->
+          <div id="depValidMsg" class="notification is-danger is-light valid-msg is-hidden py-2 px-3"></div>
+
+          <button id="btnCalcDep" class="button is-primary is-fullwidth mt-3" style="font-weight:700;font-size:1rem">
+            Calculer les performances décollage
+          </button>
         </div>
       </div>
 
-      <!-- KPI ARR -->
-      <div id="ldgKpi" class="kpi-box">
-        <div>
-          <div class="kpi-lbl">Requis — marge incluse</div>
-          <div class="kpi-val" id="ldgKpiVal">— m</div>
-          <div class="kpi-avail">LDA disponible : <span id="ldaMini">—</span></div>
+      <!-- Résultats décollage -->
+      <div class="card card-dep" id="cardDepPerf" style="display:none">
+        <div class="card-content">
+          <div class="result-header">
+            <span class="rh-title">Décollage — Résultats</span>
+            <span id="toChip" class="tag is-medium is-neutral-chip">—</span>
+          </div>
+
+          <div id="toKpi" class="kpi-box">
+            <div class="kpi-icon">🛫</div>
+            <div>
+              <div class="kpi-label">Requis (marge incluse)</div>
+              <div class="kpi-value" id="toKpiVal">— m</div>
+              <div class="kpi-sub">TODA dispo : <span id="todaMini">—</span></div>
+            </div>
+          </div>
+
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="toBaseRoll" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="toBasePass" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="toWindF" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Carénages</div>
+              <div id="toSpat" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="toExtra" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="toRes" class="pf-value">—</div>
+            </div>
+          </div>
+          <p id="toExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
+        </div>
+      </div>
+    </div><!-- fin colonne gauche -->
+
+    <!-- ══════════════════════════ ARRIVÉE ══════════════════════════ -->
+    <div class="column tab-col hidden-mobile" id="colArr">
+
+      <!-- Terrain arrivée -->
+      <div class="card mb-3 card-arr" id="cardArr">
+        <div class="card-content">
+          <p class="card-title"><span class="ct-badge arr">🛬 Arrivée</span></p>
+
+          <!-- ICAO + Élévation + METAR -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">ICAO arrivée</label>
+                <div class="control">
+                  <input id="arrIcao" class="input" inputmode="latin" maxlength="4" placeholder="LFxx" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Élévation (ft)</label>
+                <div class="control">
+                  <input id="arrAlt" class="input" type="number" inputmode="numeric" min="0" step="10" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column is-narrow is-flex is-align-items-flex-end" style="gap:.4rem">
+              <button id="btnArrMetar" class="button is-link is-outlined is-small" style="white-space:nowrap;font-weight:700">Charger METAR</button>
+              <button id="btnArrTaf"   class="button is-success is-outlined is-small" style="white-space:nowrap;font-weight:700">TAF</button>
+            </div>
+          </div>
+          <p id="arrMetarMsg" class="help has-text-grey mb-1" style="font-size:.72rem"></p>
+          <div id="arrRunwayPicker" class="runway-picker" style="display:none"></div>
+          <!-- TAF arrivée -->
+          <div id="arrTafWrap" class="taf-wrap">
+            <div class="taf-header">
+              <span class="taf-header-label">📋 TAF — choisir une période</span>
+              <div class="taf-eta-wrap">
+                <span class="taf-eta-label">ETA (UTC) :</span>
+                <input id="arrEta" type="time" class="input taf-eta-input" placeholder="--:--" />
+              </div>
+            </div>
+            <div id="arrTafRaw" class="taf-raw" style="display:none"></div>
+            <div id="arrTafPeriods" class="taf-periods"></div>
+          </div>
+
+          <!-- QFU + LDA -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">QFU arrivée (°)</label>
+                <div class="control">
+                  <input id="arrQfu" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">LDA (m)</label>
+                <div class="control">
+                  <input id="arrLda" class="input" type="text" inputmode="numeric" pattern="[0-9]*" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vent -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Direction</label>
+                <div class="control">
+                  <input id="arrWindDir" class="input" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Vitesse (kt)</label>
+                <div class="control">
+                  <input id="arrWindKt" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Rafales (kt)</label>
+                <div class="control">
+                  <input id="arrWindGust" class="input" type="number" inputmode="numeric" min="0" value="0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Secteur VRB + OAT -->
+          <div class="columns is-mobile is-variable is-2">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Secteur VRB (optionnel)</label>
+                <div class="vrb-wrap">
+                  <input id="arrVrbFrom" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM" />
+                  <span class="vrb-sep">V</span>
+                  <input id="arrVrbTo" class="input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO" />
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">OAT (°C)</label>
+                <div class="control">
+                  <input id="arrOat" class="input" type="number" inputmode="numeric" value="15" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Affichage composantes vent -->
+          <div class="wind-row mt-2">
+            <div class="wind-cell">
+              <div class="wc-label">Vent de face</div>
+              <div class="wc-value"><span id="arrHwFace">—</span> kt</div>
+            </div>
+            <div id="arrXwCard" class="wind-cell">
+              <div class="wc-label">Vent de travers</div>
+              <div class="wc-value" id="arrXw">—</div>
+            </div>
+            <div class="wind-cell">
+              <div class="wc-label">Vent arrière</div>
+              <div class="wc-value"><span id="arrTw">—</span> kt</div>
+            </div>
+          </div>
+
+          <!-- Assumption vent arrière 5kt — arrivée -->
+          <div id="arrTwAssumeWrap" class="tw-assume-wrap">
+            <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
+              <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            </button>
+          </div>
+
+          <!-- Toggle freinage -->
+          <div class="has-text-centered mt-3">
+            <p class="label is-small mb-1">Type de freinage</p>
+            <div class="buttons has-addons is-centered">
+              <button id="arrModerate" class="button is-primary is-selected">Freinage modéré (dur/herbe)</button>
+              <button id="arrNoBrake" class="button">Sans frein sur herbe</button>
+            </div>
+          </div>
+
+          <!-- Masse + facteur suppl -->
+          <div class="columns is-mobile is-variable is-2 mt-3">
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Masse à l'atterrissage (kg)</label>
+                <div class="control">
+                  <input id="arrLdw" class="input" type="number" inputmode="numeric" value="900" min="1" />
+                </div>
+                <p id="arrLdwWarn" class="mass-warn">⚠ Hors plage manuelle (700–900 kg) — valeurs limites utilisées</p>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-small">Facteur suppl. atterrissage</label>
+                <div class="control">
+                  <input id="arrExtraLDG" class="input" type="number" inputmode="numeric" step="0.01" value="1.00" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message de validation -->
+          <div id="arrValidMsg" class="notification is-danger is-light valid-msg is-hidden py-2 px-3"></div>
+
+          <button id="btnCalcArr" class="button is-primary is-fullwidth mt-3" style="font-weight:700;font-size:1rem">
+            Calculer les performances atterrissage
+          </button>
         </div>
       </div>
 
-      <!-- Détail calcul ARR -->
-      <div class="sec-card" id="arrPerfDetail" style="display:none">
-        <div class="sec-head"><span>📊</span><span class="sec-head-title">Détail du calcul</span></div>
-        <div class="sec-body pf-rows">
-          <div class="pf-row"><span class="pf-lbl">Roulement sans marge</span><span class="pf-val" id="ldgBaseRoll">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Passage 15 m sans marge</span><span class="pf-val" id="ldgBasePass">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Facteur vent</span><span class="pf-val" id="ldgWindF">—</span></div>
-          <div class="pf-row"><span class="pf-lbl">Facteur supplémentaire</span><span class="pf-val" id="ldgExtra">—</span></div>
-          <div class="pf-row"><span class="pf-lbl" style="font-weight:600;color:#374151">Résultat sans marge</span><span class="pf-val" id="ldgRes">—</span></div>
-          <div id="ldgExplain" class="explain-text"></div>
+      <!-- Résultats atterrissage -->
+      <div class="card card-arr" id="cardArrPerf" style="display:none">
+        <div class="card-content">
+          <div class="result-header">
+            <span class="rh-title">Atterrissage — Résultats</span>
+            <span id="ldgChip" class="tag is-medium is-neutral-chip">—</span>
+          </div>
+
+          <div id="ldgKpi" class="kpi-box">
+            <div class="kpi-icon">🛬</div>
+            <div>
+              <div class="kpi-label">Requis (marge incluse)</div>
+              <div class="kpi-value" id="ldgKpiVal">— m</div>
+              <div class="kpi-sub">LDA dispo : <span id="ldaMini">—</span></div>
+            </div>
+          </div>
+
+          <div class="perf-grid">
+            <div class="perf-field">
+              <div class="pf-label">Roulement (sans marge)</div>
+              <div id="ldgBaseRoll" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Passage 15m (sans marge)</div>
+              <div id="ldgBasePass" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur vent</div>
+              <div id="ldgWindF" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Facteur supplémentaire</div>
+              <div id="ldgExtra" class="pf-value">—</div>
+            </div>
+            <div class="perf-field">
+              <div class="pf-label">Résultat sans marge</div>
+              <div id="ldgRes" class="pf-value">—</div>
+            </div>
+          </div>
+          <p id="ldgExplain" class="help has-text-grey mt-2" style="font-size:.7rem"></p>
         </div>
       </div>
+    </div><!-- fin colonne droite -->
 
-      <p id="arrValidMsg" class="is-hidden valid-msg mb-2"></p>
-      <button id="btnCalcArr" class="button is-success is-fullwidth calc-btn">Calculer les performances à l'atterrissage</button>
+  </div><!-- fin columns -->
 
-    </div><!-- /colArr -->
-  </div><!-- /perf-grid -->
-</div>
 
-<!-- README -->
-<div class="readme-wrap">
-  <div class="readme-toggle" onclick="toggleReadme()">
-    <span class="readme-toggle-lbl">📖 Documentation — Comment ça marche ?</span>
-    <span id="readmeArrow">▼</span>
+
+  <!-- README accordéon -->
+  <div class="readme-wrap mt-4 mb-5">
+    <button class="readme-toggle" onclick="toggleReadme()" id="readmeBtn">
+      <span id="readmeArrow">▸</span> Documentation — comment fonctionnent les calculs ?
+    </button>
+    <div id="readmeBody" class="readme-body" style="display:none">
+
+      <div class="readme-section">
+        <h3>Vue d'ensemble</h3>
+        <p>Ce calculateur détermine les distances de décollage et d'atterrissage à partir des tables de performances issues des manuels de vol officiels (DR400 et DR300). Les données du manuel sont fixes et ne sont jamais modifiées — seule l'interpolation entre les points du tableau varie selon les paramètres saisis.</p>
+        <p style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:.65rem .9rem;color:#7f1d1d;font-weight:600">
+          ⚠ Cet outil est une aide à la préparation du vol. La <strong>source officielle reste le manuel de vol de l'avion</strong> — en cas de doute ou de divergence, le manuel de vol fait foi.<br><br>
+          Le <strong>commandant de bord est le seul responsable</strong> du vol qu'il entreprend et de la préparation de ce vol.
+        </p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Profils avion</h3>
+        <p><strong>DR400</strong> (F-GCAL, F-BXEK, F-BTBS, F-BTBJ) — tables à 3 altitudes-densité (0, 4 000, 8 000 ft) et 3 températures par altitude. Deux masses de référence : 700 kg et 900 kg. Décollage disponible en dur ou en herbe.</p>
+        <p><strong>DR300</strong> (F-BTKG, F-BTXS) — tables à 4 altitudes et 4 températures. La masse est prise en compte via un facteur d'échelle linéaire (massScale = masse / 1 000, plafonné à 1).</p>
+        <p>L'hélice associée à chaque avion (Sensenich ou Mac Cauley) est renseignée automatiquement à titre informatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Interpolation des performances</h3>
+        <p>Les performances sont calculées par <strong>interpolation linéaire triple</strong> : altitude-densité × température × masse.</p>
+        <ol>
+          <li><strong>Température</strong> : interpolation entre les 3 colonnes du manuel (ISA−20, ISA, ISA+20) selon l'OAT saisie.</li>
+          <li><strong>Altitude</strong> : interpolation entre les deux altitudes encadrantes (ex. 2 000 ft → interpolation entre 0 et 4 000 ft).</li>
+          <li><strong>Masse</strong> : interpolation linéaire entre 700 kg et 900 kg. Si la masse est hors de cette plage, les valeurs limites du manuel sont utilisées (comportement conservateur). Un avertissement s'affiche dans ce cas.</li>
+        </ol>
+        <p>La distance de référence utilisée pour le calcul est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), pas le simple roulement. Le roulement est affiché à titre indicatif.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Composantes vent</h3>
+        <p>Pour un QFU donné et une direction de vent, les composantes sont calculées trigonométriquement :</p>
+        <ul>
+          <li><strong>Vent de face</strong> = V × cos(angle) — positif si face, négatif si arrière</li>
+          <li><strong>Vent de travers</strong> = |V × sin(angle)|</li>
+          <li><strong>Vent arrière</strong> = max(0, −vent de face)</li>
+        </ul>
+        <p>où <em>angle</em> est la différence entre la direction du vent et le cap de la piste (QFU), ramenée à [0°, 180°].</p>
+        <p>Une alerte <span style="color:#b45309;font-weight:700">orange</span> s'affiche si le vent de travers atteint 18 kt, et <span style="color:#dc2626;font-weight:700">rouge</span> à partir de 22 kt.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Vent variable (secteur VRB)</h3>
+        <p>Lorsqu'un secteur variable est renseigné (ex. 340V040), le calculateur <strong>balaie toutes les directions degré par degré</strong> dans l'arc court entre les deux bornes. Pour chaque direction, il calcule les composantes avec la vitesse moyenne ET avec les rafales, et retient la composante la plus défavorable.</p>
+        <p>La direction la plus contraignante retenue est celle qui maximise le vent arrière (priorité) ou le vent de travers (si pas de vent arrière).</p>
+        <p>L'affichage dans la cellule "Vent de travers" indique le travers moyen et, si un secteur est actif, le travers maximal sur l'ensemble du secteur avec la direction qui le produit.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>METAR et pistes automatiques</h3>
+        <p>Le bouton <strong>"Charger METAR"</strong> interroge l'API AVWX avec le code ICAO saisi et applique automatiquement : direction et vitesse du vent, rafales, secteur variable, température OAT et élévation de la station.</p>
+        <p>Si la station n'a pas de METAR disponible, le calculateur tente de récupérer le METAR de la station la plus proche par coordonnées géographiques.</p>
+        <p><strong>TEMPO</strong> : si le METAR contient un groupe TEMPO avec un vent plus défavorable (plus de vent arrière ou de travers), le TEMPO remplace automatiquement le vent principal.</p>
+        <p>Simultanément, les <strong>pistes disponibles</strong> sont chargées via la base OpenAIP. Un clic sur une piste remplit automatiquement le QFU et la TODA (départ) ou LDA (arrivée) déclarée. Le QFU est calculé à partir du cap vrai OpenAIP corrigé de la déclinaison magnétique locale.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>TAF arrivée</h3>
+        <p>Le bouton <strong>"TAF"</strong> (côté arrivée) charge le TAF de la station via AVWX. Chaque période du TAF (FM, TEMPO, BECMG…) s'affiche avec son vent synthétique. En saisissant une <strong>heure ETA en UTC (Zulu)</strong>, la période correspondant à l'heure d'arrivée estimée est automatiquement surlignée. Un clic sur une période applique son vent aux champs arrivée pour le calcul de performances.</p>
+        <p>Les pistes et l'élévation sont également chargées automatiquement au clic TAF.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur vent</h3>
+        <p>Le vent de face réduit la distance requise ; le vent arrière l'augmente. Le facteur est calculé à partir d'une table issue du manuel :</p>
+        <ul>
+          <li><strong>Vent de face</strong> : interpolation linéaire entre les points (0 kt → ×1,00 ; 10 kt → ×0,78 ; 20 kt → ×0,63 ; 30 kt → ×0,52)</li>
+          <li><strong>Vent arrière</strong> : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
+        </ul>
+        <p>Le facteur vent est appliqué à la distance de passage des 15 m avant l'application de la marge de sécurité.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Hypothèse 5 kt arrière</h3>
+        <p>Cette option s'affiche lorsque le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Elle permet de calculer avec une hypothèse conservatrice fréquemment utilisée en opérations. Si le vent réel est déjà ≥ 5 kt arrière, l'option disparaît car le vrai vent est déjà plus contraignant.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Carénages de roues</h3>
+        <p>Sans carénages, un coefficient de <strong>+3 %</strong> est appliqué à la distance de décollage (passage des 15 m). Ce facteur n'est appliqué qu'au décollage, pas à l'atterrissage.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Surface de piste</h3>
+        <p>Le calculateur distingue <strong>piste dure</strong> (asphalte, béton) et <strong>herbe</strong>. Les tables du manuel fournissent des valeurs distinctes pour chaque type de surface, généralement 20 à 40 % plus élevées sur herbe. Pour l'atterrissage, la distinction est entre freinage modéré (applicable sur les deux types) et sans frein sur herbe.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Marge de sécurité</h3>
+        <p>La marge (30 % par défaut) est appliquée en <strong>multiplicateur final</strong> sur la distance calculée :</p>
+        <p style="text-align:center;font-family:monospace;background:#f1f5f9;padding:.5rem;border-radius:8px">Distance requise = Distance calculée × (1 + marge / 100)</p>
+        <p>La distance affichée dans le KPI principal ("Requis, marge incluse") est la <strong>distance de passage des 15 m</strong> avec l'ensemble des facteurs et la marge appliqués — c'est cette valeur qui est à comparer avec la TODA ou LDA disponible.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Facteur supplémentaire</h3>
+        <p>Ce multiplicateur (1,00 par défaut) est appliqué avant la marge de sécurité. Il permet d'intégrer tout coefficient non couvert par les autres paramètres : piste contaminée, pilote en formation, procédure d'exploitation particulière, etc.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Export PDF</h3>
+        <p>Le bouton <strong>"Exporter PDF"</strong> génère une fiche A4 en 2 pages (départ + arrivée) avec l'ensemble des paramètres, le METAR brut et les résultats. La ligne "Requis, marge incluse" apparaît sur fond <span style="background:#dcfce7;padding:1px 6px;border-radius:4px;color:#166534;font-weight:700">vert</span> si la distance est compatible avec la piste, et <span style="background:#fee2e2;padding:1px 6px;border-radius:4px;color:#991b1b;font-weight:700">rouge</span> sinon. Conçu pour être utilisé directement depuis mobile.</p>
+      </div>
+
+    </div><!-- /readme-body -->
+  </div><!-- /readme-wrap -->
+
+  <!-- Footer -->
+  <footer class="has-text-centered pb-5 pt-2" style="font-size:.72rem;color:#94a3b8;line-height:1.8">
+    <div>Source : Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé</div>
+    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+  </footer>
+
+  <!-- Modal disclaimer (affiché au chargement) -->
+<!-- ══════════ RESULTS MODAL ══════════ -->
+<div id="resultsModal" class="results-modal" style="display:none">
+
+  <!-- Loading -->
+  <div id="rmLoading" class="rm-loading">
+    <div class="rm-plane">✈</div>
+    <div class="rm-loading-title">Calculs en cours…</div>
+    <div class="rm-loading-sub" id="rmSub">Initialisation</div>
+    <div class="rm-progress-track">
+      <div class="rm-progress-fill" id="rmFill"></div>
+    </div>
+    <div class="rm-pct" id="rmPct">0 %</div>
   </div>
-  <div id="readmeBody" class="readme-body">
 
-    <div class="rm-alert">
-      ⚠️ <strong>Avertissement</strong> — Cet outil est une aide à la préparation, pas un substitut au manuel de vol. Le pilote commandant de bord est seul responsable de ses décisions opérationnelles.
+  <!-- Results -->
+  <div id="rmContent" class="rm-content" style="display:none">
+    <div class="rm-header is-neutral" id="rmHeader">
+      <button class="rm-close-btn" onclick="closeResultsModal()">✕</button>
+      <div class="rm-header-info">
+        <div class="rm-header-type" id="rmType"></div>
+        <div class="rm-header-verdict" id="rmVerdict"></div>
+      </div>
+      <div class="rm-verdict-badge" id="rmBadge">—</div>
     </div>
-
-    <div class="rm-sec">
-      <h3>1. Comment fonctionne le calcul ?</h3>
-      <p>Le calculateur lit les tables de performance du manuel de vol de chaque avion (AFM) et <strong>interpole</strong> entre les valeurs pour les conditions exactes du vol.</p>
-      <p>Trois paramètres sont interpolés simultanément :</p>
-      <ul>
-        <li><strong>Altitude-densité</strong> (élévation terrain en ft)</li>
-        <li><strong>Température OAT</strong> (°C)</li>
-        <li><strong>Masse</strong> (kg) — pour les DR400 uniquement</li>
-      </ul>
-      <p>La distance calculée est toujours la <strong>distance de passage des 15 m</strong> (obstacle clearance), conformément à l'AFM. Le roulement est affiché à titre informatif.</p>
+    <div class="rm-body">
+      <div class="rm-kpi-card" id="rmKpiCard">
+        <div class="rm-kpi-label">Requis (marge incluse)</div>
+        <div class="rm-kpi-value" id="rmKpiVal">—</div>
+        <div class="rm-kpi-avail" id="rmKpiAvail"></div>
+      </div>
+      <div class="rm-rows" id="rmRows"></div>
     </div>
-
-    <div class="rm-sec">
-      <h3>2. Profils avion disponibles</h3>
-      <ul>
-        <li><strong>DR400 — F-GCAL, F-BXEK</strong> (120 cv, hélice Sensenich) : tables 3 altitudes × 3 températures × 2 masses (700 / 900 kg). Tables séparées piste dure et herbe.</li>
-        <li><strong>DR300 — F-BTBS, F-BTXS, F-BTKG</strong> (120 cv, hélice Sensenich) : tables 4 altitudes × 4 températures. La masse est intégrée via un facteur d'échelle linéaire.</li>
-      </ul>
-      <p>Pour ajouter un avion, il suffit d'ajouter son fichier JSON dans <code>/aircraft/</code> dans le dépôt GitHub — aucune modification du code nécessaire.</p>
+    <div class="rm-footer">
+      <button class="rm-back-btn" onclick="closeResultsModal()">← Modifier les paramètres</button>
     </div>
-
-    <div class="rm-sec">
-      <h3>3. Marge de sécurité</h3>
-      <p>Une marge multiplicative est appliquée sur la distance calculée (30 % par défaut, réglable dans la barre en haut) :</p>
-      <p style="font-family:'IBM Plex Mono',monospace;background:#F1F5F9;padding:.5rem .8rem;border-radius:8px;font-size:.8rem">
-        Requis = Distance calculée × (1 + marge / 100)
-      </p>
-      <p>C'est cette valeur «Requis, marge incluse» qu'il faut comparer à la TODA ou LDA disponible. Si <strong>Requis ≤ TODA/LDA</strong> → <span class="tag-ok">OK</span>. Sinon → refus.</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>4. Vent — composantes et facteurs</h3>
-      <p>Les composantes sont calculées trigonométriquement à partir du QFU et de la direction/vitesse vent :</p>
-      <ul>
-        <li><strong>Face</strong> = V × cos(angle QFU−vent)</li>
-        <li><strong>Arrière</strong> = max(0, −face)</li>
-        <li><strong>Travers</strong> = |V × sin(angle)|</li>
-      </ul>
-      <p>Le <strong>facteur vent</strong> est ensuite appliqué à la distance de base :</p>
-      <ul>
-        <li>Vent de face : interpolation linéaire entre 0 kt (×1,00), 10 kt (×0,78), 20 kt (×0,63), 30 kt (×0,52)</li>
-        <li>Vent arrière : +10 % par tranche de 2 kt (ex. 4 kt arrière → ×1,20)</li>
-      </ul>
-      <p>Limite travers : <span class="tag-warn">Alerte à 18 kt</span>. Calcul bloqué à 22 kt (limite avion).</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>5. Vent variable (VRB)</h3>
-      <p><strong>Avec secteur</strong> (ex. 340V040 dans le METAR) : balayage degré par degré dans l'arc, vitesse moy. ET rafales — la composante la plus défavorable est retenue.</p>
-      <p><strong>VRB sans secteur</strong> (ex. VRB03KT) : direction inconnue → vent arrière pur appliqué. C'est l'hypothèse la plus conservative. Signalé dans les résultats.</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>6. Vent réglementaire EASA (50 % / 150 %)</h3>
-      <p>Option activable dans la barre de paramètres. Conforme <strong>CAT.POL.A.305 / CAT.POL.A.205</strong> :</p>
-      <ul>
-        <li>Vent de face : seuls <strong>50 %</strong> de la composante sont créditée (conservateur)</li>
-        <li>Vent arrière : <strong>150 %</strong> sont appliqués (conservateur)</li>
-      </ul>
-    </div>
-
-    <div class="rm-sec">
-      <h3>7. Option «5 kt arrière»</h3>
-      <p>S'affiche quand le vent calculé est moins défavorable qu'un vent arrière de 5 kt. Permet d'appliquer cette hypothèse conservatrice utilisée en opérations pour couvrir les erreurs de virement de bord ou les calmes trompeurs.</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>8. METAR et pistes automatiques</h3>
-      <p>Le bouton <strong>METAR</strong> charge automatiquement : vent (direction, vitesse, rafales, VRB), OAT et élévation. Si la station exacte est indisponible, la plus proche est utilisée. Un groupe TEMPO avec vent plus défavorable remplace le vent principal.</p>
-      <p>Les <strong>pistes disponibles</strong> sont chargées via OpenAIP (QFU magnétique exact + TODA/LDA déclarées). Un clic sur une piste remplit les champs correspondants et remet les calculs à zéro.</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>9. TAF arrivée — Sélection de période</h3>
-      <p>Le bouton <strong>TAF</strong> charge le TAF, les pistes et l'élévation en parallèle. Sélectionnez votre <strong>ETA en UTC</strong> pour voir quelles périodes TAF sont actives à votre heure d'arrivée.</p>
-      <p><strong>Code couleur des périodes :</strong></p>
-      <ul>
-        <li><span class="tag-ok">⚠ Retenir</span> — Période active à l'ETA avec la distance LDG la plus restrictive. C'est celle-ci à utiliser.</li>
-        <li><span style="background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;font:700 10px 'IBM Plex Mono';padding:2px 8px;border-radius:12px">✓ ETA</span> — Période également active mais moins restrictive.</li>
-        <li><span class="tag-warn">TEMPO</span> — Période temporaire active. Incluse dans la comparaison.</li>
-        <li><span class="tag-muted">Grisé</span> — Période non active à l'ETA sélectionné.</li>
-      </ul>
-      <p><strong>Règles OMA (AMC1 CAT.POL.A.335 / tableau 4.13.1) :</strong></p>
-      <ul>
-        <li><strong>PROB40 seul</strong> → inclus dans la comparaison (probabilité suffisante)</li>
-        <li><strong>PROB30 seul</strong> → <em>ignoré</em>, affiché en pointillé gris (probabilité trop faible)</li>
-        <li><strong>PROB30 TEMPO et PROB40 TEMPO</strong> → <em>ignorés</em> pour les performances (phénomène passager, non fiable)</li>
-      </ul>
-    </div>
-
-    <div class="rm-sec">
-      <h3>10. Comparaison METAR / TAF</h3>
-      <p>Si l'ETA tombe dans les <strong>2 heures suivant l'émission du METAR</strong>, les deux sources sont comparées. La comparaison porte sur la <strong>vraie distance LDG calculée</strong> avec chaque source :</p>
-      <ul>
-        <li>Si le METAR donne une distance plus longue → <strong>vent METAR appliqué automatiquement</strong> aux champs arrivée.</li>
-        <li>Si le TAF est plus restrictif → les champs restent sur le TAF, un message l'indique.</li>
-      </ul>
-      <p>Cliquer sur une période TAF réapplique le vent TAF (override manuel).</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>11. Surface piste et état mouillé</h3>
-      <p>Les facteurs de dégradation pour piste en herbe sont issus du <strong>tableau 1.18 (décollage) et 1.25.1 (atterrissage) de l'OMA Part C</strong> :</p>
-      <table style="width:100%;font-size:.78rem;border-collapse:collapse;margin-top:8px">
-        <thead><tr style="background:#F3F4F6">
-          <th style="padding:6px 10px;text-align:left;border:1px solid #E5E7EB;font-weight:700;color:#374151">Condition</th>
-          <th style="padding:6px 10px;text-align:center;border:1px solid #E5E7EB;font-weight:700;color:#374151">Facteur</th>
-          <th style="padding:6px 10px;text-align:left;border:1px solid #E5E7EB;font-weight:700;color:#374151">Application</th>
-        </tr></thead>
-        <tbody>
-          <tr><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe sèche</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center">×1,00</td><td style="padding:6px 10px;border:1px solid #E5E7EB">Déco + Att.</td></tr>
-          <tr style="background:#FAFAFA"><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe mouillée</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center"><strong>×1,15</strong></td><td style="padding:6px 10px;border:1px solid #E5E7EB">Déco + Att.</td></tr>
-          <tr><td style="padding:6px 10px;border:1px solid #E5E7EB">Herbe courte mouillée</td><td style="padding:6px 10px;border:1px solid #E5E7EB;text-align:center"><strong>×1,60</strong></td><td style="padding:6px 10px;border:1px solid #E5E7EB">Att. sans freins uniquement</td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top:8px">Aucun facteur spécifique n'est prévu par l'AFM pour une piste dure mouillée au décollage — la marge de 30 % couvre cette variabilité.</p>
-    </div>
-
-    <div class="rm-sec">
-      <h3>12. Export PDF</h3>
-      <p>Le bouton <strong>📄 PDF</strong> génère une fiche vectorielle incluant : paramètres, résultats, détail des facteurs, METAR brut, TAF brut (période retenue surlignée en bleu), source météo retenue, heure du coucher du soleil et de la nuit aéronautique (coucher + 30 min) calculées depuis les coordonnées de la station.</p>
-    </div>
-
   </div>
+
 </div>
+<section id="printRaw"><div id="rawPre" class="printWrap"></div></section>
 
-<footer class="app-foot">Manuels de vol DR400 et DR300 — Aéroclub de Beauvais-Tillé · LFOB</footer>
 
-<script>
-/* Disclaimer */
-document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('modalDisclaimer');
-  document.getElementById('btnCloseDisclaimer').addEventListener('click', () => {
-    modal.classList.remove('is-active');
-    modal.style.display = 'none';
-  });
-
-  /* ICAO display */
-  ['dep','arr'].forEach(side => {
-    const inp  = document.getElementById(side + 'Icao');
-    const disp = document.getElementById(side + 'Icao_display');
-    if (inp && disp) inp.addEventListener('input', () => {
-      disp.textContent = inp.value.toUpperCase() || '—';
-    });
-  });
-
-  /* KPI box ok/bad sync */
-  ['toChip','ldgChip'].forEach(id => {
-    const chip = document.getElementById(id);
-    const bar  = document.getElementById(id === 'toChip' ? 'toKpi' : 'ldgKpi');
-    const val  = document.getElementById(id === 'toChip' ? 'toKpiVal' : 'ldgKpiVal');
-    if (!chip || !bar) return;
-    new MutationObserver(() => {
-      bar.classList.toggle('is-ok',  chip.classList.contains('is-ok-chip'));
-      bar.classList.toggle('is-bad', chip.classList.contains('is-bad-chip'));
-      val.style.color = chip.classList.contains('is-ok-chip') ? '#059669'
-                      : chip.classList.contains('is-bad-chip') ? '#DC2626' : '';
-    }).observe(chip, { attributes: true });
-  });
-
-  /* Perf detail visibility */
-  new MutationObserver(() => {
-    ['dep','arr'].forEach(side => {
-      const v = document.getElementById(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal')?.textContent;
-      const d = document.getElementById(side === 'dep' ? 'depPerfDetail' : 'arrPerfDetail');
-      if (d) d.style.display = (v && v !== '— m') ? 'block' : 'none';
-    });
-  }).observe(document.body, { childList:true, subtree:true, characterData:true });
-
-  /* rmHeader ok/bad */
-  const rmH = document.getElementById('rmHeader');
-  if (rmH) new MutationObserver(() => {
-    const ok  = rmH.classList.contains('is-ok');
-    const bad = rmH.classList.contains('is-bad');
-    const kpi = document.getElementById('rmKpiCard');
-    const bdg = document.getElementById('rmBadge');
-    const val = document.getElementById('rmKpiVal');
-    kpi.className = 'rm-kpi-card' + (ok ? ' is-ok' : bad ? ' is-bad' : '');
-    const base = 'font:700 16px \'IBM Plex Mono\';width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center';
-    bdg.style.cssText = ok  ? base + ';background:#ECFDF5;color:#059669'
-                      : bad ? base + ';background:#FEF2F2;color:#DC2626'
-                             : base + ';background:#F1F5F9;color:#9CA3AF';
-    val.style.color = ok ? '#059669' : bad ? '#DC2626' : '';
-  }).observe(rmH, { attributes: true, attributeFilter: ['class'] });
-
-  /* propeller span patch */
-  const p = document.getElementById('propeller');
-  if (p && p.tagName !== 'INPUT') {
-    Object.defineProperty(p, 'value', {
-      get() { return this.textContent; },
-      set(v) { this.textContent = v || ''; }
-    });
-  }
-});
-
-/* switchTab */
-function switchTab(tab) {
-  const colDep = document.getElementById('colDep');
-  const colArr = document.getElementById('colArr');
-  const btnDep = document.getElementById('tabDep');
-  const btnArr = document.getElementById('tabArr');
-  if (tab === 'dep') {
-    colDep.classList.remove('is-hidden-mobile');
-    colArr.classList.add('is-hidden-mobile');
-    btnDep.classList.add('is-active');
-    btnArr.classList.remove('is-active');
-  } else {
-    colArr.classList.remove('is-hidden-mobile');
-    colDep.classList.add('is-hidden-mobile');
-    btnArr.classList.add('is-active');
-    btnDep.classList.remove('is-active');
-  }
-}
-
-function toggleReadme() {
-  const b = document.getElementById('readmeBody');
-  const a = document.getElementById('readmeArrow');
-  const o = b.style.display !== 'block';
-  b.style.display = o ? 'block' : 'none';
-  a.textContent   = o ? '▲' : '▼';
-}
-
-if ('serviceWorker' in navigator)
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-</script>
-
+<div style="display:none">
+  <input id="depExtraTO" type="number" value="1.00"/>
+  <input id="arrExtraLDG" type="number" value="1.00"/>
+</div>
 <script>
 
 
@@ -3781,6 +5057,8 @@ if ('serviceWorker' in navigator) {
   };
 })();
 
+
+/* crosswindLimitColor patch */
 (function() {
   const orig = window.crosswindLimitColor;
   if (!orig) return;
