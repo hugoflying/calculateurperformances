@@ -2556,7 +2556,7 @@ function openResultsModal(side, computeFn) {
   loading.style.display = 'flex';
   loading.style.background = '';
   content.style.display = 'none';
-  fill.className   = 'rm-bar-fill ' + side;
+  fill.className   = 'rm-progress-fill rm-bar-fill ' + side;
   fill.style.width = '0%';
   pct.textContent  = '0 %';
   sub.textContent  = RM_STEPS[0];
