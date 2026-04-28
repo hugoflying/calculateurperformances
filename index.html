@@ -2761,6 +2761,23 @@ async function fetchRunways(icao) {
   }
   const airport = await r.json();
 
+  // ── DEBUG OPENAI P ─────────────────────────────────────────────────────
+  console.group('[OpenAIP] Réponse brute pour ' + icao);
+  console.log('Airport object:', airport);
+  console.log('Runways bruts:', airport.runways);
+  (airport.runways || []).forEach((rwy, i) => {
+    console.log(`  Piste[${i}]`, {
+      designator:  rwy.designator,
+      trueHeading: rwy.trueHeading,
+      mainSurface: rwy.mainSurface,
+      surface:     rwy.surface,
+      dimension:   rwy.dimension,
+      allKeys:     Object.keys(rwy),
+    });
+  });
+  console.groupEnd();
+  // ────────────────────────────────────────────────────────────────────────
+
   return (airport.runways || [])
     .filter(rwy => rwy.dimension?.length?.value > 0)
     .map(rwy => {
