@@ -306,14 +306,18 @@ input[type=number]{-moz-appearance:textfield}
 .tw-assume-wrap{display:none}
 .tw-assume-wrap.visible{display:block}
 .tw-assume-btn{
-  width:100%;text-align:left;padding:10px 14px;border-radius:var(--radius-sm);
-  font:600 12px 'Inter';color:var(--amber);
-  background:var(--amber-light);border:1.5px dashed rgba(217,119,6,.4);
-  transition:all .13s;
+  width:100%;text-align:left;padding:12px 14px;border-radius:var(--radius-sm);
+  font:600 12px 'Inter';color:#92400e;
+  background:#fef3c7;border:1.5px solid #fde68a;
+  transition:all .13s;display:flex;align-items:center;gap:10px;
 }
-.tw-assume-btn:hover{border-style:solid}
-.tw-assume-btn.active{border-style:solid;background:#fef3c7}
-.tw-check{margin-right:6px}
+.tw-assume-btn:hover{background:#fde68a;border-color:#f59e0b}
+.tw-assume-btn.active{background:#fde68a;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.tw-assume-btn .assume-icon{font-size:18px;flex-shrink:0}
+.tw-assume-btn .assume-text{display:flex;flex-direction:column;gap:1px}
+.tw-assume-btn .assume-title{font:700 12px 'Inter';color:#78350f}
+.tw-assume-btn .assume-sub{font:400 11px 'Inter';color:#92400e;opacity:.8}
+.tw-check{display:none}
 
 /* ═══════════════════════════════════
    TAF PICKER
@@ -680,7 +684,11 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div id="depTwAssumeWrap" class="tw-assume-wrap">
           <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
-            <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            <span class="assume-icon">⚠️</span>
+            <span class="assume-text">
+              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+              <span class="assume-sub">Plus restrictif que le vent calculé</span>
+            </span>
           </button>
         </div>
         <div id="depExplain" style="font:400 11px 'Inter';color:var(--text-3);line-height:1.5"></div>
@@ -823,7 +831,11 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
           <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
-            <span class="tw-check">☐</span>⚠ Appliquer 5 kt de vent arrière
+            <span class="assume-icon">⚠️</span>
+            <span class="assume-text">
+              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+              <span class="assume-sub">Plus restrictif que le vent calculé</span>
+            </span>
           </button>
         </div>
         <div id="arrExplain" style="font:400 11px 'Inter';color:var(--text-3);line-height:1.5"></div>
@@ -1081,6 +1093,9 @@ async function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
   sel.innerHTML = '<option value="" disabled selected>Chargement…</option>';
 
+  // Liste de fallback si /aircraft/index.json indisponible (ex: dev local)
+  const FALLBACK_LIST = ['F-GCAL','F-BXEK','F-BTBS','F-BTXS','F-GOVB'];
+
   // 1. Charger la liste des immatriculations depuis /aircraft/index.json
   let immatList = [];
   try {
@@ -1088,9 +1103,8 @@ async function loadAllAircraft() {
     if (!r.ok) throw new Error('index.json non disponible (' + r.status + ')');
     immatList = await r.json();
   } catch (err) {
-    sel.innerHTML = '<option value="" disabled selected>⚠ /aircraft/index.json introuvable</option>';
-    console.error('[Aircraft] Impossible de charger index.json :', err.message);
-    return;
+    console.warn('[Aircraft] index.json indisponible, utilisation liste fallback:', err.message);
+    immatList = FALLBACK_LIST;
   }
 
   // 2. Charger chaque fichier JSON individuellement
@@ -2361,13 +2375,13 @@ function renderRunwayPicker(side, runways) {
     <div class="rwy-list">
       ${runways.map((rwy, i) => {
         const isGrass   = rwy.surfaceType === 'grass';
-        const surfLabel = isGrass ? '🌿 Herbe' : '⬛ Revêtue';
+        const surfLabel = isGrass ? '<span style="display:inline-block;width:9px;height:9px;background:#16a34a;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Herbe' : '<span style="display:inline-block;width:9px;height:9px;background:#64748b;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Revêtue';
         const lenM      = side === 'dep' ? rwy.toraM : rwy.ldaM;
         return `<button class="rwy-btn${isGrass ? ' grass-surface' : ''}" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})">
           <span class="rwy-desig">${rwy.designator}</span>
           <span class="rwy-len">${lenM} m</span>
           <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
-          <span class="rwy-surf-badge">${surfLabel}</span>
+          <span class="rwy-surf-badge" style="display:flex;align-items:center;gap:2px">${surfLabel}</span>
         </button>`;
       }).join('')}
     </div>`;
