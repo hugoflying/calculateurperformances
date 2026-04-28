@@ -2361,7 +2361,15 @@ async function fetchRunways(icao) {
         surfaceRaw,
       };
     })
-    .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
+    .sort((a, b) => {
+      // Regrouper les pistes opposées : (04,22), (12,30), (09,27)...
+      // Principe : regrouper par paire (N, N+18), triées par le plus petit des deux
+      const n = d => parseInt(d) || 0;
+      const pairKey = d => { const q = n(d); return Math.min(q, q > 18 ? q - 18 : q + 18); };
+      const pa = pairKey(a.designator), pb = pairKey(b.designator);
+      if (pa !== pb) return pa - pb;          // trier les paires entre elles
+      return n(a.designator) - n(b.designator); // dans la paire : le plus petit d'abord
+    });
 }
 
 function renderRunwayPicker(side, runways) {
