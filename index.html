@@ -2828,15 +2828,23 @@ async function fetchRunways(icao) {
       const desigNum   = parseInt(designator, 10);
       // QFU = trueHeading exact d'OpenAIP (déjà en magnétique dans leur base)
       const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
-      // Surface OpenAIP - codes texte ET numériques (l'API renvoie parfois des entiers)
-      const surf = String(rwy.mainSurface || rwy.surface || '').toUpperCase().trim();
-      // Codes herbe / non revêtu
-      const GRASS_CODES = /^(GRS|GRASS|TURF|GRVL|GRAVEL|DIRT|SAND|SOD|WATER|SNOW|CLAY|LATERITE|CORAL|TREATED|NATURAL|LAWN)/;
-      // OpenAIP peut aussi retourner des codes numériques : 3=GRASS, 4=DIRT, 5=GRAVEL, 6=SAND
-      const GRASS_NUMS = /^(3|4|5|6|7|8|9)$/;
-      const surfaceType = (GRASS_CODES.test(surf) || GRASS_NUMS.test(surf)) ? 'grass' : 'hard';
-      // Debug: logger la surface pour diagnostic
-      console.log('[OpenAIP] Piste', designator, '– mainSurface:', rwy.mainSurface, '→', surfaceType);
+      // Surface OpenAIP — lire surface.composition[] (tableau d'enums)
+      // Ref: GET /airports API docs — champ composition
+      const COMPOSITION_MAP = {
+        0: 'ASPH', 1: 'CONC', 2: 'GRASS', 3: 'DIRT',
+        4: 'GRAVEL', 5: 'SAND', 6: 'WATER', 7: 'SNOW', 8: 'UNKNOWN',
+      };
+      const UNPAVED = new Set(['GRASS','DIRT','GRAVEL','SAND','WATER','SNOW']);
+      const compositions = Array.isArray(rwy.surface?.composition) ? rwy.surface.composition : [];
+      const surfaceCodes = compositions.map(v => COMPOSITION_MAP[v] ?? ('ENUM_'+v));
+      // Fallback : si composition vide, essayer mainSurface (champ legacy)
+      if (!surfaceCodes.length && rwy.mainSurface != null) {
+        const ms = String(rwy.mainSurface).toUpperCase();
+        surfaceCodes.push(COMPOSITION_MAP[parseInt(rwy.mainSurface)] || ms);
+      }
+      const surfaceType = surfaceCodes.some(c => UNPAVED.has(c)) ? 'grass' : 'hard';
+      const surfaceRaw  = surfaceCodes.join('/') || '?';
+      console.log('[OpenAIP] Piste', designator, '| composition:', compositions, '|', surfaceRaw, '->', surfaceType);
       return {
         designator,
         qfu,
