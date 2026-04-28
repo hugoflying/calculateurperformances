@@ -747,7 +747,6 @@ input[type=number]{-moz-appearance:textfield}
           <button id="btnArrTaf"   class="load-btn neutral">TAF</button>
         </div>
         <div id="arrMetarMsg" class="metar-box"></div>
-        <!-- TAF picker -->
         <div id="arrTafWrap" class="taf-wrap">
           <div class="taf-header">
             <span class="taf-header-label">Prévision TAF</span>
@@ -1778,12 +1777,11 @@ function validateBeforeCompute(side) {
     : parseInt(document.getElementById('arrLda').value||'0',10);
   if (!lenVal) errors.push(side === 'dep' ? 'TODA manquante.' : 'LDA manquante.');
 
+  // Vent : non bloquant si vide (on calcule avec vent nul = conservateur)
+  // Seulement valider le format VRB si une direction est saisie
   const dir = (document.getElementById(side+'WindDir').value||'').trim();
   const kt  = parseInt(document.getElementById(side+'WindKt').value||'0',10);
-  if (!dir) errors.push('Direction vent manquante.');
-  const fromEl = document.getElementById(side+'VrbFrom').value.trim();
-  const toEl   = document.getElementById(side+'VrbTo').value.trim();
-  if (!kt && !fromEl && !toEl) errors.push('Vitesse vent manquante (ou saisir un secteur VRB).');
+  // La direction est optionnelle (vent calme = 0/0KT accepté)
 
   const massId = side === 'dep' ? 'depTow' : 'arrLdw';
   const masse  = parseFloat(document.getElementById(massId).value||'0');
@@ -1806,7 +1804,7 @@ function validateBeforeCompute(side) {
 /* ===================== RÉSOLUTION DU VENT POUR CALCUL ===================== */
 // Retourne { w, taActive, note } avec le vent résolu et une note éventuelle
 function resolveWindForCalc(side, qfu, assumeTA) {
-  const meanDir = document.getElementById(side+'WindDir').value;
+  const meanDir = document.getElementById(side+'WindDir').value || '000';
   const kt      = +(document.getElementById(side+'WindKt').value  || 0);
   const gust    = +(document.getElementById(side+'WindGust').value|| 0);
   const sf      = parseInt(document.getElementById(side+'VrbFrom').value||'0',10);
