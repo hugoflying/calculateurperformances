@@ -3365,6 +3365,9 @@ function renderTafPicker(tafData) {
     // Calcule la vraie distance LDG (sans marge) pour le vent d'une période TAF
     // en utilisant les paramètres actuels du formulaire arrivée
     if (!period?.wind) return null;
+    // Vérifier que les tables avion sont chargées
+    if (profile === 'DR400' && !LDG_DR400) return null;
+    if (profile === 'DR300' && !LDG_DR300) return null;
     const qfu = normQFU(document.getElementById('arrQfu').value);
     if (!qfu) return null;
 
@@ -3697,10 +3700,18 @@ async function loadTafFor(side) {
 
     if (!taf || typeof taf !== 'object') throw new Error('Réponse TAF invalide');
     if (taf.error) throw new Error(taf.error);
+    if (!taf.raw && (!taf.forecast || !taf.forecast.length)) throw new Error('TAF vide ou sans prévisions');
     const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
     lastArrTafRaw = taf.raw || '—';
     setMetarMsg(msgEl, prefix + (taf.raw || '—'));
-    renderTafPicker(taf);
+    try { renderTafPicker(taf); } catch(renderErr) {
+      console.error('[TAF] Erreur rendu:', renderErr);
+      // Afficher quand même le TAF brut
+      const wrap = document.getElementById('arrTafWrap');
+      const rawEl = document.getElementById('arrTafRaw');
+      if (rawEl) { rawEl.textContent = taf.raw || '—'; rawEl.style.display = 'block'; }
+      if (wrap) wrap.classList.add('visible');
+    }
   } catch(e) {
     setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
   }
