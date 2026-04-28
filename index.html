@@ -3279,6 +3279,11 @@ function periodContainsEta(period, etaHour) {
 }
 
 function renderTafPicker(tafData) {
+  if (!tafData || typeof tafData !== 'object') {
+    const msgEl = document.getElementById('arrMetarMsg');
+    setMetarMsg(msgEl, 'TAF indisponible (réponse invalide)');
+    return;
+  }
   const wrap      = document.getElementById('arrTafWrap');
   const rawEl     = document.getElementById('arrTafRaw');
   const periodsEl = document.getElementById('arrTafPeriods');
@@ -3690,6 +3695,8 @@ async function loadTafFor(side) {
       if (typeof d === 'number' && u) distTxt = ' (~' + d + ' ' + u + ')';
     }
 
+    if (!taf || typeof taf !== 'object') throw new Error('Réponse TAF invalide');
+    if (taf.error) throw new Error(taf.error);
     const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
     lastArrTafRaw = taf.raw || '—';
     setMetarMsg(msgEl, prefix + (taf.raw || '—'));
@@ -4332,8 +4339,6 @@ if ('serviceWorker' in navigator) {
   };
 })();
 
-
-/* crosswindLimitColor patch */
 (function() {
   const orig = window.crosswindLimitColor;
   if (!orig) return;
