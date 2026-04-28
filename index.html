@@ -1824,9 +1824,23 @@ $('#safety').addEventListener('input', () => {
 /* ===================== ICAO sanitize ===================== */
 ['depIcao','arrIcao'].forEach(id => {
   const el = $('#'+id);
+  const side = id.startsWith('dep') ? 'dep' : 'arr';
   const sanitize = () => { el.value = (el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4); };
-  el.addEventListener('input', sanitize);
-  el.addEventListener('blur',  sanitize);
+  el.addEventListener('input', () => {
+    sanitize();
+    // Charger les pistes dès que 4 caractères sont saisis
+    const icao = el.value.trim();
+    if (icao.length === 4) {
+      fetchRunways(icao)
+        .then(rws => renderRunwayPicker(side, rws))
+        .catch(() => {});
+    } else {
+      // Masquer le picker si ICAO incomplet
+      const picker = document.getElementById(side + 'RunwayPicker');
+      if (picker) picker.style.display = 'none';
+    }
+  });
+  el.addEventListener('blur', sanitize);
 });
 
 /* ===================== QFU normalize ===================== */
@@ -2852,7 +2866,7 @@ async function fetchRunways(icao) {
         ldaM   : Math.round(rwy.declaredDistance?.lda?.value  || rwy.dimension.length.value),
         lengthM: Math.round(rwy.dimension.length.value),
         surfaceType,
-        surfaceRaw: surf || null,
+        surfaceRaw,
       };
     })
     .sort((a, b) => parseInt(a.designator) - parseInt(b.designator));
@@ -2860,22 +2874,19 @@ async function fetchRunways(icao) {
 
 function renderRunwayPicker(side, runways) {
   const wrap = document.getElementById(side + 'RunwayPicker');
-  if (!runways.length) { wrap.style.display = 'none'; return; }
+  if (!wrap) return;
+  if (!runways || !runways.length) { wrap.style.display = 'none'; return; }
 
   const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
   wrap.innerHTML = `
-    <p style="font:600 10px system-ui;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:8px">
-      🛣 Pistes — sélectionner pour remplir QFU + ${lenLabel}
-    </p>
-    <div class="tags" style="gap:6px">
+    <p class="label is-small mb-2">🛣 Pistes — cliquer pour remplir QFU + ${lenLabel}</p>
+    <div class="buttons">
       ${runways.map((rwy, i) => {
-        const surfIcon = rwy.surfaceType === 'grass' ? '🌿' : '⬛';
+        const surfIcon  = rwy.surfaceType === 'grass' ? '🌿' : '⬛';
         const surfLabel = rwy.surfaceType === 'grass' ? 'Herbe' : 'Revêtue';
-        return `<button class="rwy-tag" id="rwy-${side}-${i}" onclick="applyRunway('${side}', ${i})">
-          <strong>${rwy.designator}</strong>
-          <span>${side === 'dep' ? rwy.toraM : rwy.ldaM} m</span>
-          <span>${String(rwy.qfu).padStart(3,'0')}°</span>
-          <span class="rwy-surf-badge">${surfIcon} ${surfLabel}</span>
+        const lenM      = side === 'dep' ? rwy.toraM : rwy.ldaM;
+        return `<button class="button is-small rwy-btn" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})" title="${surfLabel}">
+          <span><strong>${rwy.designator}</strong> &nbsp;${lenM}&thinsp;m &nbsp;${String(rwy.qfu).padStart(3,'0')}° &nbsp;${surfIcon}</span>
         </button>`;
       }).join('')}
     </div>`;
