@@ -1081,7 +1081,6 @@ if ('serviceWorker' in navigator)
 /* ===================== DONNÉES AVIONS (chargées depuis /aircraft/*.json) ===================== */
 
 // Liste des immatriculations à charger (ordre d'affichage)
-const AIRCRAFT_DATA_EMBEDDED = {"F-GCAL":{"immat":"F-GCAL","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BXEK":{"immat":"F-BXEK","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BTBS":{"immat":"F-BTBS","puissance":"120cv","helice":"Sensenich","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-BTXS":{"immat":"F-BTXS","puissance":"120cv","helice":"Sensenich","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-BTKG":{"immat":"F-BTKG","puissance":"120cv","helice":"Sensenich","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}}};
 const aircraftData = {};
 
 let TO_DR400  = null;
@@ -1093,35 +1092,37 @@ async function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
   sel.innerHTML = '<option value="" disabled selected>Chargement…</option>';
 
-  // Données embarquées directement — toujours disponibles
-  Object.entries(AIRCRAFT_DATA_EMBEDDED).forEach(([immat, d]) => {
-    aircraftData[immat] = d;
-  });
-
-  // Essayer aussi de charger depuis le serveur pour détecter de nouveaux avions
+  // Charger la liste depuis /aircraft/index.json
+  let immatList = [];
   try {
     const r = await fetch('/aircraft/index.json');
-    if (r.ok) {
-      const immatList = await r.json();
-      await Promise.all(immatList.map(async immat => {
-        if (aircraftData[immat]) return; // déjà embarqué
-        try {
-          const r2 = await fetch('/aircraft/' + immat + '.json');
-          if (r2.ok) aircraftData[immat] = await r2.json();
-        } catch(_) {}
-      }));
-    }
-  } catch(_) {
-    console.info('[Aircraft] Utilisation données embarquées');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    immatList = await r.json();
+  } catch(err) {
+    sel.innerHTML = '<option value="" disabled selected>⚠ Impossible de charger les avions</option>';
+    console.error('[Aircraft] index.json inaccessible :', err.message);
+    return;
   }
 
-  // Peupler le select
+  // Charger chaque fichier JSON
+  await Promise.all(immatList.map(async immat => {
+    try {
+      const r = await fetch('/aircraft/' + immat + '.json');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      aircraftData[immat] = await r.json();
+    } catch(err) {
+      console.warn('[Aircraft]', immat, ':', err.message);
+    }
+  }));
+
+  // Peupler le select dans l'ordre de l'index
   sel.innerHTML = '';
-  Object.entries(aircraftData).forEach(([immat, d]) => {
-    const label = immat + ' — ' + (d.profil || '') + ' ' + (d.puissance || '') + ' · ' + (d.helice || '');
+  immatList.forEach(immat => {
+    const d = aircraftData[immat];
+    if (!d) return;
     const opt = document.createElement('option');
     opt.value = immat;
-    opt.textContent = label;
+    opt.textContent = immat + ' — ' + (d.profil || '') + ' ' + (d.puissance || '') + ' · ' + (d.helice || '');
     sel.appendChild(opt);
   });
 
@@ -2336,11 +2337,34 @@ async function fetchRunways(icao) {
       const qfu = Math.round(rwy.trueHeading || desigNum * 10) || desigNum * 10;
       // Surface OpenAIP — lire surface.composition[] (tableau d'enums)
       // Ref: GET /airports API docs — champ composition
+      // Enums officiels OpenAIP — surface.composition[]
       const COMPOSITION_MAP = {
-        0: 'ASPH', 1: 'CONC', 2: 'GRASS', 3: 'DIRT',
-        4: 'GRAVEL', 5: 'SAND', 6: 'WATER', 7: 'SNOW', 8: 'UNKNOWN',
+        0:  'ASPH',       // Asphalt
+        1:  'CONC',       // Concrete
+        2:  'GRASS',      // Grass
+        3:  'SAND',       // Sand
+        4:  'WATER',      // Water
+        5:  'BITU',       // Bituminous tar / earth cement
+        6:  'BRICK',      // Brick
+        7:  'MACADAM',    // Macadam / tarmac
+        8:  'STONE',      // Stone
+        9:  'CORAL',      // Coral
+        10: 'CLAY',       // Clay
+        11: 'LATERITE',   // Laterite
+        12: 'GRAVEL',     // Gravel
+        13: 'EARTH',      // Earth / Dirt
+        14: 'ICE',        // Ice
+        15: 'SNOW',       // Snow
+        16: 'RUBBER',     // Protective laminate (rubber)
+        17: 'METAL',      // Metal
+        18: 'ALUM_MAT',   // Landing mat aluminium
+        19: 'PLANKING',   // Pierced steel planking
+        20: 'WOOD',       // Wood
+        21: 'NON_BITU',   // Non bituminous mix
+        22: 'UNKNOWN',    // Unknown
       };
-      const UNPAVED = new Set(['GRASS','DIRT','GRAVEL','SAND','WATER','SNOW']);
+      // Surfaces non revêtues → herbe dans le calculateur
+      const UNPAVED = new Set(['GRASS','SAND','WATER','CORAL','CLAY','LATERITE','GRAVEL','EARTH','ICE','SNOW','WOOD','NON_BITU','UNKNOWN']);
       const compositions = Array.isArray(rwy.surface?.composition) ? rwy.surface.composition : [];
       const surfaceCodes = compositions.map(v => COMPOSITION_MAP[v] ?? ('ENUM_'+v));
       // Fallback : si composition vide, essayer mainSurface (champ legacy)
