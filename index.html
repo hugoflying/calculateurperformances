@@ -101,11 +101,17 @@ input[type=number]{-moz-appearance:textfield}
 .setbar{
   background:var(--surface);
   border-bottom:1px solid var(--border);
-  padding:10px 16px;
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:8px 12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
 }
-.setbar-group{display:flex;align-items:center;gap:8px}
+.setbar-group{display:flex;align-items:center;gap:6px}
 .setbar-label{font:600 11px 'Inter';text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);white-space:nowrap}
+@media(max-width:640px){
+  .setbar{padding:6px 10px;gap:6px}
+  .setbar-label{display:none} /* masquer labels sur petit écran */
+  .seg-btn{padding:4px 8px;font-size:11px}
+  .setbar-input{width:48px;padding:4px 6px;font-size:12px}
+}
 .setbar-input{
   width:60px;background:var(--surface-2);border:1px solid var(--border);
   border-radius:6px;color:var(--text);font:700 13px 'JetBrains Mono',monospace;
@@ -349,6 +355,9 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period.is-tempo{border-style:dashed;border-color:rgba(217,119,6,.5);background:var(--amber-light)}
 .taf-period.is-inactive{opacity:.3}
 .taf-period.is-excluded{opacity:.45;border-style:dotted}
+.taf-period.is-applied{outline:2px solid var(--blue-mid);outline-offset:-1px}
+.taf-period.is-applied::after{content:'✓ appliqué';position:absolute;right:10px;top:50%;transform:translateY(-50%);font:700 9px 'Inter';color:var(--blue-mid);text-transform:uppercase;letter-spacing:.04em}
+.taf-period{position:relative}
 .tp-type-col{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   flex-shrink:0;width:50px;padding:10px 4px;gap:2px;
@@ -689,7 +698,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="wind-strip">
           <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="depHwFace">—</div><div class="wc-unit">kt</div></div>
           <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="depTw">—</div><div class="wc-unit">kt</div></div>
-          <div id="depXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="depXw">—</div><div class="wc-unit">kt</div></div>
+          <div id="depXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="depXw">—</div><div class="wc-unit" id="depXwSub" style="font-size:9px;line-height:1.3"></div></div>
         </div>
         <div id="depTwAssumeWrap" class="tw-assume-wrap">
           <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
@@ -837,7 +846,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="wind-strip">
           <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="arrHwFace">—</div><div class="wc-unit">kt</div></div>
           <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="arrTw">—</div><div class="wc-unit">kt</div></div>
-          <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit">kt</div></div>
+          <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit" id="arrXwSub" style="font-size:9px;line-height:1.3"></div></div>
         </div>
         <div id="arrTafTwSuggest" style="display:none"></div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
@@ -1463,7 +1472,7 @@ function updateWindDisplay(side) {
   if (dirEl) {
     const isVrb = (dirEl.value || '').toUpperCase().includes('VRB');
     const rowEl = document.getElementById(side + 'VrbRow');
-    if (rowEl) rowEl.style.display = isVrb ? '' : 'none';
+    if (rowEl) rowEl.style.display = isVrb ? 'grid' : 'none';
   }
   const qfu    = normQFU(document.getElementById(side+'Qfu').value);
   const dirStr = (document.getElementById(side+'WindDir').value||'');
@@ -1516,10 +1525,14 @@ function updateWindDisplay(side) {
       if (c.tail > worst.val) worst = { type:'arrière', val:c.tail, dir };
       else if (c.tail === 0 && c.xw > worst.val) worst = { type:'travers', val:c.xw, dir };
     }
-    xwElem.textContent = `${worstX} kt (moy.)  /  ${Math.round(worst.val)} kt max`;
+    xwElem.textContent = `${worstX} kt`;
+    const subEl = document.getElementById(side + 'XwSub');
+    if (subEl) subEl.textContent = `max ${Math.round(worst.val)} kt`;
     crosswindLimitColor(side, worst.val);
   } else {
     xwElem.textContent = baseText;
+    const subElR = document.getElementById(side + 'XwSub');
+    if (subElR) subElR.textContent = 'kt';
     crosswindLimitColor(side, worstX);
   }
 
@@ -3090,7 +3103,7 @@ function renderTafPicker(tafData) {
         const t = type.toUpperCase();
         if (t === 'PROB30') applyLabel = '⚠ non retenu (probabilité trop faible)';
         else if (/PROB(?:30|40).*TEMPO/.test(t)) applyLabel = '⚠ non retenu (phénomène passager)';
-        else if (t === 'TEMPO' && p.wx_type === 'transient') applyLabel = '⚠ non retenu (orage/averse)';
+        else if (t === 'TEMPO' && p.wx_type === 'transient') applyLabel = '⚠ non retenu (phénomène passager)';
         else applyLabel = '⚠ ignoré';
       } else if (compareablePeriods.length === 1) {
         applyLabel = '✓ ETA';
@@ -3120,9 +3133,9 @@ function renderTafPicker(tafData) {
       }
       if (p.type === 'TEMPO') {
         if (p.wx_type === 'transient')
-          becmgHint = '<div class="tp-extra" style="color:#9CA3AF">⚡ Phénomène passager (orage, averse) — non retenu pour le calcul</div>';
+          becmgHint = '<div class="tp-extra" style="color:#9CA3AF">Phénomène passager — non retenu pour le calcul</div>';
         else if (p.wx_type === 'persistent')
-          becmgHint = '<div class="tp-extra" style="color:#D97706">🌧 Phénomène durable (brouillard, pluie, neige…) — retenu pour le calcul</div>';
+          becmgHint = '<div class="tp-extra" style="color:#D97706">Phénomène durable — retenu pour le calcul</div>';
       }
 
       return `<div class="${cls}" onclick="applyTafPeriodImpl(${i})">
@@ -3188,8 +3201,13 @@ function applyMetarWindOnly(side, data) {
 window._tafManualOverride = false;
 
 function applyTafPeriodImpl(idx) {
-  window._tafManualOverride = true; // l'utilisateur a choisi manuellement → ne pas réappliquer le METAR
-  const forecast = document.getElementById('arrTafPeriods')._forecast;
+  window._tafManualOverride = true;
+  // Marquer visuellement la période appliquée
+  const periodsEl = document.getElementById('arrTafPeriods');
+  periodsEl.querySelectorAll('.taf-period').forEach(el => el.classList.remove('is-applied'));
+  const clickedEl = periodsEl.querySelectorAll('.taf-period')[idx];
+  if (clickedEl) clickedEl.classList.add('is-applied');
+  const forecast = periodsEl._forecast;
   const period   = forecast?.[idx];
   if (!period || !period.wind) return;
 
