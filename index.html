@@ -565,15 +565,8 @@ input[type=number]{-moz-appearance:textfield}
 <!-- TOP BAR -->
 <header class="topbar">
   <div class="topbar-brand">
-    <span class="topbar-title">ACBT Perfs</span>
+    <span class="topbar-title">ACBT — Calculateur de performances</span>
   </div>
-  <select id="aircraftSel" class="topbar-ac">
-    <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
-    <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
-    <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
-    <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
-    <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
-  </select>
 </header>
 
 <!-- Settings bar supprimée - marge dans Paramètres avion -->
@@ -650,6 +643,16 @@ input[type=number]{-moz-appearance:textfield}
     <div class="card">
       <div class="card-head"><span class="card-head-icon">⚖️</span><span class="card-head-title">Paramètres avion</span></div>
       <div class="card-body">
+        <div class="field" style="margin-bottom:4px">
+          <label class="field-label">Avion</label>
+          <select id="aircraftSel" class="field-input" style="font-family:'JetBrains Mono',monospace;font-weight:600">
+            <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
+            <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
+            <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
+            <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
+            <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
+          </select>
+        </div>
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="depTow" class="field-input" type="number" value="900"/><span id="depTowWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><input id="safety" class="field-input" type="number" value="30" min="0"/></div>
@@ -731,6 +734,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="pf-row"><span class="pf-label">Facteur vent</span><span class="pf-val" id="toWindF">—</span></div>
         <div class="pf-row"><span class="pf-label">Carénages</span><span class="pf-val" id="toSpat">—</span></div>
         <div id="toSurfRow" class="pf-row" style="display:none"><span class="pf-label">Majoration surface</span><span class="pf-val" id="toSurf">—</span></div>
+        <div style="display:none"><span id="toExtra"></span></div>
         <div class="pf-row"><span class="pf-label" style="font-weight:600;color:var(--text)">Résultat sans marge</span><span class="pf-val" id="toRes">—</span></div>
         <div id="toExplain" style="font:400 11px 'Inter';color:var(--text-3);padding-top:4px;line-height:1.5"></div>
       </div>
