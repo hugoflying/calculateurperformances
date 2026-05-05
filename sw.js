@@ -1,4 +1,4 @@
-const CACHE = 'acbt-perf-v2';
+const CACHE = 'acbt-perf-v3';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
