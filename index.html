@@ -601,12 +601,12 @@ input[type=number]{-moz-appearance:textfield}
     <div class="col-hd dep">
       <div class="col-hd-left">
         <span class="col-hd-badge">Décollage</span>
-        <div style="display:flex;flex-direction:column;gap:1px">
-          <span id="depIcao_display" class="col-hd-icao">—</span>
-          <span id="depAirportName" style="font:500 11px 'Inter';color:rgba(255,255,255,.7);line-height:1.2"></span>
+        <div>
+          <span id="depAirportName" class="col-hd-icao" style="font-size:16px;letter-spacing:0">—</span>
+          <span id="depIcao_display" style="display:none"></span>
         </div>
       </div>
-      <span id="toChip" class="chip neutral">—</span>
+<span id="toChip" style="display:none"></span>
     </div>
 
     <!-- Station météo -->
@@ -736,12 +736,12 @@ input[type=number]{-moz-appearance:textfield}
     <div class="col-hd arr">
       <div class="col-hd-left">
         <span class="col-hd-badge">Atterrissage</span>
-        <div style="display:flex;flex-direction:column;gap:1px">
-          <span id="arrIcao_display" class="col-hd-icao">—</span>
-          <span id="arrAirportName" style="font:500 11px 'Inter';color:rgba(255,255,255,.7);line-height:1.2"></span>
+        <div>
+          <span id="arrAirportName" class="col-hd-icao" style="font-size:16px;letter-spacing:0">—</span>
+          <span id="arrIcao_display" style="display:none"></span>
         </div>
       </div>
-      <span id="ldgChip" class="chip neutral">—</span>
+<span id="ldgChip" style="display:none"></span>
     </div>
 
     <!-- Station + TAF -->
@@ -771,7 +771,6 @@ input[type=number]{-moz-appearance:textfield}
           <div id="arrTafRaw" class="metar-box visible" style="margin-bottom:10px">—</div>
           <div id="arrTafPeriods" class="taf-periods"></div>
         </div>
-        <div id="arrTafTwSuggest" style="display:none;margin-top:.5rem"></div>
       </div>
     </div>
 
@@ -838,6 +837,7 @@ input[type=number]{-moz-appearance:textfield}
           <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="arrTw">—</div><div class="wc-unit">kt</div></div>
           <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit">kt</div></div>
         </div>
+        <div id="arrTafTwSuggest" style="display:none"></div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
           <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
             <span class="assume-icon">⚠️</span>
@@ -1064,9 +1064,8 @@ if ('serviceWorker' in navigator)
 
 function setAirportName(side, _unused, icao) {
   const el = document.getElementById(side + 'AirportName');
-  if (!el || !icao) return;
-  // Nom depuis OpenAIP uniquement
-  const name = window._airportNamesFallback?.[icao.toUpperCase()] || '';
+  if (!el) return;
+  const name = (icao && window._airportNamesFallback?.[icao.toUpperCase()]) || '—';
   el.textContent = name;
 }
 </script>
@@ -1850,7 +1849,7 @@ function computeDepPerf() {
   const st2 = depToda ? (toMargin <= depToda ? 'ok' : 'bad') : 'neutral';
   setChip(document.getElementById('toChip'), st2);
   const kpi = document.getElementById('toKpi');
-  kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
+  kpi.className = 'kpi-bar' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
   document.getElementById('toExplain').textContent = windNote ||
     'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   depComputed = true;
@@ -1900,7 +1899,7 @@ function computeArrPerf() {
   const st2 = arrLda ? (ldgMargin <= arrLda ? 'ok' : 'bad') : 'neutral';
   setChip(document.getElementById('ldgChip'), st2);
   const kpi = document.getElementById('ldgKpi');
-  kpi.className = 'kpi-box' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
+  kpi.className = 'kpi-bar' + (st2 === 'ok' ? ' is-ok' : st2 === 'bad' ? ' is-bad' : '');
   document.getElementById('ldgExplain').textContent = windNote ||
     'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   arrComputed = true;
