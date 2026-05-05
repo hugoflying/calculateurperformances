@@ -353,8 +353,7 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period.is-inactive{opacity:.3}
 .taf-period.is-excluded{opacity:.45;border-style:dotted}
 .taf-period.is-applied{outline:2px solid var(--blue-mid);outline-offset:-1px}
-.taf-period.is-applied::after{content:'✓ appliqué';position:absolute;right:10px;top:50%;transform:translateY(-50%);font:700 9px 'Inter';color:var(--blue-mid);text-transform:uppercase;letter-spacing:.04em}
-.taf-period{position:relative}
+.taf-period.is-applied .tp-apply{color:var(--blue-mid);font-weight:700}
 .tp-type-col{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   flex-shrink:0;width:50px;padding:10px 4px;gap:2px;
@@ -1520,7 +1519,7 @@ function updateWindDisplay(side) {
   const cMean = compsFrom(qfu, dirDisp, kt);
   const cGust = compsFrom(qfu, dirDisp, G);
   const worstX = Math.round(Math.max(cMean ? cMean.xw : 0, cGust ? cGust.xw : 0));
-  let baseText = `${worstX} kt`;
+  let baseText = String(worstX);
 
   const fEl = document.getElementById(side+'VrbFrom');
   const tEl = document.getElementById(side+'VrbTo');
@@ -1539,7 +1538,7 @@ function updateWindDisplay(side) {
       if (c.tail > worst.val) worst = { type:'arrière', val:c.tail, dir };
       else if (c.tail === 0 && c.xw > worst.val) worst = { type:'travers', val:c.xw, dir };
     }
-    xwElem.textContent = `${worstX} kt`;
+    xwElem.textContent = String(worstX);
     const subEl = document.getElementById(side + 'XwSub');
     if (subEl) subEl.textContent = `max ${Math.round(worst.val)} kt`;
     crosswindLimitColor(side, worst.val);
@@ -3218,9 +3217,20 @@ function applyTafPeriodImpl(idx) {
   window._tafManualOverride = true;
   // Marquer visuellement la période appliquée
   const periodsEl = document.getElementById('arrTafPeriods');
-  periodsEl.querySelectorAll('.taf-period').forEach(el => el.classList.remove('is-applied'));
+  periodsEl.querySelectorAll('.taf-period').forEach(el => {
+    el.classList.remove('is-applied');
+    const applySpan = el.querySelector('.tp-apply');
+    if (applySpan && applySpan.dataset.original) applySpan.textContent = applySpan.dataset.original;
+  });
   const clickedEl = periodsEl.querySelectorAll('.taf-period')[idx];
-  if (clickedEl) clickedEl.classList.add('is-applied');
+  if (clickedEl) {
+    clickedEl.classList.add('is-applied');
+    const applySpan = clickedEl.querySelector('.tp-apply');
+    if (applySpan) {
+      if (!applySpan.dataset.original) applySpan.dataset.original = applySpan.textContent;
+      applySpan.textContent = '✓ appliqué';
+    }
+  }
   const forecast = periodsEl._forecast;
   const period   = forecast?.[idx];
   if (!period || !period.wind) return;
