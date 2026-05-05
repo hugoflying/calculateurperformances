@@ -601,7 +601,10 @@ input[type=number]{-moz-appearance:textfield}
     <div class="col-hd dep">
       <div class="col-hd-left">
         <span class="col-hd-badge">Décollage</span>
-        <span id="depIcao_display" class="col-hd-icao">—</span>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span id="depIcao_display" class="col-hd-icao">—</span>
+          <span id="depAirportName" style="font:500 11px 'Inter';color:rgba(255,255,255,.7);line-height:1.2"></span>
+        </div>
       </div>
       <span id="toChip" class="chip neutral">—</span>
     </div>
@@ -733,7 +736,10 @@ input[type=number]{-moz-appearance:textfield}
     <div class="col-hd arr">
       <div class="col-hd-left">
         <span class="col-hd-badge">Atterrissage</span>
-        <span id="arrIcao_display" class="col-hd-icao">—</span>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span id="arrIcao_display" class="col-hd-icao">—</span>
+          <span id="arrAirportName" style="font:500 11px 'Inter';color:rgba(255,255,255,.7);line-height:1.2"></span>
+        </div>
       </div>
       <span id="ldgChip" class="chip neutral">—</span>
     </div>
@@ -955,7 +961,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const disp = document.getElementById(side + 'Icao_display');
     if (inp && disp) {
       inp.addEventListener('input', () => {
-        disp.textContent = inp.value.toUpperCase() || '—';
+        const v = inp.value.toUpperCase();
+        disp.textContent = v || '—';
+        const namEl = document.getElementById(side + 'AirportName');
+        if (namEl) namEl.textContent = '';
       });
     }
   });
@@ -1052,6 +1061,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if ('serviceWorker' in navigator)
   navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+function setAirportName(side, nameAvwx, icao) {
+  const el = document.getElementById(side + 'AirportName');
+  if (!el) return;
+  const name = nameAvwx || window._airportNamesFallback?.[icao?.toUpperCase()] || '';
+  el.textContent = name;
+}
 </script>
 
 <script>
@@ -2258,6 +2274,12 @@ async function fetchRunways(icao) {
   }
   const airport = await r.json();
 
+  // Stocker le nom depuis OpenAIP comme fallback (AVWX est prioritaire)
+  if (airport.name) {
+    window._airportNamesFallback = window._airportNamesFallback || {};
+    window._airportNamesFallback[icao.toUpperCase()] = airport.name;
+  }
+
   // ── DEBUG OPENAI P ─────────────────────────────────────────────────────
   console.group('[OpenAIP] Réponse brute pour ' + icao);
   console.log('Airport object:', airport);
@@ -2479,7 +2501,14 @@ async function loadMetarFor(side) {
     }
     // Pistes OpenAIP via proxy Cloudflare (pas besoin de coords)
     fetchRunways(icao)
-      .then(rws => renderRunwayPicker(side, rws))
+      .then(rws => {
+          renderRunwayPicker(side, rws);
+          const nameEl = document.getElementById(side + 'AirportName');
+          if (nameEl && !nameEl.textContent.trim()) {
+            const fb = window._airportNamesFallback?.[icao.toUpperCase()];
+            if (fb) nameEl.textContent = fb;
+          }
+        })
       .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message));
     let metar, usedIcao = icao, isNearest = false, distTxt = '';
     try {
@@ -2493,6 +2522,14 @@ async function loadMetarFor(side) {
         if (typeof d === 'number' && u) distTxt = ' (~' + d + ' ' + u + ')';
       } else throw _e;
     }
+    // Nom aéroport depuis AVWX (priorité), fallback OpenAIP
+    // AVWX peut retourner le nom dans plusieurs champs selon la version
+    const _avwxName = metar?.info?.name
+      || metar?.station_info?.name
+      || metar?.meta?.station_info?.name
+      || '';
+    console.log('[Airport name] AVWX fields:', {info: metar?.info, station_info: metar?.station_info});
+    setAirportName(side, _avwxName, icao);
     applyMetar(side, metar);
     setMetarMsg(msgEl, isNearest
       ? '⚠ METAR le plus proche : ' + usedIcao + distTxt + ' — ' + (metar?.raw||'—')
@@ -3224,7 +3261,14 @@ async function loadTafFor(side) {
         }
       }).catch(() => {}),
       fetchRunways(icao)
-        .then(rws => renderRunwayPicker(side, rws))
+        .then(rws => {
+          renderRunwayPicker(side, rws);
+          const nameEl = document.getElementById(side + 'AirportName');
+          if (nameEl && !nameEl.textContent.trim()) {
+            const fb = window._airportNamesFallback?.[icao.toUpperCase()];
+            if (fb) nameEl.textContent = fb;
+          }
+        })
         .catch(e  => console.warn('[OpenAIP] pistes non chargées :', e.message)),
       fetchMetar(icao).catch(() => null) // METAR en parallèle pour le PDF
     ]);
