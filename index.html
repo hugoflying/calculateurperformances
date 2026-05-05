@@ -482,8 +482,9 @@ input[type=number]{-moz-appearance:textfield}
 .rm-row:last-child{border-bottom:none}
 .rm-row-label{font:400 13px 'Inter';color:var(--text-2)}
 .rm-row-value{font:700 13px 'JetBrains Mono',monospace;color:var(--text)}
-.rm-foot{padding:14px 20px;border-top:1px solid var(--border);background:var(--surface-2);flex-shrink:0;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
-.rm-footer-btn{width:100%;padding:13px;border-radius:12px;font:700 12px 'Inter';text-transform:uppercase;letter-spacing:.05em;background:#f8fafc;border:1.5px solid #cbd5e1;color:#1a2332;transition:all .15s}
+.rm-foot{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface-2);flex-shrink:0;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+@media(max-width:480px){.rm-foot{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}}
+.rm-footer-btn{width:100%;padding:14px;border-radius:12px;font:700 13px 'Inter';text-transform:uppercase;letter-spacing:.04em;background:#f8fafc;border:1.5px solid #cbd5e1;color:#1a2332;transition:all .15s;display:block;text-align:center}
 .rm-footer-btn:hover{border-color:#475569;color:#1a2332}
 .rm-footer-btn.is-ok-dep{background:var(--blue-mid)!important;color:#fff!important;border-color:var(--blue-mid)!important}
 .rm-footer-btn.is-ok-arr{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important}
@@ -553,9 +554,9 @@ input[type=number]{-moz-appearance:textfield}
       <div id="rmRows" class="rm-rows"></div>
     </div>
     <div class="rm-foot">
-      <div style="display:flex;gap:8px">
-        <button id="rmFooterBtn" class="rm-footer-btn" onclick="closeResultsModal()" style="flex:1">← Modifier les paramètres</button>
-        <button id="btnPrint" class="rm-footer-btn" onclick="" style="flex-shrink:0;background:var(--blue-mid);color:#fff;border-color:var(--blue-mid)" disabled>📄 PDF</button>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button id="btnPrint" class="rm-footer-btn" style="background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);width:100%" disabled>📄 Exporter le PDF</button>
+        <button id="rmFooterBtn" class="rm-footer-btn" onclick="closeResultsModal()" style="width:100%">← Modifier les paramètres</button>
       </div>
     </div>
   </div>
@@ -575,14 +576,7 @@ input[type=number]{-moz-appearance:textfield}
   </select>
 </header>
 
-<!-- SETTINGS BAR -->
-<div class="setbar">
-  <div class="setbar-group">
-    <span class="setbar-label">Marge</span>
-    <input id="safety" class="setbar-input" type="number" value="30" min="0"/>
-    <span class="setbar-label" style="opacity:.6">%</span>
-  </div>
-</div>
+<!-- Settings bar supprimée - marge dans Paramètres avion -->
 
 <!-- TAB BAR (mobile) -->
 <div class="tabbar">
@@ -736,7 +730,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="pf-row"><span class="pf-label">Passage 15 m sans marge</span><span class="pf-val" id="toBasePass">—</span></div>
         <div class="pf-row"><span class="pf-label">Facteur vent</span><span class="pf-val" id="toWindF">—</span></div>
         <div class="pf-row"><span class="pf-label">Carénages</span><span class="pf-val" id="toSpat">—</span></div>
-        <div class="pf-row"><span class="pf-label">Facteur supplémentaire</span><span class="pf-val" id="toExtra">—</span></div>
+        <div id="toSurfRow" class="pf-row" style="display:none"><span class="pf-label">Majoration surface</span><span class="pf-val" id="toSurf">—</span></div>
         <div class="pf-row"><span class="pf-label" style="font-weight:600;color:var(--text)">Résultat sans marge</span><span class="pf-val" id="toRes">—</span></div>
         <div id="toExplain" style="font:400 11px 'Inter';color:var(--text-3);padding-top:4px;line-height:1.5"></div>
       </div>
@@ -868,8 +862,8 @@ input[type=number]{-moz-appearance:textfield}
         <div class="toggle-wrap" style="margin-top:4px">
           <span class="toggle-label">Vent réglementaire</span>
           <div class="toggle-group">
-            <button id="btnRegWindOffArr" class="toggle-btn is-selected is-primary" onclick="document.getElementById('btnRegWindOff').click()">100 % réel</button>
-            <button id="btnRegWindOnArr"  class="toggle-btn" onclick="document.getElementById('btnRegWindOn').click()">50 % / 150 %</button>
+            <button id="btnRegWindOffArr" class="toggle-btn is-selected is-primary" onclick="setRegWindArr(false)">100 % réel</button>
+            <button id="btnRegWindOnArr"  class="toggle-btn" onclick="setRegWindArr(true)">50 % / 150 %</button>
           </div>
         </div>
         <div id="arrTafTwSuggest" style="display:none"></div>
@@ -902,6 +896,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="pf-row"><span class="pf-label">Passage 15 m sans marge</span><span class="pf-val" id="ldgBasePass">—</span></div>
         <div class="pf-row"><span class="pf-label">Facteur vent</span><span class="pf-val" id="ldgWindF">—</span></div>
         <div class="pf-row"><span class="pf-label">Carénages</span><span class="pf-val" id="ldgExtra">—</span></div>
+        <div id="ldgSurfRow" class="pf-row" style="display:none"><span class="pf-label">Majoration état piste</span><span class="pf-val" id="ldgSurf">—</span></div>
         <div class="pf-row"><span class="pf-label" style="font-weight:600;color:var(--text)">Résultat sans marge</span><span class="pf-val" id="ldgRes">—</span></div>
         <div id="ldgExplain" style="font:400 11px 'Inter';color:var(--text-3);padding-top:4px;line-height:1.5"></div>
       </div>
@@ -1077,7 +1072,7 @@ document.getElementById('aircraftSel')?.addEventListener('change', () => {
     syncRegWindArr();
     const rwd = document.getElementById('regWindDisplay');
     const cd  = document.getElementById('carenaDisplay');
-    if (rwd) rwd.textContent = useRegWind ? '50 % / 150 %' : '100 % réel';
+    if (rwd) rwd.textContent = useRegWindArr ? '50 % / 150 %' : '100 % réel';
     if (cd)  cd.textContent  = withSpats  ? 'Avec' : 'Sans (+3 %)';
   }
   ['btnRegWindOff','btnRegWindOn','spatsWith','spatsWithout'].forEach(id => {
@@ -1338,8 +1333,8 @@ $('#arrGrassDry').onclick       = () => { arrWetFactor = 1.0;  setToggleActive($
 $('#arrGrassWet').onclick       = () => { arrWetFactor = 1.15; setToggleActive($('#arrGrassWet'), $('#arrGrassDry'), $('#arrGrassWetShort')); resetComputedState('arr'); };
 $('#arrGrassWetShort').onclick  = () => { arrWetFactor = 1.60; setToggleActive($('#arrGrassWetShort'), $('#arrGrassDry'), $('#arrGrassWet')); resetComputedState('arr'); };
 
-$('#btnRegWindOff').onclick = () => { useRegWind = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); resetComputedState('arr'); };
-$('#btnRegWindOn').onclick  = () => { useRegWind = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); resetComputedState('arr'); };
+$('#btnRegWindOff').onclick = () => { useRegWindDep = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); };
+$('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); };
 
 /* ===================== MARGE ===================== */
 $('#safety').addEventListener('input', () => {
@@ -1849,7 +1844,19 @@ function validateBeforeCompute(side) {
 
 /* ===================== RÉSOLUTION DU VENT POUR CALCUL ===================== */
 // Retourne { w, taActive, note } avec le vent résolu et une note éventuelle
+function setRegWindArr(val) {
+  useRegWindArr = val;
+  const off = document.getElementById('btnRegWindOffArr');
+  const on  = document.getElementById('btnRegWindOnArr');
+  if (val) { on?.classList.add('is-selected','is-primary');  off?.classList.remove('is-selected','is-primary'); }
+  else      { off?.classList.add('is-selected','is-primary'); on?.classList.remove('is-selected','is-primary'); }
+  resetComputedState('arr');
+  syncDisplays();
+}
+
 function resolveWindForCalc(side, qfu, assumeTA) {
+  // Chaque côté a son propre réglage vent réglementaire
+  useRegWind = side === 'dep' ? useRegWindDep : useRegWindArr;
   const meanDir = document.getElementById(side+'WindDir').value || '000';
   const kt      = +(document.getElementById(side+'WindKt').value  || 0);
   const gust    = +(document.getElementById(side+'WindGust').value|| 0);
@@ -2229,11 +2236,13 @@ function showResultsContent(side) {
   // Bouton footer
   const footerBtn = document.getElementById('rmFooterBtn');
   footerBtn.className = 'rm-footer-btn';
-  if (isOk) {
-    footerBtn.textContent = side === 'dep' ? '✓ Fermer — décollage possible' : '✓ Fermer — atterrissage possible';
-    footerBtn.classList.add(side === 'dep' ? 'is-ok-dep' : 'is-ok-arr');
-  } else {
-    footerBtn.textContent = '← Modifier les paramètres';
+  footerBtn.textContent = '← Modifier les paramètres';
+  // PDF : disponible seulement si le vol est faisable
+  const printBtn = document.getElementById('btnPrint');
+  if (printBtn) {
+    const isBad2 = rmHeader.classList.contains('is-bad');
+    printBtn.style.display = isBad2 ? 'none' : 'block';
+    printBtn.disabled = isBad2;
   }
 
   // Transition
