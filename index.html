@@ -577,22 +577,6 @@ input[type=number]{-moz-appearance:textfield}
     <input id="safety" class="setbar-input" type="number" value="30" min="0"/>
     <span class="setbar-label" style="opacity:.6">%</span>
   </div>
-  <div class="setbar-sep"></div>
-  <div class="setbar-group">
-    <span class="setbar-label">Vent</span>
-    <div class="seg">
-      <button id="btnRegWindOff" class="seg-btn on">100 %</button>
-      <button id="btnRegWindOn"  class="seg-btn">50/150 %</button>
-    </div>
-  </div>
-  <div class="setbar-sep"></div>
-  <div class="setbar-group">
-    <span class="setbar-label">Caréna.</span>
-    <div class="seg">
-      <button id="spatsWith"    class="seg-btn on">Avec</button>
-      <button id="spatsWithout" class="seg-btn">Sans</button>
-    </div>
-  </div>
 </div>
 
 <!-- TAB BAR (mobile) -->
@@ -659,6 +643,13 @@ input[type=number]{-moz-appearance:textfield}
           </div>
         </div>
         <div class="toggle-wrap">
+          <span class="toggle-label">Carénages</span>
+          <div class="toggle-group">
+            <button id="spatsWith"    class="toggle-btn is-selected is-primary">Avec</button>
+            <button id="spatsWithout" class="toggle-btn">Sans (+3 %)</button>
+          </div>
+        </div>
+        <div class="toggle-wrap">
           <span class="toggle-label">Type de piste</span>
           <div class="toggle-group">
             <button id="depSurfHard"  class="toggle-btn is-selected is-primary">Revêtue</button>
@@ -703,6 +694,13 @@ input[type=number]{-moz-appearance:textfield}
           <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="depHwFace">—</div><div class="wc-unit">kt</div></div>
           <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="depTw">—</div><div class="wc-unit">kt</div></div>
           <div id="depXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="depXw">—</div><div class="wc-unit">kt</div><div id="depXwSub" style="font:600 9px 'Inter';color:var(--text-3);margin-top:1px;line-height:1.3"></div></div>
+        </div>
+        <div class="toggle-wrap" style="margin-top:4px">
+          <span class="toggle-label">Vent réglementaire</span>
+          <div class="toggle-group">
+            <button id="btnRegWindOff" class="toggle-btn is-selected is-primary">100 % réel</button>
+            <button id="btnRegWindOn"  class="toggle-btn">50 % / 150 %</button>
+          </div>
         </div>
         <div id="depTwAssumeWrap" class="tw-assume-wrap">
           <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
@@ -815,6 +813,12 @@ input[type=number]{-moz-appearance:textfield}
           </div>
         </div>
         <div class="toggle-wrap">
+          <span class="toggle-label">Carénages</span>
+          <div class="toggle-group">
+            <button class="toggle-btn" style="background:var(--surface-2);color:var(--text-3);font-size:11px;cursor:default" id="carenaDisplay">Avec</button>
+          </div>
+        </div>
+        <div class="toggle-wrap">
           <span class="toggle-label">Type de freinage</span>
           <div class="toggle-group">
             <button id="arrModerate" class="toggle-btn is-selected is-primary">Freinage normal</button>
@@ -857,6 +861,12 @@ input[type=number]{-moz-appearance:textfield}
           <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="arrHwFace">—</div><div class="wc-unit">kt</div></div>
           <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="arrTw">—</div><div class="wc-unit">kt</div></div>
           <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit">kt</div><div id="arrXwSub" style="font:600 9px 'Inter';color:var(--text-3);margin-top:1px;line-height:1.3"></div></div>
+        </div>
+        <div class="toggle-wrap" style="margin-top:4px">
+          <span class="toggle-label">Vent réglementaire</span>
+          <div class="toggle-group">
+            <button class="toggle-btn" style="background:var(--surface-2);color:var(--text-3);font-size:11px;cursor:default" id="regWindDisplay">100 % réel</button>
+          </div>
         </div>
         <div id="arrTafTwSuggest" style="display:none"></div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
@@ -1031,6 +1041,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bdg) { bdg.style.background = ok ? 'var(--green-light)' : bad ? 'var(--red-light)' : ''; bdg.style.color = ok ? 'var(--green)' : bad ? 'var(--red)' : ''; }
     if (val) val.style.color = ok ? 'var(--green)' : bad ? 'var(--red)' : '';
   }).observe(rmH, { attributes: true, attributeFilter: ['class'] });
+
+  // Synchro affichages lecture seule ARR
+  function syncDisplays() {
+    const rwd = document.getElementById('regWindDisplay');
+    const cd  = document.getElementById('carenaDisplay');
+    if (rwd) rwd.textContent = useRegWind ? '50 % / 150 %' : '100 % réel';
+    if (cd)  cd.textContent  = withSpats  ? 'Avec' : 'Sans (+3 %)';
+  }
+  ['btnRegWindOff','btnRegWindOn','spatsWith','spatsWithout'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => setTimeout(syncDisplays, 50));
+  });
+  syncDisplays();
 
   /* VRB rows masquées par défaut */
   ['dep','arr'].forEach(side => {
@@ -1540,7 +1563,10 @@ function updateWindDisplay(side) {
     }
     xwElem.textContent = String(worstX);
     const subEl = document.getElementById(side + 'XwSub');
-    if (subEl) subEl.textContent = `max ${Math.round(worst.val)} kt`;
+    if (subEl) {
+      const maxVal = Math.round(worst.val);
+      subEl.innerHTML = `max <strong style="color:${maxVal>=22?'var(--red)':maxVal>=18?'var(--amber)':'var(--text-2)'}">${maxVal}</strong> kt`;
+    }
     crosswindLimitColor(side, worst.val);
   } else {
     xwElem.textContent = baseText;
@@ -2550,7 +2576,7 @@ async function loadMetarFor(side) {
     setAirportName(side, null, icao);
     applyMetar(side, metar);
     setMetarMsg(msgEl, isNearest
-      ? '⚠ METAR le plus proche : ' + usedIcao + distTxt + ' — ' + (metar?.raw||'—')
+      ? '⚠ Station la plus proche (' + usedIcao + distTxt + ') — ' + (metar?.raw||'—')
       : (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
@@ -2846,18 +2872,19 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
 
 function periodContainsEta(period, etaHour) {
   if (etaHour === '' || etaHour == null) return false;
-  const h = parseInt(etaHour, 10);
-  if (isNaN(h)) return false;
+  const raw = parseInt(etaHour, 10);
+  if (isNaN(raw)) return false;
+  const dayOffset = Math.floor(raw / 24);
+  const h = raw % 24;
 
   const startDt = period.start_time?.dt ? new Date(period.start_time.dt) : null;
   const endDt   = period.end_time?.dt   ? new Date(period.end_time.dt)   : null;
   if (!startDt || !endDt) return false;
 
-  // Construire ETA = aujourd'hui UTC à l'heure h:00
+  // Construire ETA selon jour sélectionné (J ou J+1)
   const now = new Date();
-  let eta = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
-  // Si avant le début du TAF, essayer le lendemain
-  if (eta < startDt) eta = new Date(eta.getTime() + 86400000);
+  const baseDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + dayOffset));
+  let eta = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), baseDate.getUTCDate(), h, 0, 0));
 
   // ── Règle OMA Bartolini tableau 4.13.1 pour BECMG ──────────────────────
   // Comparer le vent BECMG avec le vent FROM précédent (prevWind)
@@ -2901,15 +2928,23 @@ function renderTafPicker(tafData) {
   rawEl.style.display = 'none';
 
   // Générer les options horaires si pas encore fait
-  if (etaSelect.options.length <= 1) {
+  // Toujours régénérer les options avec J et J+1
+  {
     etaSelect.innerHTML = '<option value="">ETA UTC…</option>';
-    for (let h = 0; h < 24; h++) {
-      const hh   = String(h).padStart(2,'0');
-      const hh1  = String((h+1)%24).padStart(2,'0');
-      const opt  = document.createElement('option');
-      opt.value  = String(h);
-      opt.textContent = hh + 'h – ' + hh1 + 'h';
-      etaSelect.appendChild(opt);
+    const now  = new Date();
+    const todayUTC   = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const tomorrowUTC= new Date(todayUTC.getTime() + 86400000);
+    const fmtDate = d => String(d.getUTCDate()).padStart(2,'0') + '/' + String(d.getUTCMonth()+1).padStart(2,'0');
+    for (let day = 0; day < 2; day++) {
+      const dayDt = day === 0 ? todayUTC : tomorrowUTC;
+      const dateStr = fmtDate(dayDt);
+      for (let h = 0; h < 24; h++) {
+        const hh  = String(h).padStart(2,'0');
+        const opt = document.createElement('option');
+        opt.value = String(day * 24 + h);
+        opt.textContent = dateStr + ' ' + hh + 'h UTC';
+        etaSelect.appendChild(opt);
+      }
     }
   }
 
