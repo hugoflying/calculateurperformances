@@ -1266,17 +1266,9 @@ $('#safety').addEventListener('input', () => {
   const sanitize = () => { el.value = (el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4); };
   el.addEventListener('input', () => {
     sanitize();
-    // Charger les pistes dès que 4 caractères sont saisis
-    const icao = el.value.trim();
-    if (icao.length === 4) {
-      fetchRunways(icao)
-        .then(rws => renderRunwayPicker(side, rws))
-        .catch(() => {});
-    } else {
-      // Masquer le picker si ICAO incomplet
-      const picker = document.getElementById(side + 'RunwayPicker');
-      if (picker) picker.style.display = 'none';
-    }
+    // Masquer les pistes si l'ICAO change — elles se chargent avec METAR/TAF
+    const picker = document.getElementById(side + 'RunwayPicker');
+    if (picker) picker.style.display = 'none';
   });
   el.addEventListener('blur', sanitize);
 });
