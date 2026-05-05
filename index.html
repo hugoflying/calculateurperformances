@@ -2208,18 +2208,24 @@ function showResultsContent(side) {
   document.getElementById('rmKpiAvail').textContent = (isDep ? 'TODA dispo : ' : 'LDA dispo : ') + avail.textContent;
 
   // Rows
+  const toSurfTxt = document.getElementById('toSurf')?.textContent;
+  const ldgSurfTxt= document.getElementById('ldgSurf')?.textContent;
+  const toSurfVisible  = document.getElementById('toSurfRow')?.style.display !== 'none' && toSurfTxt && toSurfTxt !== '—';
+  const ldgSurfVisible = document.getElementById('ldgSurfRow')?.style.display !== 'none' && ldgSurfTxt && ldgSurfTxt !== '—';
+
   const rows = isDep ? [
     { l: 'Roulement (sans marge)',    v: document.getElementById('toBaseRoll').textContent },
     { l: 'Passage 15 m (sans marge)', v: document.getElementById('toBasePass').textContent },
     { l: 'Facteur vent',              v: document.getElementById('toWindF').textContent },
     { l: 'Carénages',                 v: document.getElementById('toSpat').textContent },
-    { l: 'Facteur supplémentaire',    v: document.getElementById('toExtra').textContent },
+    ...(toSurfVisible  ? [{ l: 'Majoration surface', v: toSurfTxt }] : []),
     { l: 'Résultat sans marge',       v: document.getElementById('toRes').textContent },
   ] : [
     { l: 'Roulement (sans marge)',    v: document.getElementById('ldgBaseRoll').textContent },
     { l: 'Passage 15 m (sans marge)', v: document.getElementById('ldgBasePass').textContent },
     { l: 'Facteur vent',              v: document.getElementById('ldgWindF').textContent },
-    { l: 'Facteur supplémentaire',    v: document.getElementById('ldgExtra').textContent },
+    { l: 'Carénages',                 v: document.getElementById('ldgExtra').textContent },
+    ...(ldgSurfVisible ? [{ l: 'Majoration état piste', v: ldgSurfTxt }] : []),
     { l: 'Résultat sans marge',       v: document.getElementById('ldgRes').textContent },
     ...(lastMetarVsTafResult ? [{
       l: 'Source météo (ETA < 2h)',
@@ -2240,7 +2246,7 @@ function showResultsContent(side) {
   // PDF : disponible seulement si le vol est faisable
   const printBtn = document.getElementById('btnPrint');
   if (printBtn) {
-    const isBad2 = rmHeader.classList.contains('is-bad');
+    const isBad2 = header.classList.contains('is-bad');
     printBtn.style.display = isBad2 ? 'none' : 'block';
     printBtn.disabled = isBad2;
   }
