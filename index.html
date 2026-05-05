@@ -132,7 +132,7 @@ input[type=number]{-moz-appearance:textfield}
   display:flex;
   background:var(--surface);
   border-bottom:2px solid var(--border);
-  position:sticky;top:54px;z-index:90;
+  position:sticky;top:54px;z-index:10;
 }
 .tab-btn{
   flex:1;padding:12px 8px;
@@ -410,8 +410,8 @@ input[type=number]{-moz-appearance:textfield}
 .calc-btn.dep:hover{box-shadow:0 6px 20px rgba(37,99,235,.4);transform:translateY(-1px)}
 .calc-btn.arr{background:linear-gradient(135deg,#047857 0%,var(--green) 100%);color:#fff;box-shadow:0 4px 14px rgba(5,150,105,.3)}
 .calc-btn.arr:hover{box-shadow:0 6px 20px rgba(5,150,105,.4);transform:translateY(-1px)}
-.calc-btn.done-dep{background:var(--blue-light);color:var(--blue-mid);border:1.5px solid var(--blue-border);box-shadow:none;transform:none;font-size:12px}
-.calc-btn.done-arr{background:var(--green-light);color:var(--green);border:1.5px solid var(--green-border);box-shadow:none;transform:none;font-size:12px}
+.calc-btn.done-dep{background:var(--blue-light)!important;color:var(--blue-mid)!important;border:1.5px solid var(--blue-border)!important;box-shadow:none!important;transform:none!important;font-size:12px}
+.calc-btn.done-arr{background:var(--green-light)!important;color:var(--green)!important;border:1.5px solid var(--green-border)!important;box-shadow:none!important;transform:none!important;font-size:12px}
 .is-hidden{display:none!important}
 
 /* ═══════════════════════════════════
@@ -476,8 +476,10 @@ input[type=number]{-moz-appearance:textfield}
 .rm-row-label{font:400 13px 'Inter';color:var(--text-2)}
 .rm-row-value{font:700 13px 'JetBrains Mono',monospace;color:var(--text)}
 .rm-foot{padding:14px 20px;border-top:1px solid var(--border);background:var(--surface-2);flex-shrink:0;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
-.rm-footer-btn{width:100%;padding:13px;border-radius:12px;font:700 12px 'Inter';text-transform:uppercase;letter-spacing:.05em;background:var(--surface);border:1.5px solid var(--border);color:var(--text-2);transition:all .15s}
-.rm-footer-btn:hover{border-color:var(--text-2);color:var(--text)}
+.rm-footer-btn{width:100%;padding:13px;border-radius:12px;font:700 12px 'Inter';text-transform:uppercase;letter-spacing:.05em;background:#f8fafc;border:1.5px solid #cbd5e1;color:#1a2332;transition:all .15s}
+.rm-footer-btn:hover{border-color:#475569;color:#1a2332}
+.rm-footer-btn.is-ok-dep{background:var(--blue-mid)!important;color:#fff!important;border-color:var(--blue-mid)!important}
+.rm-footer-btn.is-ok-arr{background:var(--green)!important;color:#fff!important;border-color:var(--green)!important}
 
 /* ═══════════════════════════════════
    README
@@ -1960,16 +1962,16 @@ function updateCalcButton(side) {
   const changed  = snap !== null && snap !== current;
 
   if (isCalc && !changed) {
-    btn.innerHTML = side === 'dep'
+    btn.textContent = side === 'dep'
       ? '✅ Décollage calculé — voir résultats'
       : '✅ Atterrissage calculé — voir résultats';
-    btn.style.background = side === 'dep'
-      ? 'linear-gradient(135deg,var(--navy),var(--dep))'
-      : 'linear-gradient(135deg,#047857,var(--arr))';
+    btn.className = 'calc-btn ' + (side === 'dep' ? 'done-dep' : 'done-arr');
+    btn.style.background = '';
   } else {
-    btn.innerHTML = side === 'dep'
-      ? 'Calculer les performances décollage'
-      : 'Calculer les performances atterrissage';
+    btn.textContent = side === 'dep'
+      ? 'Calculer les performances au décollage'
+      : "Calculer les performances à l'atterrissage";
+    btn.className = 'calc-btn ' + side;
     btn.style.background = '';
   }
 }
@@ -2148,18 +2150,14 @@ function showResultsContent(side) {
       <span class="rm-row-value">${r.v}</span>
     </div>`).join('');
 
-  // Bouton footer : Valider si OK, Modifier si NON
+  // Bouton footer
   const footerBtn = document.getElementById('rmFooterBtn');
+  footerBtn.className = 'rm-footer-btn';
   if (isOk) {
-    footerBtn.textContent = '✓ Valider';
-    footerBtn.style.background = 'linear-gradient(135deg,#047857,var(--arr))';
-    footerBtn.style.color = '#fff';
-    footerBtn.style.border = 'none';
+    footerBtn.textContent = side === 'dep' ? '✓ Fermer — décollage possible' : '✓ Fermer — atterrissage possible';
+    footerBtn.classList.add(side === 'dep' ? 'is-ok-dep' : 'is-ok-arr');
   } else {
     footerBtn.textContent = '← Modifier les paramètres';
-    footerBtn.style.background = '';
-    footerBtn.style.color = '';
-    footerBtn.style.border = '';
   }
 
   // Transition
