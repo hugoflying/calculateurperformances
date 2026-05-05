@@ -1,4 +1,4 @@
-const CACHE = 'acbt-perf-v1';
+const CACHE = 'acbt-perf-v2';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
@@ -14,7 +14,6 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Réseau d'abord, cache en fallback (METAR/TAF toujours frais)
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
   );
