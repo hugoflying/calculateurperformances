@@ -1538,8 +1538,12 @@ function updateWindDisplay(side) {
             ? '⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent TAF)'
             : '⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent METAR)';
           suggestEl.style.display = 'block';
-          suggestEl.innerHTML = `<button class="taf-tw-suggest${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
-            <span>${isActive ? '☑' : '☐'}</span> ${label}
+          suggestEl.innerHTML = `<button class="tw-assume-btn${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
+            <span class="assume-icon">⚠️</span>
+            <span class="assume-text">
+              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+              <span class="assume-sub">${label.replace('⚠ Appliquer 5 kt de vent arrière (plus restrictif que le ', '').replace(')', '')}</span>
+            </span>
           </button>`;
         } else {
           suggestEl.style.display = 'none';
