@@ -90,6 +90,8 @@ input[type=number]{-moz-appearance:textfield}
 [data-theme="dark"] .rwy-btn:hover{background:var(--surface-2)}
 [data-theme="dark"] .readme-body,.readme-toggle{background:var(--surface);border-color:var(--border)}
 [data-theme="dark"] .results-modal{background:#161c29;color:var(--text)}
+[data-theme="dark"] .disc-box{background:#1e2535}
+[data-theme="dark"] .disc-box div[style*='color:#000']{color:#fff!important}
 [data-theme="dark"] .rm-header.is-neutral{background:#1e2535;border-color:var(--border)}
 [data-theme="dark"] .rm-header.is-ok{background:#064e3b;border-color:#065f46}
 [data-theme="dark"] .rm-header.is-bad{background:#450a0a;border-color:#7f1d1d}
@@ -630,7 +632,7 @@ input[type=number]{-moz-appearance:textfield}
 <!-- DISCLAIMER -->
 <div id="modalDisclaimer" class="disc-overlay is-active">
   <div class="disc-box" style="text-align:center;max-width:420px">
-    <div style="font:800 20px 'Inter';color:var(--text);margin-bottom:6px;letter-spacing:-.02em">ACBT Performances</div>
+    <div style="font:800 20px 'Inter';color:#000;margin-bottom:6px;letter-spacing:-.02em">Avertissement</div>
     <div style="font:400 13px 'Inter';color:var(--text-3);margin-bottom:20px">Aéroclub de Beauvais-Tillé · LFOB</div>
     <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px 14px;font:500 12px 'Inter';color:var(--red);line-height:1.6;margin-bottom:20px;text-align:left">
       <strong>Document opérationnel.</strong> Cet outil est une aide à la préparation du vol basée sur les manuels officiels (AFM). Il ne remplace en aucun cas le manuel de vol.<br><br>
@@ -2673,13 +2675,13 @@ function renderRunwayPicker(side, runways) {
           ? '<span style="display:inline-block;width:9px;height:9px;background:#16a34a;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Herbe'
           : '<span style="display:inline-block;width:9px;height:9px;background:#64748b;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Revêtue';
         const lenM = side === 'dep' ? rwy.toraM : rwy.ldaM;
-        const prefBadge = isPref ? '<span style="font:700 9px Inter,sans-serif;background:#2563eb;color:#fff;border-radius:4px;padding:1px 5px;margin-top:2px">★ préférentielle</span>' : '';
-        return `<button class="rwy-btn${isGrass ? ' grass-surface' : ''}${isPref ? ' rwy-preferred' : ''}" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})">
+        const prefStar = isPref ? '<span style="position:absolute;top:4px;right:4px;font-size:10px;color:#2563eb;line-height:1">★</span>' : '';
+        return `<button class="rwy-btn${isGrass ? ' grass-surface' : ''}${isPref ? ' rwy-preferred' : ''}" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})" style="position:relative">
+          ${prefStar}
           <span class="rwy-desig">${rwy.designator}</span>
           <span class="rwy-len">${lenM} m</span>
           <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
           <span class="rwy-surf-badge" style="display:flex;align-items:center;gap:2px">${surfLabel}</span>
-          ${prefBadge}
         </button>`;
       }).join('')}
     </div>`;
@@ -3816,7 +3818,7 @@ function generatePDF() {
     if (el?.classList.contains('is-bad-chip')) return 'bad';
     return 'neu';
   };
-  const verdictTxt = v => v==='ok'?'✓ Vol faisable':v==='bad'?'✗ Refus':'— Non calculé';
+    const verdictTxt = (v, side) => { const d = side==='dep'?'Décollage':'Atterrissage'; return v==='ok'?'✓ '+d+' possible':v==='bad'?'✗ Distance insuffisante':'— Non calculé'; };
 
   const params = [
     ['Avion',aircraft],['Profil',profile||'—'],['Marge',safety+' %'],
@@ -3862,7 +3864,7 @@ function generatePDF() {
         <div class="pv-col-icao">${name&&name!=='—'?name+' · ':''} ${icao}</div>
       </div>
       <div class="pv-verdict ${v}">
-        <div class="pv-verdict-label">${verdictTxt(v)}</div>
+        <div style="font:800 16pt Arial,sans-serif;color:${v==='ok'?'#059669':v==='bad'?'#dc2626':'#94a3b8'}">${verdictTxt(v, side)}</div>
         <div class="pv-verdict-dist">Distance requise : <strong>${req}</strong> &nbsp;·&nbsp; ${DIST} dispo : ${avail}</div>
       </div>
       <div class="pv-section-head">Piste &amp; conditions</div>
