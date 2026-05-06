@@ -356,7 +356,7 @@ input[type=number]{-moz-appearance:textfield}
 /* is-applied : box-shadow inset → pas de reflow, transition fluide */
 .taf-period.is-applied .tp-apply{color:var(--blue-mid)!important;font-weight:800}
 .taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){box-shadow:inset 0 0 0 2px var(--border-strong)}
-.taf-period.is-tempo.is-applied{box-shadow:inset 0 0 0 2px var(--amber)}
+.taf-period.is-tempo.is-applied{box-shadow:none;outline:2.5px dashed var(--amber);outline-offset:-2px}
 .taf-period.is-current.is-applied{box-shadow:inset 0 0 0 2px var(--green)}
 .taf-period.is-eta-other.is-applied{box-shadow:inset 0 0 0 2px var(--blue-mid)}
 .tp-type-col{
