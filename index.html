@@ -84,7 +84,26 @@ input[type=number]{-moz-appearance:textfield}
 [data-theme="dark"] .seg{background:var(--surface);border-color:var(--border)}
 [data-theme="dark"] .seg-btn.on{background:var(--surface-2)}
 [data-theme="dark"] .taf-period{background:var(--surface-2)}
+[data-theme="dark"] .rwy-desig{color:var(--text)!important}
+[data-theme="dark"] .rwy-btn{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .rwy-btn.grass-surface{background:#064e3b;border-color:#065f46}
+[data-theme="dark"] .rwy-btn:hover{background:var(--surface-2)}
 [data-theme="dark"] .readme-body,.readme-toggle{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .results-modal{background:#161c29;color:var(--text)}
+[data-theme="dark"] .rm-header.is-neutral{background:#1e2535;border-color:var(--border)}
+[data-theme="dark"] .rm-header.is-ok{background:#064e3b;border-color:#065f46}
+[data-theme="dark"] .rm-header.is-bad{background:#450a0a;border-color:#7f1d1d}
+[data-theme="dark"] .rm-body{background:#161c29}
+[data-theme="dark"] .rm-kpi-card{background:#1e2535;border-color:var(--border)}
+[data-theme="dark"] .rm-kpi-card.is-ok{background:#064e3b;border-color:#065f46}
+[data-theme="dark"] .rm-kpi-card.is-bad{background:#450a0a;border-color:#7f1d1d}
+[data-theme="dark"] .rm-rows{background:#1e2535;border-color:var(--border)}
+[data-theme="dark"] .rm-row{border-color:var(--border)}
+[data-theme="dark"] .rm-row-label{color:var(--text-2)}
+[data-theme="dark"] .rm-row-value{color:var(--text)}
+[data-theme="dark"] .rm-foot{background:#1e2535;border-color:var(--border)}
+[data-theme="dark"] .rm-loading{background:#161c29}
+[data-theme="dark"] .rm-loading-title{color:var(--text-2)}
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar{width:3px}
@@ -553,8 +572,12 @@ input[type=number]{-moz-appearance:textfield}
    PRINT / PDF
 ═══════════════════════════════════ */
 #printView{display:none}
+@page { size: A4 portrait; margin: 0; }
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  html, body { height: auto !important; overflow: visible !important; }
+  /* Forcer le thème clair sur le PDF */
+  :root, [data-theme="dark"] { --surface:#fff; --surface-2:#f8fafc; --border:#e2e8f0; --text:#1a2332; --text-2:#475569; --text-3:#94a3b8; background-color:#fff !important; }
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
   .pv-page{padding:0;min-height:297mm;position:relative}
@@ -3394,6 +3417,16 @@ function renderTafPicker(tafData) {
     }
 
     const hasEta = etaHour !== '' && etaHour != null;
+
+    // Auto-appliquer si une seule période comparable active
+    if (hasEta && compareablePeriods.length === 1) {
+      const { i: autoIdx } = compareablePeriods[0];
+      // Seulement si pas déjà appliqué
+      const alreadyApplied = periodsEl.querySelectorAll?.('.is-applied').length > 0;
+      if (!alreadyApplied && !window._tafManualOverride) {
+        setTimeout(() => applyTafPeriodImpl(autoIdx), 50);
+      }
+    }
 
     periodsEl.innerHTML = forecast.map((p, i) => {
       const type      = p.type_label || p.type || 'FROM';
