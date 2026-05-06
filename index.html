@@ -1072,13 +1072,6 @@ document.getElementById('aircraftSel')?.addEventListener('change', () => {
     }
   }
 
-  function syncDisplays() {
-    syncRegWindArr();
-    const rwd = document.getElementById('regWindDisplay');
-    const cd  = document.getElementById('carenaDisplay');
-    if (rwd) rwd.textContent = useRegWindArr ? '50 % / 150 %' : '100 % réel';
-    if (cd)  cd.textContent  = withSpats  ? 'Avec' : 'Sans (+3 %)';
-  }
   ['btnRegWindOff','btnRegWindOn','spatsWith','spatsWithout'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', () => setTimeout(syncDisplays, 50));
@@ -1848,6 +1841,27 @@ function validateBeforeCompute(side) {
 
 /* ===================== RÉSOLUTION DU VENT POUR CALCUL ===================== */
 // Retourne { w, taActive, note } avec le vent résolu et une note éventuelle
+function syncRegWindArr() {
+  const offArr = document.getElementById('btnRegWindOffArr');
+  const onArr  = document.getElementById('btnRegWindOnArr');
+  if (!offArr || !onArr) return;
+  if (useRegWindArr) {
+    onArr.classList.add('is-selected','is-primary');
+    offArr.classList.remove('is-selected','is-primary');
+  } else {
+    offArr.classList.add('is-selected','is-primary');
+    onArr.classList.remove('is-selected','is-primary');
+  }
+}
+
+function syncDisplays() {
+  syncRegWindArr();
+  const rwd = document.getElementById('regWindDisplay');
+  const cd  = document.getElementById('carenaDisplay');
+  if (rwd) rwd.textContent = useRegWindArr ? '50 % / 150 %' : '100 % réel';
+  if (cd)  cd.textContent  = withSpats  ? 'Avec' : 'Sans (+3 %)';
+}
+
 function setRegWindArr(val) {
   useRegWindArr = val;
   const off = document.getElementById('btnRegWindOffArr');
