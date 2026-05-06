@@ -312,6 +312,8 @@ input[type=number]{-moz-appearance:textfield}
 }
 .rwy-btn:hover{border-color:var(--blue-mid);background:var(--blue-light);transform:translateY(-1px);box-shadow:0 2px 8px rgba(37,99,235,.15)}
 .rwy-btn.active{border-color:var(--blue-mid);background:var(--blue-light);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.rwy-btn.rwy-preferred{border-color:var(--blue-mid);border-width:2px}
+.rwy-btn.rwy-preferred .rwy-desig{color:var(--blue-mid)}
 .rwy-btn.grass-surface{border-color:var(--green-border);background:var(--green-light)}
 .rwy-btn.grass-surface:hover,.rwy-btn.grass-surface.active{border-color:var(--green);box-shadow:0 0 0 3px rgba(5,150,105,.12)}
 .rwy-desig{font:800 16px 'JetBrains Mono',monospace;color:var(--blue);line-height:1}
@@ -370,14 +372,20 @@ input[type=number]{-moz-appearance:textfield}
   width:100%;text-align:left;padding:12px 14px;border-radius:var(--radius-sm);
   font:600 12px 'Inter';color:#92400e;
   background:#fef3c7;border:1.5px solid #fde68a;
-  transition:all .13s;display:flex;align-items:center;gap:10px;
+  transition:all .13s;display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .tw-assume-btn:hover{background:#fde68a;border-color:#f59e0b}
-.tw-assume-btn.active{background:#fde68a;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
-.tw-assume-btn .assume-icon{font-size:18px;flex-shrink:0}
+.tw-assume-btn.active{background:#fef3c7;border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.2)}
+.tw-assume-btn .assume-left{display:flex;align-items:center;gap:10px}
+.tw-assume-btn .assume-icon{font-size:16px;flex-shrink:0}
 .tw-assume-btn .assume-text{display:flex;flex-direction:column;gap:1px}
 .tw-assume-btn .assume-title{font:700 12px 'Inter';color:#78350f}
 .tw-assume-btn .assume-sub{font:400 11px 'Inter';color:#92400e;opacity:.8}
+/* Toggle switch */
+.tw-switch{flex-shrink:0;width:40px;height:22px;border-radius:11px;background:#e5e7eb;border:none;position:relative;transition:background .2s;cursor:pointer;display:inline-block}
+.tw-switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tw-assume-btn.active .tw-switch{background:#f59e0b}
+.tw-assume-btn.active .tw-switch::after{transform:translateX(18px)}
 .tw-check{display:none}
 
 /* ═══════════════════════════════════
@@ -572,12 +580,13 @@ input[type=number]{-moz-appearance:textfield}
    PRINT / PDF
 ═══════════════════════════════════ */
 #printView{display:none}
-@page { size: A4 portrait; margin: 0; }
+@page { size: A4 portrait; margin: 0; orphans: 0; widows: 0; }
 @media print {
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   html, body { height: auto !important; overflow: visible !important; }
-  /* Forcer le thème clair sur le PDF */
-  :root, [data-theme="dark"] { --surface:#fff; --surface-2:#f8fafc; --border:#e2e8f0; --text:#1a2332; --text-2:#475569; --text-3:#94a3b8; background-color:#fff !important; }
+  /* Forcer 1 page et thème clair absolu */
+  html, body, #printView { background:#fff !important; color:#000 !important; }
+  [data-theme="dark"] * { background-color: inherit; color: inherit; }
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
   .pv-page{padding:0;min-height:297mm;position:relative}
@@ -816,11 +825,14 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div id="depTwAssumeWrap" class="tw-assume-wrap">
           <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
-            <span class="assume-icon">⚠️</span>
-            <span class="assume-text">
-              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
-              <span class="assume-sub">Plus restrictif que le vent calculé</span>
+            <span class="assume-left">
+              <span class="assume-icon">⚠️</span>
+              <span class="assume-text">
+                <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+                <span class="assume-sub">Plus restrictif que le vent calculé</span>
+              </span>
             </span>
+            <span class="tw-switch"></span>
           </button>
         </div>
         <div id="depExplain" style="font:400 11px 'Inter';color:var(--text-3);line-height:1.5"></div>
@@ -945,7 +957,7 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number" value="900"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
-          <div class="field"><label class="field-label">Marge (%)</label><div class="field-input" style="display:flex;align-items:center;color:var(--text-3)" id="arrMargeDisplay">30 %</div></div>
+          <div class="field"><label class="field-label">Marge (%)</label><div class="field-input" style="display:flex;align-items:center;color:var(--text);font:700 15px 'JetBrains Mono',monospace" id="arrMargeDisplay">30 %</div></div>
         </div>
         <div class="toggle-wrap">
           <span class="toggle-label">Carénages</span>
@@ -995,11 +1007,14 @@ input[type=number]{-moz-appearance:textfield}
         <div id="arrTafTwSuggest" style="display:none"></div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
           <button id="arrTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('arr')">
-            <span class="assume-icon">⚠️</span>
-            <span class="assume-text">
-              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
-              <span class="assume-sub">Plus restrictif que le vent calculé</span>
+            <span class="assume-left">
+              <span class="assume-icon">⚠️</span>
+              <span class="assume-text">
+                <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+                <span class="assume-sub">Plus restrictif que le vent calculé</span>
+              </span>
             </span>
+            <span class="tw-switch"></span>
           </button>
         </div>
         <div id="arrExplain" style="font:400 11px 'Inter';color:var(--text-3);line-height:1.5"></div>
@@ -1113,10 +1128,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ICAO display */
-  // Reset calcul si marge change
-document.getElementById('safety')?.addEventListener('input', () => {
+  // Reset calcul si marge change + synchro affichage ARR
+document.getElementById('safety')?.addEventListener('input', function() {
   resetComputedState('dep');
   resetComputedState('arr');
+  const arrDisp = document.getElementById('arrMargeDisplay');
+  if (arrDisp) arrDisp.textContent = (this.value || '30') + ' %';
 });
 // Reset calcul si avion change
 document.getElementById('aircraftSel')?.addEventListener('change', () => {
@@ -2634,19 +2651,37 @@ function renderRunwayPicker(side, runways) {
   if (!wrap) return;
   if (!runways || !runways.length) { wrap.style.display = 'none'; return; }
 
+  // Calculer la piste préférentielle selon le vent
+  const windDir = parseInt(document.getElementById(side + 'WindDir')?.value || '0') || 0;
+  const windKt  = +(document.getElementById(side + 'WindKt')?.value || 0);
+  let bestIdx = -1;
+  let bestHead = -Infinity;
+  if (windKt > 0) {
+    runways.forEach((rwy, i) => {
+      const diff = ((windDir - rwy.qfu + 180 + 360) % 360) - 180;
+      const head = Math.cos(diff * Math.PI / 180) * windKt;
+      if (head > bestHead) { bestHead = head; bestIdx = i; }
+    });
+  }
+
   const lenLabel = side === 'dep' ? 'TODA' : 'LDA';
   wrap.innerHTML = `
-    <div class="runway-picker-label">🛣 Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
+    <div class="runway-picker-label">Pistes — cliquer pour remplir QFU + ${lenLabel}</div>
     <div class="rwy-list">
       ${runways.map((rwy, i) => {
         const isGrass   = rwy.surfaceType === 'grass';
-        const surfLabel = isGrass ? '<span style="display:inline-block;width:9px;height:9px;background:#16a34a;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Herbe' : '<span style="display:inline-block;width:9px;height:9px;background:#64748b;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Revêtue';
-        const lenM      = side === 'dep' ? rwy.toraM : rwy.ldaM;
-        return `<button class="rwy-btn${isGrass ? ' grass-surface' : ''}" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})">
+        const isPref    = i === bestIdx && windKt > 0;
+        const surfLabel = isGrass
+          ? '<span style="display:inline-block;width:9px;height:9px;background:#16a34a;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Herbe'
+          : '<span style="display:inline-block;width:9px;height:9px;background:#64748b;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Revêtue';
+        const lenM = side === 'dep' ? rwy.toraM : rwy.ldaM;
+        const prefBadge = isPref ? '<span style="font:700 9px Inter,sans-serif;background:#2563eb;color:#fff;border-radius:4px;padding:1px 5px;margin-top:2px">★ préférentielle</span>' : '';
+        return `<button class="rwy-btn${isGrass ? ' grass-surface' : ''}${isPref ? ' rwy-preferred' : ''}" id="rwy-${side}-${i}" onclick="applyRunway('${side}',${i})">
           <span class="rwy-desig">${rwy.designator}</span>
           <span class="rwy-len">${lenM} m</span>
           <span class="rwy-hdg">${String(rwy.qfu).padStart(3,'0')}°</span>
           <span class="rwy-surf-badge" style="display:flex;align-items:center;gap:2px">${surfLabel}</span>
+          ${prefBadge}
         </button>`;
       }).join('')}
     </div>`;
