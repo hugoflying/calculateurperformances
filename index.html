@@ -2973,6 +2973,44 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
     }
   }
 
+  // Créer des périodes FROM implicites entre les fins de BECMG et le prochain changement
+  // pour couvrir toute la plage du TAF
+  const allEnds = periods.map(p => p.end_time?.dt).filter(Boolean);
+  const allStarts = periods.map(p => p.start_time?.dt).filter(Boolean);
+
+  // Parcourir les BECMG et créer un FROM couvrant [end_becmg, prochain_changement]
+  const implicitPeriods = [];
+  const becmgPeriods = periods.filter(p => p.type === 'BECMG');
+  becmgPeriods.forEach(becmg => {
+    const afterEnd = becmg.end_time?.dt;
+    if (!afterEnd) return;
+    // Trouver la prochaine période qui commence après la fin du BECMG
+    const nextStart = periods
+      .filter(p => p.start_time?.dt && p.start_time.dt > afterEnd && p !== becmg)
+      .sort((a,b) => a.start_time.dt.localeCompare(b.start_time.dt))[0];
+    const implicitEnd = nextStart ? nextStart.start_time : validity.end;
+    if (implicitEnd.dt && implicitEnd.dt > afterEnd) {
+      // Créer un FROM implicite avec le vent prévalent du BECMG
+      implicitPeriods.push({
+        type: 'FROM', type_label: 'FROM',
+        start_time: becmg.end_time, end_time: implicitEnd,
+        wind: becmg.wind, extra_summary: '',
+        wind_direction: becmg.wind_direction,
+        wind_speed: becmg.wind_speed,
+        wind_gust: becmg.wind_gust,
+        _implicit: true,
+      });
+    }
+  });
+  // Ajouter les périodes implicites en évitant les doublons
+  implicitPeriods.forEach(ip => {
+    const overlaps = periods.some(p =>
+      p.type === 'FROM' && p.start_time?.dt && p.end_time?.dt &&
+      p.start_time.dt <= ip.start_time.dt && p.end_time.dt >= ip.end_time.dt
+    );
+    if (!overlaps) periods.push(ip);
+  });
+
   return periods.filter(p => p.start_time?.dt && p.end_time?.dt);
 }
 
