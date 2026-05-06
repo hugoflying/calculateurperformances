@@ -1414,13 +1414,11 @@ function toggleTwAssume(side) {
     arrAssumeTA = !arrAssumeTA;
   }
   const btn = document.getElementById(side + 'TwAssumeBtn');
-  const check = btn.querySelector('.tw-check');
-  if ((side === 'dep' ? depAssumeTA : arrAssumeTA)) {
+  const isActive = side === 'dep' ? depAssumeTA : arrAssumeTA;
+  if (isActive) {
     btn.classList.add('active');
-    check.textContent = '☑';
   } else {
     btn.classList.remove('active');
-    check.textContent = '☐';
   }
   // Si un calcul a déjà été fait, le réinitialiser car c'est un changement significatif
   resetComputedState(side);
