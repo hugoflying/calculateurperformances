@@ -345,7 +345,7 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period{
   display:flex;align-items:stretch;gap:0;
   border:1.5px solid var(--border);border-radius:10px;
-  overflow:hidden;cursor:pointer;transition:border .2s ease,box-shadow .2s ease;background:var(--surface);
+  overflow:hidden;cursor:pointer;transition:box-shadow .2s ease;background:var(--surface);
 }
 .taf-period:hover{border-color:var(--border-strong);box-shadow:var(--shadow-sm)}
 .taf-period.is-current{border-color:var(--green-border);background:var(--green-light);border-width:2px}
@@ -353,16 +353,12 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period.is-tempo{border-style:dashed;border-color:rgba(217,119,6,.5);background:var(--amber-light)}
 .taf-period.is-inactive{opacity:.3}
 .taf-period.is-excluded{opacity:.45;border-style:dotted}
-/* is-applied : renforce la bordure selon le type, texte toujours bleu */
+/* is-applied : box-shadow inset → pas de reflow, transition fluide */
 .taf-period.is-applied .tp-apply{color:var(--blue-mid)!important;font-weight:800}
-/* FROM neutre → bordure gris renforcée */
-.taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){border-width:3px!important;border-color:var(--border-strong)!important}
-/* TEMPO → pointillés qui passent en trait plein et orange vif */
-.taf-period.is-tempo.is-applied{border-width:3px!important;border-style:dashed!important;border-color:var(--amber)!important;box-shadow:none}
-/* ETA principale → bordure verte renforcée */
-.taf-period.is-current.is-applied{border-width:3px!important;border-color:var(--green)!important}
-/* ETA secondaire → bordure bleue renforcée */
-.taf-period.is-eta-other.is-applied{border-width:3px!important;border-color:var(--blue-mid)!important}
+.taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){box-shadow:inset 0 0 0 2px var(--border-strong)}
+.taf-period.is-tempo.is-applied{box-shadow:inset 0 0 0 2px var(--amber)}
+.taf-period.is-current.is-applied{box-shadow:inset 0 0 0 2px var(--green)}
+.taf-period.is-eta-other.is-applied{box-shadow:inset 0 0 0 2px var(--blue-mid)}
 .tp-type-col{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   flex-shrink:0;width:50px;padding:10px 4px;gap:2px;
