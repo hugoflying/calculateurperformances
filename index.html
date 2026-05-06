@@ -520,7 +520,7 @@ input[type=number]{-moz-appearance:textfield}
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
   .pv-page{padding:0;min-height:297mm;position:relative}
-  .pv-header{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:-16mm -14mm 8mm}
+  .pv-header{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:0}
   .pv-header-title{font:700 16pt 'Inter'}
   .pv-header-sub{font:400 8pt 'Inter';opacity:.7;margin-top:2mm}
   .pv-header-right{text-align:right}
@@ -867,6 +867,17 @@ input[type=number]{-moz-appearance:textfield}
     <div class="card">
       <div class="card-head"><span class="card-head-icon"><i data-lucide="scale" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Paramètres avion</span></div>
       <div class="card-body">
+        <div class="field" style="margin-bottom:4px">
+          <label class="field-label">Avion</label>
+          <select id="aircraftSelArr" class="field-input" style="font-family:'JetBrains Mono',monospace;font-weight:600" onchange="document.getElementById('aircraftSel').value=this.value;document.getElementById('aircraftSel').dispatchEvent(new Event('change'))">
+            <option value="" style="color:var(--text-3)">Choisir un avion</option>
+            <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
+            <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
+            <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
+            <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
+            <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
+          </select>
+        </div>
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number" value="900"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><div class="field-input" style="display:flex;align-items:center;color:var(--text-3)" id="arrMargeDisplay">30 %</div></div>
@@ -1347,6 +1358,9 @@ $('#aircraftSel').addEventListener('change', () => {
   updateWindDisplay('arr');
   resetComputedState('dep');
   resetComputedState('arr');
+  // Synchro avec le select ARR
+  const arrSel = document.getElementById('aircraftSelArr');
+  if (arrSel && arrSel.value !== immat) arrSel.value = immat;
 });
 
 /* ===================== TOGGLES ===================== */
@@ -3734,15 +3748,15 @@ function generatePDF() {
   if (arrComputed) cols.push('arr');
 
   const html = `
-  <div class="pv-page">
-    <div class="pv-header">
+  <div class="pv-page" style="padding:0">
+    <div class="pv-header" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:0 0 0 0;page-break-inside:avoid">
       <div>
-        <div class="pv-header-title">Fiche de performances</div>
-        <div class="pv-header-sub">Aéroclub de Beauvais-Tillé · LFOB</div>
+        <div class="pv-header-title" style="font:700 16pt Inter,sans-serif;color:#fff">Fiche de performances</div>
+        <div class="pv-header-sub" style="font:400 8pt Inter,sans-serif;color:rgba(255,255,255,.7);margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB</div>
       </div>
-      <div class="pv-header-right">
-        <div class="pv-header-title">${aircraft}</div>
-        <div class="pv-header-sub">${stamp}</div>
+      <div style="text-align:right">
+        <div style="font:700 16pt Inter,sans-serif;color:#fff">${aircraft}</div>
+        <div style="font:400 8pt Inter,sans-serif;color:rgba(255,255,255,.7);margin-top:2mm">${stamp}</div>
       </div>
     </div>
     <div class="pv-warn">⚠ Calcul préparatoire au vol — Ne remplace pas le manuel de vol. Le commandant de bord est seul responsable de ses décisions opérationnelles.</div>
