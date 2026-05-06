@@ -649,6 +649,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="field" style="margin-bottom:4px">
           <label class="field-label">Avion</label>
           <select id="aircraftSel" class="field-input" style="font-family:'JetBrains Mono',monospace;font-weight:600">
+            <option value="" disabled selected style="color:var(--text-3)">Choisir un avion</option>
             <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
             <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
             <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
@@ -3348,9 +3349,26 @@ function applyMetarWindOnly(side, data) {
 window._tafManualOverride = false;
 
 function applyTafPeriodImpl(idx) {
+  const periodsEl = document.getElementById('arrTafPeriods');
+  const forecast  = periodsEl._forecast;
+  const period    = forecast?.[idx];
+
+  // Bloquer l'application des phénomènes passagers
+  if (period) {
+    const t = (period.type_label || period.type || '').toUpperCase();
+    const isPassager = (t === 'TEMPO' && period.wx_type === 'transient')
+      || /PROB(?:30|40).*TEMPO/.test(t)
+      || t === 'PROB30';
+    if (isPassager) {
+      const el = periodsEl.querySelectorAll('.taf-period')[idx];
+      if (el) { el.style.opacity = '.4'; setTimeout(() => el.style.opacity = '', 300); }
+      return;
+    }
+  }
+
   window._tafManualOverride = true;
   // Marquer visuellement la période appliquée
-  const periodsEl = document.getElementById('arrTafPeriods');
+
   periodsEl.querySelectorAll('.taf-period').forEach(el => {
     el.classList.remove('is-applied');
     const applySpan = el.querySelector('.tp-apply');
@@ -3365,8 +3383,7 @@ function applyTafPeriodImpl(idx) {
       applySpan.textContent = '✓ appliqué';
     }
   }
-  const forecast = periodsEl._forecast;
-  const period   = forecast?.[idx];
+  // forecast et period déjà définis en début de fonction
   if (!period || !period.wind) return;
 
   const dirRepr = (period.wind_direction?.repr || period.wind?.dir || '').toUpperCase();
