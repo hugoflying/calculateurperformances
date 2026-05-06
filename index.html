@@ -48,6 +48,43 @@ input[type=number]{-moz-appearance:textfield}
   --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.05);
   --shadow-sm:0 1px 2px rgba(0,0,0,.05);
 }
+[data-theme="dark"]{
+  --blue:#1e3a5f;
+  --blue-mid:#60a5fa;
+  --blue-light:#1e3a5f;
+  --blue-border:#1e40af;
+  --green:#10b981;
+  --green-light:#064e3b;
+  --green-border:#065f46;
+  --amber:#fbbf24;
+  --amber-light:#451a03;
+  --red:#f87171;
+  --red-light:#450a0a;
+  --surface:#1e2535;
+  --surface-2:#161c29;
+  --border:#2d3748;
+  --border-strong:#4a5568;
+  --text:#f1f5f9;
+  --text-2:#94a3b8;
+  --text-3:#64748b;
+  --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.2);
+}
+[data-theme="dark"] body{background:#111827}
+[data-theme="dark"] .topbar{background:#111827}
+[data-theme="dark"] .tabbar{background:var(--surface-2)}
+[data-theme="dark"] .field-input{background:var(--surface);color:var(--text)}
+[data-theme="dark"] .field-input:focus{background:#252f3f}
+[data-theme="dark"] .toggle-group{background:var(--surface-2)}
+[data-theme="dark"] .wind-cell{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .rm-footer-btn{background:var(--surface-2);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .metar-box{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .col-hd.dep{background:linear-gradient(135deg,#1e3a5f,#1e40af)}
+[data-theme="dark"] .col-hd.arr{background:linear-gradient(135deg,#064e3b,#047857)}
+[data-theme="dark"] .seg{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .seg-btn.on{background:var(--surface-2)}
+[data-theme="dark"] .taf-period{background:var(--surface-2)}
+[data-theme="dark"] .readme-body,.readme-toggle{background:var(--surface);border-color:var(--border)}
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar{width:3px}
@@ -533,11 +570,11 @@ input[type=number]{-moz-appearance:textfield}
   .pv-param-value{font:700 8pt 'JetBrains Mono',monospace;color:#1a2332}
   .pv-cols{display:flex;gap:6mm;padding:0 14mm}
   .pv-col{flex:1}
-  .pv-col-head{padding:5mm 6mm;color:#fff;font:700 11pt 'Inter'}
+  .pv-col-head{padding:5mm 6mm;color:#fff;font:700 11pt 'Inter';border-radius:2mm 2mm 0 0}
   .pv-col-head.dep{background:#1e3a5f}
   .pv-col-head.arr{background:#047857}
   .pv-col-icao{font:400 7pt 'Inter';opacity:.7;margin-top:1mm}
-  .pv-verdict{padding:5mm;border:1.5pt solid;border-radius:0 0 2mm 2mm;margin-bottom:4mm;text-align:center}
+  .pv-verdict{padding:5mm;border:1.5pt solid;border-radius:2mm;margin-bottom:4mm;text-align:center}
   .pv-verdict.ok{border-color:#a7f3d0;background:#ecfdf5}
   .pv-verdict.bad{border-color:#fca5a5;background:#fef2f2}
   .pv-verdict.neu{border-color:#e2e8f0;background:#f8fafc}
@@ -546,8 +583,8 @@ input[type=number]{-moz-appearance:textfield}
   .pv-verdict.bad .pv-verdict-label{color:#dc2626}
   .pv-verdict.neu .pv-verdict-label{color:#94a3b8}
   .pv-verdict-dist{font:400 8pt 'Inter';color:#64748b;margin-top:2mm}
-  .pv-section-head{font:700 6.5pt 'Inter';text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:2mm 4mm;background:#f1f5f9;border-bottom:1pt solid #e2e8f0;margin-top:3mm}
-  .pv-row{display:flex;justify-content:space-between;padding:2mm 4mm;border-bottom:.5pt solid #f1f5f9;font:400 7.5pt 'Inter'}
+  .pv-section-head{font:700 6.5pt 'Inter';text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:2mm 4mm;background:#f1f5f9;border-bottom:1pt solid #e2e8f0;margin-top:3mm;border-radius:1.5mm 1.5mm 0 0}
+  .pv-row{display:flex;justify-content:space-between;padding:2mm 4mm;border-bottom:.5pt solid #e2e8f0;font:400 7.5pt 'Inter'}
   .pv-row:last-child{border-bottom:none;font-weight:600}
   .pv-row-val{font:700 7.5pt 'JetBrains Mono',monospace;color:#1e3a5f}
   .pv-arr .pv-row-val{color:#047857}
@@ -602,7 +639,10 @@ input[type=number]{-moz-appearance:textfield}
     <div class="rm-foot">
       <div style="display:flex;flex-direction:column;gap:8px">
         <button id="btnPrint" class="rm-footer-btn" style="background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);width:100%" disabled>📄 Exporter le PDF</button>
-        <button id="rmFooterBtn" class="rm-footer-btn" onclick="closeResultsModal()" style="width:100%">← Modifier les paramètres</button>
+        <div style="display:flex;gap:8px">
+          <button id="rmFooterBtn" class="rm-footer-btn" onclick="closeResultsModal()" style="flex:1">← Modifier les paramètres</button>
+          <button id="rmSwitchBtn" class="rm-footer-btn" style="flex:1;display:none" onclick="switchToOtherSide()">Calculer l'atterrissage →</button>
+        </div>
       </div>
     </div>
   </div>
@@ -613,6 +653,7 @@ input[type=number]{-moz-appearance:textfield}
   <div class="topbar-brand">
     <span class="topbar-title">ACBT — Calculateur de performances</span>
   </div>
+  <button id="btnDark" onclick="toggleDark()" title="Mode sombre" style="flex-shrink:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);width:32px;height:32px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer">🌙</button>
 </header>
 
 <!-- Settings bar supprimée - marge dans Paramètres avion -->
@@ -2133,12 +2174,18 @@ function updateCalcButton(side) {
   const current = getInputSnapshot(side);
   const changed  = snap !== null && snap !== current;
 
-  // Le bouton reste toujours dans le même style
+  const _isCalc = side === 'dep' ? depComputed : arrComputed;
   btn.className = 'calc-btn ' + side;
   btn.style.background = '';
-  btn.textContent = side === 'dep'
-    ? 'Calculer les performances au décollage'
-    : "Calculer les performances à l'atterrissage";
+  if (_isCalc) {
+    btn.textContent = side === 'dep'
+      ? '✓ Performances de décollage calculées'
+      : "✓ Performances d'atterrissage calculées";
+  } else {
+    btn.textContent = side === 'dep'
+      ? 'Calculer les performances au décollage'
+      : "Calculer les performances à l'atterrissage";
+  }
 }
 
 // Surveiller les changements d'inputs pour réinitialiser l'état calculé
@@ -2325,6 +2372,15 @@ function showResultsContent(side) {
   const footerBtn = document.getElementById('rmFooterBtn');
   footerBtn.className = 'rm-footer-btn';
   footerBtn.textContent = '← Modifier les paramètres';
+  // Bouton switch vers l'autre côté
+  const switchBtn = document.getElementById('rmSwitchBtn');
+  if (switchBtn) {
+    const otherDone = side === 'dep' ? false : depComputed;
+    const otherLabel = side === 'dep' ? "Calculer l'atterrissage →" : "← Calculer le décollage";
+    switchBtn.textContent = otherLabel;
+    switchBtn.style.display = 'block';
+  }
+
   // PDF : disponible seulement si le vol est faisable
   const printBtn = document.getElementById('btnPrint');
   if (printBtn) {
@@ -2355,8 +2411,16 @@ function closeResultsModal() {
   }, 400);
 }
 
-document.getElementById('btnCalcDep').addEventListener('click', () => openResultsModal('dep', computeDepPerf));
-document.getElementById('btnCalcArr').addEventListener('click', () => openResultsModal('arr', computeArrPerf));
+document.getElementById('btnCalcDep').addEventListener('click', () => {
+  const av = document.getElementById('aircraftSel').value;
+  if (!av) { showValidMsg('dep', '⚠ Choisir un avion avant de calculer.'); return; }
+  openResultsModal('dep', computeDepPerf);
+});
+document.getElementById('btnCalcArr').addEventListener('click', () => {
+  const av = document.getElementById('aircraftSel').value;
+  if (!av) { showValidMsg('arr', '⚠ Choisir un avion avant de calculer.'); return; }
+  openResultsModal('arr', computeArrPerf);
+});
 
 /* ===================== METAR (AVWX) ===================== */
 const AVWX_TOKEN = 'uzx2VSQfIvukrEMHF_VsGealm3SCHuE4BrB9sreJACc';
@@ -3137,7 +3201,14 @@ function renderTafPicker(tafData) {
       const opt = document.createElement('option');
       opt.value = String(optIdx++);
       const nextH = new Date(cur.getTime() + 3600000);
-      opt.textContent = pad2(cur.getUTCHours()) + 'h – ' + pad2(nextH.getUTCHours()) + 'h UTC';
+      // Afficher en heure locale avec indication UTC entre parenthèses
+      const localH    = cur.getHours();
+      const localHEnd = nextH.getHours();
+      const utcH      = cur.getUTCHours();
+      const utcHEnd   = nextH.getUTCHours();
+      const localStr  = pad2(localH) + 'h – ' + pad2(localHEnd) + 'h';
+      const utcStr    = pad2(utcH) + 'z – ' + pad2(utcHEnd) + 'z';
+      opt.textContent = localStr + '  (' + utcStr + ')';
       opt.dataset.ts = String(cur.getTime()); // timestamp réel pour periodContainsEta
       grp.appendChild(opt);
       cur = new Date(cur.getTime() + 3600000);
@@ -3820,6 +3891,39 @@ function toggleReadme() {
 }
 
 // SW registration
+function toggleDark() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('btnDark').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('acbt-theme', isDark ? 'light' : 'dark');
+}
+// Restaurer le thème au chargement
+(function() {
+  const saved = localStorage.getItem('acbt-theme');
+  if (saved === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btnDark');
+      if (btn) btn.textContent = '☀️';
+    });
+  }
+})();
+
+function switchToOtherSide() {
+  const side = document.getElementById('rmType')?.textContent?.includes('Décollage') ? 'dep' : 'arr';
+  const otherSide = side === 'dep' ? 'arr' : 'dep';
+  closeResultsModal();
+  // Sur mobile : switcher l'onglet
+  if (window.innerWidth < 900) {
+    setTimeout(() => switchTab(otherSide), 420);
+  }
+  // Scroller vers le bouton de l'autre côté
+  setTimeout(() => {
+    const btn = document.getElementById(otherSide === 'dep' ? 'btnCalcDep' : 'btnCalcArr');
+    btn?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 450);
+}
+
 function toggleGustVisible(side, val) {
   const row = document.getElementById(side + 'GustRow');
   if (row) row.style.display = (+val > 0) ? 'block' : 'none';
