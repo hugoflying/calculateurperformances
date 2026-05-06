@@ -1201,7 +1201,9 @@ let profile      = 'DR400';
 let depSurface   = 'hard';
 let depWetFactor = 1.0;   // 1.0 sèche | 1.15 mouillée | 1.60 très courte mouillée
 let arrWetFactor = 1.0;
-let useRegWind   = false; // facteur réglementaire : ×50% face / ×150% arrière (EASA CAT.POL.A)
+let useRegWind    = false; // facteur réglementaire : ×50% face / ×150% arrière (EASA CAT.POL.A)
+let useRegWindDep = false; // vent réglementaire côté décollage (indépendant)
+let useRegWindArr = false; // vent réglementaire côté atterrissage (indépendant)
 let lastDepMetarRaw = '—';
 let lastArrMetarRaw = '—';
 let lastArrTafRaw   = '—';
@@ -1330,8 +1332,8 @@ $('#arrGrassDry').onclick       = () => { arrWetFactor = 1.0;  setToggleActive($
 $('#arrGrassWet').onclick       = () => { arrWetFactor = 1.15; setToggleActive($('#arrGrassWet'), $('#arrGrassDry'), $('#arrGrassWetShort')); resetComputedState('arr'); };
 $('#arrGrassWetShort').onclick  = () => { arrWetFactor = 1.60; setToggleActive($('#arrGrassWetShort'), $('#arrGrassDry'), $('#arrGrassWet')); resetComputedState('arr'); };
 
-$('#btnRegWindOff').onclick = () => { useRegWindDep = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); };
-$('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); };
+$('#btnRegWindOff').onclick = () => { useRegWindDep = false; useRegWind = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); };
+$('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  useRegWind = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); };
 
 /* ===================== MARGE ===================== */
 $('#safety').addEventListener('input', () => {
