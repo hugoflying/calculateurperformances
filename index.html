@@ -353,18 +353,16 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period.is-tempo{border-style:dashed;border-color:rgba(217,119,6,.5);background:var(--amber-light)}
 .taf-period.is-inactive{opacity:.3}
 .taf-period.is-excluded{opacity:.45;border-style:dotted}
-/* is-applied : renforce la bordure existante selon le type de période */
-.taf-period.is-applied{border-width:3px!important;box-shadow:0 0 0 1px currentColor;outline:none}
-/* Période normale (FROM) appliquée → bordure grise renforcée */
-.taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){border-color:var(--border-strong)!important;box-shadow:0 0 0 1px var(--border-strong)}
-/* TEMPO appliqué → bordure orange renforcée, reste dashed */
-.taf-period.is-tempo.is-applied{border-color:var(--amber)!important;border-style:dashed!important;box-shadow:0 0 0 1px var(--amber)}
-/* Période ETA principale appliquée → bordure verte renforcée */
-.taf-period.is-current.is-applied{border-color:var(--green)!important;box-shadow:0 0 0 1px var(--green)}
-/* Période ETA secondaire appliquée → bordure bleue renforcée */
-.taf-period.is-eta-other.is-applied{border-color:var(--blue-mid)!important;box-shadow:0 0 0 1px var(--blue-mid)}
-/* Texte "appliqué" hérite de la couleur de type */
-.taf-period.is-applied .tp-apply{font-weight:800}
+/* is-applied : renforce la bordure selon le type, texte toujours bleu */
+.taf-period.is-applied .tp-apply{color:var(--blue-mid)!important;font-weight:800}
+/* FROM neutre → bordure gris renforcée */
+.taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){border-width:3px!important;border-color:var(--border-strong)!important}
+/* TEMPO → pointillés qui passent en trait plein et orange vif */
+.taf-period.is-tempo.is-applied{border-width:3px!important;border-style:dashed!important;border-color:var(--amber)!important;box-shadow:none}
+/* ETA principale → bordure verte renforcée */
+.taf-period.is-current.is-applied{border-width:3px!important;border-color:var(--green)!important}
+/* ETA secondaire → bordure bleue renforcée */
+.taf-period.is-eta-other.is-applied{border-width:3px!important;border-color:var(--blue-mid)!important}
 .tp-type-col{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   flex-shrink:0;width:50px;padding:10px 4px;gap:2px;
