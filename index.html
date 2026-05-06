@@ -3656,6 +3656,11 @@ function applyTafPeriodImpl(idx) {
   lastArrTafPeriodDesc = `${type} ${t1}→${t2} · ${wind}${period.extra_summary ? ' · ' + period.extra_summary : ''}`;
 
   updateWindDisplay('arr');
+  // Rafraîchir la piste préférentielle ARR avec le vent TAF
+  setTimeout(() => {
+    const _pk = document.getElementById('arrRunwayPicker');
+    if (_pk && _pk._runways && _pk._runways.length) renderRunwayPicker('arr', _pk._runways);
+  }, 50);
 
   document.querySelectorAll('.taf-period').forEach((el, i) => {
     el.style.outline = i === idx ? '2px solid var(--arr)' : '';
