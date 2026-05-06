@@ -3749,17 +3749,19 @@ function generatePDF() {
 
   const html = `
   <div class="pv-page" style="padding:0">
-    <div class="pv-header" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:0 0 0 0;page-break-inside:avoid">
-      <div>
-        <div class="pv-header-title" style="font:700 16pt Inter,sans-serif;color:#fff">Fiche de performances</div>
-        <div class="pv-header-sub" style="font:400 8pt Inter,sans-serif;color:rgba(255,255,255,.7);margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font:700 16pt Inter,sans-serif;color:#fff">${aircraft}</div>
-        <div style="font:400 8pt Inter,sans-serif;color:rgba(255,255,255,.7);margin-top:2mm">${stamp}</div>
-      </div>
-    </div>
-    <div class="pv-warn">⚠ Calcul préparatoire au vol — Ne remplace pas le manuel de vol. Le commandant de bord est seul responsable de ses décisions opérationnelles.</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;margin-bottom:0">
+      <tr>
+        <td style="padding:10mm 14mm;vertical-align:middle">
+          <div style="font:800 18pt Arial,sans-serif;color:#fff;letter-spacing:-.02em">FICHE DE PERFORMANCES</div>
+          <div style="font:400 8pt Arial,sans-serif;color:rgba(255,255,255,.65);margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB · Calcul préparatoire au vol</div>
+        </td>
+        <td style="padding:10mm 14mm;vertical-align:middle;text-align:right">
+          <div style="font:800 20pt 'Courier New',monospace;color:#fff;letter-spacing:.02em">${aircraft}</div>
+          <div style="font:400 8pt Arial,sans-serif;color:rgba(255,255,255,.65);margin-top:2mm">${stamp}</div>
+        </td>
+      </tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff7ed;border-top:2pt solid #ea580c;border-bottom:2pt solid #ea580c;margin-bottom:0"><tr><td style="padding:3mm 14mm;font:600 7pt Arial,sans-serif;color:#c2410c">⚠&nbsp; Calcul préparatoire au vol — Ne remplace pas le manuel de vol. Le commandant de bord est seul responsable de ses décisions opérationnelles.</td></tr></table>
     <div class="pv-params">
       ${params.map(([l,v])=>`<div class="pv-param"><div class="pv-param-label">${l}</div><div class="pv-param-value">${v}</div></div>`).join('')}
     </div>
