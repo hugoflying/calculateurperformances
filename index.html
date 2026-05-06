@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -520,20 +519,20 @@ input[type=number]{-moz-appearance:textfield}
 @media print {
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
-  .pv-page{padding:16mm 14mm;min-height:297mm;position:relative}
-  .pv-header{background:#1e3a5f;color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:-16mm -14mm 8mm}
+  .pv-page{padding:0;min-height:297mm;position:relative}
+  .pv-header{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:-16mm -14mm 8mm}
   .pv-header-title{font:700 16pt 'Inter'}
   .pv-header-sub{font:400 8pt 'Inter';opacity:.7;margin-top:2mm}
   .pv-header-right{text-align:right}
-  .pv-warn{background:#fff7ed;border:1pt solid #f97316;padding:4mm 6mm;font:600 7.5pt 'Inter';color:#c2410c;margin-bottom:6mm;border-radius:2mm}
-  .pv-params{display:flex;gap:4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:2mm;padding:4mm 6mm;margin-bottom:6mm}
+  .pv-warn{background:#fff7ed;border-top:2pt solid #f97316;border-bottom:2pt solid #f97316;padding:4mm 14mm;font:600 7.5pt 'Inter';color:#c2410c;margin-bottom:6mm}
+  .pv-params{display:flex;gap:4mm;background:#f8fafc;border:1pt solid #e2e8f0;padding:4mm 14mm;margin-bottom:6mm}
   .pv-param{flex:1;border-right:1pt solid #e2e8f0;padding-right:4mm}
   .pv-param:last-child{border-right:none}
   .pv-param-label{font:400 6pt 'Inter';text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:1mm}
   .pv-param-value{font:700 8pt 'JetBrains Mono',monospace;color:#1a2332}
-  .pv-cols{display:flex;gap:6mm}
+  .pv-cols{display:flex;gap:6mm;padding:0 14mm}
   .pv-col{flex:1}
-  .pv-col-head{padding:4mm 5mm;border-radius:2mm 2mm 0 0;color:#fff;font:700 10pt 'Inter'}
+  .pv-col-head{padding:5mm 6mm;color:#fff;font:700 11pt 'Inter'}
   .pv-col-head.dep{background:#1e3a5f}
   .pv-col-head.arr{background:#047857}
   .pv-col-icao{font:400 7pt 'Inter';opacity:.7;margin-top:1mm}
@@ -541,7 +540,7 @@ input[type=number]{-moz-appearance:textfield}
   .pv-verdict.ok{border-color:#a7f3d0;background:#ecfdf5}
   .pv-verdict.bad{border-color:#fca5a5;background:#fef2f2}
   .pv-verdict.neu{border-color:#e2e8f0;background:#f8fafc}
-  .pv-verdict-label{font:700 14pt 'Inter';letter-spacing:-.01em}
+  .pv-verdict-label{font:800 18pt 'Inter';letter-spacing:-.02em}
   .pv-verdict.ok .pv-verdict-label{color:#059669}
   .pv-verdict.bad .pv-verdict-label{color:#dc2626}
   .pv-verdict.neu .pv-verdict-label{color:#94a3b8}
@@ -3688,7 +3687,7 @@ function generatePDF() {
       ].map(([l,v2])=>`<div class="pv-row"><span>${l}</span><span class="pv-row-val">${v2}</span></div>`).join('')}
       <div class="pv-section-head">Détail calcul</div>
       ${dRows.map(([l,v2],i)=>`<div class="pv-row ${i===dRows.length-1?'':''}"><span>${l}</span><span class="pv-row-val">${v2}</span></div>`).join('')}
-      ${metar?`<div class="pv-section-head">METAR / TAF</div><div class="pv-metar">${metar}</div>`:''}
+      ${metar?`<div class="pv-section-head">${dep ? 'METAR' : (lastArrTafRaw && lastArrTafRaw !== '—' ? 'TAF' : 'METAR')}</div><div class="pv-metar">${metar}</div>`:''}
     </div>`;
   };
 
@@ -3778,12 +3777,6 @@ function applyGustVisibility(side, gustVal) {
   const row = document.getElementById(side + 'GustRow');
   if (row) row.style.display = (+gustVal > 0) ? 'block' : 'none';
 }
-
-// Initialiser les icônes Lucide
-if (typeof lucide !== 'undefined') lucide.createIcons();
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof lucide !== 'undefined') lucide.createIcons();
-});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -3905,5 +3898,6 @@ if ('serviceWorker' in navigator) {
   obs.observe(fill, { attributes: true, attributeFilter: ['class'] });
 })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js" onload="lucide.createIcons()"></script>
 </body>
 </html>
