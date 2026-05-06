@@ -2651,12 +2651,6 @@ async function fetchRunways(icao) {
     });
 }
 
-  // Mise à jour vent + piste préférentielle
-  updateWindDisplay(side);
-  setTimeout(() => {
-    const pk = document.getElementById(side + 'RunwayPicker');
-    if (pk && pk._runways && pk._runways.length) renderRunwayPicker(side, pk._runways);
-  }, 50);
 
 function renderRunwayPicker(side, runways) {
   const wrap = document.getElementById(side + 'RunwayPicker');
