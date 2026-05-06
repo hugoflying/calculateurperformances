@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -191,7 +192,8 @@ input[type=number]{-moz-appearance:textfield}
 ═══════════════════════════════════ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
 .card-head{padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
-.card-head-icon{font-size:14px;opacity:.6}
+.card-head-icon{display:flex;align-items:center;opacity:.6}
+.card-head-icon i[data-lucide]{display:block}
 .card-head-title{font:700 11px 'Inter';text-transform:uppercase;letter-spacing:.07em;color:var(--text-3)}
 .card-body{padding:14px;display:flex;flex-direction:column;gap:12px}
 
@@ -510,6 +512,48 @@ input[type=number]{-moz-appearance:textfield}
 
 /* Footer */
 .app-footer{text-align:center;padding:12px 16px;font:400 11px 'Inter';color:var(--text-3);border-top:1px solid var(--border)}
+
+/* ═══════════════════════════════════
+   PRINT / PDF
+═══════════════════════════════════ */
+#printView{display:none}
+@media print {
+  body > *:not(#printView){display:none!important}
+  #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
+  .pv-page{padding:16mm 14mm;min-height:297mm;position:relative}
+  .pv-header{background:#1e3a5f;color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin:-16mm -14mm 8mm}
+  .pv-header-title{font:700 16pt 'Inter'}
+  .pv-header-sub{font:400 8pt 'Inter';opacity:.7;margin-top:2mm}
+  .pv-header-right{text-align:right}
+  .pv-warn{background:#fff7ed;border:1pt solid #f97316;padding:4mm 6mm;font:600 7.5pt 'Inter';color:#c2410c;margin-bottom:6mm;border-radius:2mm}
+  .pv-params{display:flex;gap:4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:2mm;padding:4mm 6mm;margin-bottom:6mm}
+  .pv-param{flex:1;border-right:1pt solid #e2e8f0;padding-right:4mm}
+  .pv-param:last-child{border-right:none}
+  .pv-param-label{font:400 6pt 'Inter';text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:1mm}
+  .pv-param-value{font:700 8pt 'JetBrains Mono',monospace;color:#1a2332}
+  .pv-cols{display:flex;gap:6mm}
+  .pv-col{flex:1}
+  .pv-col-head{padding:4mm 5mm;border-radius:2mm 2mm 0 0;color:#fff;font:700 10pt 'Inter'}
+  .pv-col-head.dep{background:#1e3a5f}
+  .pv-col-head.arr{background:#047857}
+  .pv-col-icao{font:400 7pt 'Inter';opacity:.7;margin-top:1mm}
+  .pv-verdict{padding:5mm;border:1.5pt solid;border-radius:0 0 2mm 2mm;margin-bottom:4mm;text-align:center}
+  .pv-verdict.ok{border-color:#a7f3d0;background:#ecfdf5}
+  .pv-verdict.bad{border-color:#fca5a5;background:#fef2f2}
+  .pv-verdict.neu{border-color:#e2e8f0;background:#f8fafc}
+  .pv-verdict-label{font:700 14pt 'Inter';letter-spacing:-.01em}
+  .pv-verdict.ok .pv-verdict-label{color:#059669}
+  .pv-verdict.bad .pv-verdict-label{color:#dc2626}
+  .pv-verdict.neu .pv-verdict-label{color:#94a3b8}
+  .pv-verdict-dist{font:400 8pt 'Inter';color:#64748b;margin-top:2mm}
+  .pv-section-head{font:700 6.5pt 'Inter';text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:2mm 4mm;background:#f1f5f9;border-bottom:1pt solid #e2e8f0;margin-top:3mm}
+  .pv-row{display:flex;justify-content:space-between;padding:2mm 4mm;border-bottom:.5pt solid #f1f5f9;font:400 7.5pt 'Inter'}
+  .pv-row:last-child{border-bottom:none;font-weight:600}
+  .pv-row-val{font:700 7.5pt 'JetBrains Mono',monospace;color:#1e3a5f}
+  .pv-arr .pv-row-val{color:#047857}
+  .pv-metar{font:400 6.5pt 'JetBrains Mono',monospace;padding:3mm 4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:1.5mm;white-space:pre-wrap;word-break:break-all;margin-top:2mm;color:#475569}
+  .pv-footer{position:fixed;bottom:10mm;left:14mm;right:14mm;display:flex;justify-content:space-between;font:400 6pt 'Inter';color:#94a3b8;border-top:1pt solid #e2e8f0;padding-top:2mm}
+}
 </style>
 </head>
 <body>
@@ -517,7 +561,6 @@ input[type=number]{-moz-appearance:textfield}
 <!-- DISCLAIMER -->
 <div id="modalDisclaimer" class="disc-overlay is-active">
   <div class="disc-box" style="text-align:center;max-width:420px">
-    <div style="font-size:48px;margin-bottom:12px">✈️</div>
     <div style="font:800 20px 'Inter';color:var(--text);margin-bottom:6px;letter-spacing:-.02em">ACBT Performances</div>
     <div style="font:400 13px 'Inter';color:var(--text-3);margin-bottom:20px">Aéroclub de Beauvais-Tillé · LFOB</div>
     <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:12px 14px;font:500 12px 'Inter';color:var(--red);line-height:1.6;margin-bottom:20px;text-align:left">
@@ -576,8 +619,8 @@ input[type=number]{-moz-appearance:textfield}
 
 <!-- TAB BAR (mobile) -->
 <div class="tabbar">
-  <button id="tabDep" class="tab-btn is-active dep" onclick="switchTab('dep')">✈ Décollage</button>
-  <button id="tabArr" class="tab-btn arr" onclick="switchTab('arr')">🛬 Atterrissage</button>
+  <button id="tabDep" class="tab-btn is-active dep" onclick="switchTab('dep')">Décollage</button>
+  <button id="tabArr" class="tab-btn arr" onclick="switchTab('arr')">Atterrissage</button>
 </div>
 
 <!-- LAYOUT -->
@@ -599,7 +642,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Aéroport -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">📡</span><span class="card-head-title">Aéroport</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="radio" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Aéroport</span></div>
       <div class="card-body">
         <div class="icao-row">
           <div class="field">
@@ -614,7 +657,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Piste -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">🛣</span><span class="card-head-title">Piste</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="gauge" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Piste</span></div>
       <div class="card-body">
         <div class="row-3">
           <div class="field"><label class="field-label">QFU</label><input id="depQfu" class="field-input" type="number"/></div>
@@ -644,12 +687,12 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Paramètres avion DEP -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">⚖️</span><span class="card-head-title">Paramètres avion</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="scale" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Paramètres avion</span></div>
       <div class="card-body">
         <div class="field" style="margin-bottom:4px">
           <label class="field-label">Avion</label>
           <select id="aircraftSel" class="field-input" style="font-family:'JetBrains Mono',monospace;font-weight:600">
-            <option value="" disabled selected style="color:var(--text-3)">Choisir un avion</option>
+            <option value="" selected style="color:var(--text-3)">Choisir un avion</option>
             <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
             <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
             <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
@@ -675,7 +718,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Vent -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">💨</span><span class="card-head-title">Météo</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="wind" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Météo</span></div>
       <div class="card-body">
         <div id="depWindGrid" class="row-3">
           <div class="field"><label class="field-label">Direction</label><input id="depWindDir" class="field-input" type="text"/></div>
@@ -731,7 +774,7 @@ input[type=number]{-moz-appearance:textfield}
     </div>
 
     <div id="depPerfDetail" class="card" style="display:none">
-      <div class="card-head"><span class="card-head-icon">📊</span><span class="card-head-title">Détail calcul</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="bar-chart-2" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Détail calcul</span></div>
       <div class="card-body">
         <div class="pf-row"><span class="pf-label">Roulement sans marge</span><span class="pf-val" id="toBaseRoll">—</span></div>
         <div class="pf-row"><span class="pf-label">Passage 15 m sans marge</span><span class="pf-val" id="toBasePass">—</span></div>
@@ -765,7 +808,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Station + TAF -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">📡</span><span class="card-head-title">Aéroport</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="radio" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Aéroport</span></div>
       <div class="card-body">
         <div class="icao-row">
           <div class="field">
@@ -795,7 +838,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Piste -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">🛣</span><span class="card-head-title">Piste</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="gauge" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Piste</span></div>
       <div class="card-body">
         <div class="row-3">
           <div class="field"><label class="field-label">QFU</label><input id="arrQfu" class="field-input" type="number"/></div>
@@ -823,7 +866,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Conditions -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">⚖️</span><span class="card-head-title">Paramètres avion</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="scale" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Paramètres avion</span></div>
       <div class="card-body">
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number" value="900"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
@@ -842,7 +885,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Vent -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon">💨</span><span class="card-head-title">Météo</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="wind" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Météo</span></div>
       <div class="card-body">
         <div id="arrWindGrid" class="row-3">
           <div class="field"><label class="field-label">Direction</label><input id="arrWindDir" class="field-input" type="text"/></div>
@@ -898,7 +941,7 @@ input[type=number]{-moz-appearance:textfield}
     </div>
 
     <div id="arrPerfDetail" class="card" style="display:none">
-      <div class="card-head"><span class="card-head-icon">📊</span><span class="card-head-title">Détail calcul</span></div>
+      <div class="card-head"><span class="card-head-icon"><i data-lucide="bar-chart-2" style="width:14px;height:14px;stroke-width:2"></i></span><span class="card-head-title">Détail calcul</span></div>
       <div class="card-body">
         <div class="pf-row"><span class="pf-label">Roulement sans marge</span><span class="pf-val" id="ldgBaseRoll">—</span></div>
         <div class="pf-row"><span class="pf-label">Passage 15 m sans marge</span><span class="pf-val" id="ldgBasePass">—</span></div>
@@ -962,6 +1005,7 @@ input[type=number]{-moz-appearance:textfield}
 </div>
 
 <footer class="app-footer">Manuels DR400 et DR300 — Aéroclub de Beauvais-Tillé · LFOB</footer>
+<div id="printView"></div>
 
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
 
@@ -2213,7 +2257,7 @@ function showResultsContent(side) {
   const rmKpiCard = document.getElementById('rmKpiCard');
 
   header.className   = 'rm-header ' + (isOk ? 'is-ok' : isBad ? 'is-bad' : 'is-neutral');
-  rmType.textContent = isDep ? '✈ Décollage' : '🛬 Atterrissage';
+  rmType.textContent = isDep ? 'Décollage' : 'Atterrissage';
   rmKpiCard.className = 'rm-kpi-card ' + (isOk ? 'is-ok' : isBad ? 'is-bad' : '');
 
   if (isOk) {
@@ -3566,251 +3610,128 @@ function sunsetUtc(lat, lon, date = new Date()) {
   return { h, m, str: pad(h) + ':' + pad(m) };
 }
 
-async function generatePDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-
-  // ── Constantes ───────────────────────────────────────
-  const PW=210, PH=297, M=14, W=PW-M*2;
-
-  // ── Couleurs ─────────────────────────────────────────
-  const NAVY=[14,48,112], BLUE=[37,99,235], GREEN=[5,150,105];
-  const RED=[220,38,38],  AMBER=[217,119,6];
-  const BG=[248,250,252], BORDER=[226,232,240];
-  const DARK=[15,23,42],  GRAY=[100,116,139], WHITE=[255,255,255];
-  const BLUE_L=[219,234,254], GREEN_L=[209,250,229], RED_L=[254,226,226];
-
-  // ── Helpers ──────────────────────────────────────────
-  const F=(x,y,w,h,c)=>{doc.setFillColor(...c);doc.rect(x,y,w,h,'F')};
-  const R=(x,y,w,h,c,lw=.3)=>{doc.setDrawColor(...c);doc.setLineWidth(lw);doc.rect(x,y,w,h,'S')};
-  const H=(x1,y1,x2,y2,c=BORDER,lw=.25)=>{doc.setDrawColor(...c);doc.setLineWidth(lw);doc.line(x1,y1,x2,y2)};
-  const T=(t,x,y,sz,bold,c,align='left',mw=null)=>{
-    doc.setFont('helvetica',bold?'bold':'normal');
-    doc.setFontSize(sz);doc.setTextColor(...c);
-    doc.text(String(t??'—'),x,y,{align,...(mw?{maxWidth:mw}:{})});
-  };
-  const MONO=(t,x,y,sz,c)=>{doc.setFont('courier','normal');doc.setFontSize(sz);doc.setTextColor(...c);doc.text(String(t),x,y)};
-  const SPLIT=(t,w,sz,bold=false)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(sz);return doc.splitTextToSize(String(t),w)};
-  const SPLITM=(t,w,sz)=>{doc.setFont('courier','normal');doc.setFontSize(sz);return doc.splitTextToSize(String(t),w)};
-
-  // ── Données ──────────────────────────────────────────
-  const now    = new Date();
-  const pad2   = n => String(n).padStart(2,'0');
-  const stamp  = `${pad2(now.getUTCDate())}/${pad2(now.getUTCMonth()+1)}/${now.getUTCFullYear()} ${pad2(now.getUTCHours())}:${pad2(now.getUTCMinutes())} UTC`;
-  const dateStr= `${pad2(now.getDate())}/${pad2(now.getMonth()+1)}/${now.getFullYear()}`;
-
+function generatePDF() {
   const aircraft = document.getElementById('aircraftSel').value || '—';
-  const safety   = +(document.getElementById('safety').value || 30);
+  const safety   = document.getElementById('safety').value || '30';
+  const now      = new Date();
+  const pad2     = n => String(n).padStart(2,'0');
+  const stamp    = pad2(now.getUTCDate())+'/'+pad2(now.getUTCMonth()+1)+'/'+now.getUTCFullYear()+' '+pad2(now.getUTCHours())+':'+pad2(now.getUTCMinutes())+' UTC';
+  const dateStr  = pad2(now.getDate())+'/'+pad2(now.getMonth()+1)+'/'+now.getFullYear();
 
-  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const get = id => document.getElementById(id)?.value?.trim() || '—';
   const txt = id => document.getElementById(id)?.textContent?.trim() || '—';
 
-  const both = depComputed && arrComputed;
-  const CW   = both ? (W-5)/2 : W;
+  const chip = side => {
+    const el = document.getElementById(side==='dep'?'toChip':'ldgChip');
+    if (el?.classList.contains('is-ok-chip'))  return 'ok';
+    if (el?.classList.contains('is-bad-chip')) return 'bad';
+    return 'neu';
+  };
+  const verdictTxt = v => v==='ok'?'✓ Vol faisable':v==='bad'?'✗ Refus':'— Non calculé';
+
+  const params = [
+    ['Avion',aircraft],['Profil',profile||'—'],['Marge',safety+' %'],
+    ['Carénages',withSpats?'Avec':'Sans (+3%)'],
+    ['Vent régl. (DEP)',useRegWindDep?'50/150 %':'100 %'],
+    ['Vent régl. (ARR)',useRegWindArr?'50/150 %':'100 %'],
+    ['Date',dateStr],
+  ];
+
+  const colHtml = (side) => {
+    const dep   = side==='dep';
+    const v     = chip(side);
+    const req   = txt(dep?'toKpiVal':'ldgKpiVal');
+    const avail = txt(dep?'todaMini':'ldaMini');
+    const label = dep?'DÉCOLLAGE':'ATTERRISSAGE';
+    const DIST  = dep?'TODA':'LDA';
+    const name  = document.getElementById(dep?'depAirportName':'arrAirportName')?.textContent||'';
+    const icao  = get(dep?'depIcao':'arrIcao').toUpperCase();
+    const wdir  = get(dep?'depWindDir':'arrWindDir');
+    const wkt   = get(dep?'depWindKt':'arrWindKt');
+    const wgust = get(dep?'depWindGust':'arrWindGust');
+    const windStr = wdir+'/'+wkt+'kt'+(+wgust>0?' G'+wgust:'');
+    const surf = dep
+      ? (depSurface==='grass'?'Herbe':'Revêtue')+(depWetFactor>1?' ×'+depWetFactor.toFixed(2):'')
+      : (landingMode==='nobrake_grass'?'Sans freins':'Freinage normal')+(arrWetFactor>1?' ×'+arrWetFactor.toFixed(2):'');
+    const dRows = dep ? [
+      ['Passage 15m (base)',txt('toBasePass')],
+      ['Facteur vent',txt('toWindF')],
+      ['Carénages',txt('toSpat')],
+      ['Sans marge',txt('toRes')],
+    ] : [
+      ['Passage 15m (base)',txt('ldgBasePass')],
+      ['Facteur vent',txt('ldgWindF')],
+      ['Carénages',txt('ldgExtra')],
+      ['Sans marge',txt('ldgRes')],
+    ];
+    const metar = document.getElementById(dep?'depMetarMsg':'arrMetarMsg')?.textContent?.trim()||'';
+    const cls = dep?'dep':'arr';
+
+    return `
+    <div class="pv-col ${cls}">
+      <div class="pv-col-head ${cls}">${label}
+        <div class="pv-col-icao">${name&&name!=='—'?name+' · ':''} ${icao}</div>
+      </div>
+      <div class="pv-verdict ${v}">
+        <div class="pv-verdict-label">${verdictTxt(v)}</div>
+        <div class="pv-verdict-dist">Distance requise : <strong>${req}</strong> &nbsp;·&nbsp; ${DIST} dispo : ${avail}</div>
+      </div>
+      <div class="pv-section-head">Piste &amp; conditions</div>
+      ${[
+        ['QFU', get(dep?'depQfu':'arrQfu')+'°'],
+        [DIST, get(dep?'depToda':'arrLda')+' m'],
+        ['Élévation', get(dep?'depAlt':'arrAlt')+' ft'],
+        ['OAT', get(dep?'depOat':'arrOat')+' °C'],
+        ['Masse', get(dep?'depTow':'arrLdw')+' kg'],
+        ['Vent', windStr],
+        ['Surface', surf],
+      ].map(([l,v2])=>`<div class="pv-row"><span>${l}</span><span class="pv-row-val">${v2}</span></div>`).join('')}
+      <div class="pv-section-head">Détail calcul</div>
+      ${dRows.map(([l,v2],i)=>`<div class="pv-row ${i===dRows.length-1?'':''}"><span>${l}</span><span class="pv-row-val">${v2}</span></div>`).join('')}
+      ${metar?`<div class="pv-section-head">METAR / TAF</div><div class="pv-metar">${metar}</div>`:''}
+    </div>`;
+  };
+
   const cols = [];
   if (depComputed) cols.push('dep');
   if (arrComputed) cols.push('arr');
 
-  // ── HEADER ───────────────────────────────────────────
-  let y = M;
+  const html = `
+  <div class="pv-page">
+    <div class="pv-header">
+      <div>
+        <div class="pv-header-title">Fiche de performances</div>
+        <div class="pv-header-sub">Aéroclub de Beauvais-Tillé · LFOB</div>
+      </div>
+      <div class="pv-header-right">
+        <div class="pv-header-title">${aircraft}</div>
+        <div class="pv-header-sub">${stamp}</div>
+      </div>
+    </div>
+    <div class="pv-warn">⚠ Calcul préparatoire au vol — Ne remplace pas le manuel de vol. Le commandant de bord est seul responsable de ses décisions opérationnelles.</div>
+    <div class="pv-params">
+      ${params.map(([l,v])=>`<div class="pv-param"><div class="pv-param-label">${l}</div><div class="pv-param-value">${v}</div></div>`).join('')}
+    </div>
+    <div class="pv-cols">
+      ${cols.map(s=>colHtml(s)).join('')}
+    </div>
+    <div class="pv-footer">
+      <span>Généré le ${stamp} · ACBT Performances</span>
+      <span>Document réservé à la préparation du vol</span>
+    </div>
+  </div>`;
 
-  // Bandeau haut
-  F(M, y, W, 16, NAVY);
-  // Logo
-  F(M+2, y+2, 12, 12, [255,255,255,20]);
-  doc.setDrawColor(255,255,255); doc.setLineWidth(.5);
-  doc.rect(M+2, y+2, 12, 12, 'S');
-  T('AC', M+8, y+10, 9, true, WHITE, 'center');
-  // Titre principal
-  T('FICHE DE PERFORMANCES', M+18, y+7, 11, true, WHITE);
-  T('Aéroclub de Beauvais-Tillé · LFOB', M+18, y+12.5, 6.5, false, [148,190,255]);
-  // Avion + horodatage
-  T(aircraft, M+W-2, y+7, 10, true, WHITE, 'right');
-  T(stamp, M+W-2, y+12.5, 6, false, [148,190,255], 'right');
-  y += 16;
-
-  // Bande orange "DOCUMENT RÉGLEMENTAIRE"
-  F(M, y, W, 6, [255,247,237]);
-  H(M, y, M+W, y, [253,186,116]);
-  H(M, y+6, M+W, y+6, [253,186,116]);
-  T('⚠  CALCUL PRÉPARATOIRE AU VOL — VALIDE UNIQUEMENT AVEC LA SIGNATURE DU COMMANDANT DE BORD', M+4, y+4.2, 5.5, true, AMBER);
-  y += 6+3;
-
-  // ── INFOS GÉNÉRALES ──────────────────────────────────
-  F(M, y, W, 9, BG); R(M, y, W, 9, BORDER);
-  const infos = [
-    ['Avion', aircraft],
-    ['Profil', profile || '—'],
-    ['Marge', safety + ' %'],
-    ['Carénages', withSpats ? 'Avec' : 'Sans (+3%)'],
-    ['Vent régl.', useRegWind ? '50% / 150%' : '100% réel'],
-    ['Date', dateStr],
-  ];
-  const iw = W / infos.length;
-  infos.forEach(([k,v], i) => {
-    const ix = M + i*iw + 2;
-    T(k, ix, y+3.5, 4.5, false, GRAY);
-    T(v, ix, y+7.5, 6.5, true, DARK);
-    if (i < infos.length-1) H(M+(i+1)*iw, y+1, M+(i+1)*iw, y+8);
-  });
-  y += 9 + 4;
-
-  // ── COLONNES DEP / ARR ───────────────────────────────
-  const drawCol = (side, cx) => {
-    const dep    = side === 'dep';
-    const colC   = dep ? BLUE : GREEN;
-    const colBg  = dep ? BLUE_L : GREEN_L;
-    const lbl    = dep ? 'DÉCOLLAGE' : 'ATTERRISSAGE';
-    const DIST   = dep ? 'TODA' : 'LDA';
-    let cy = y;
-
-    // ── En-tête colonne ──
-    F(cx, cy, CW, 11, colC);
-    T(lbl, cx+3, cy+5, 9, true, WHITE);
-    const airName = document.getElementById(dep ? 'depAirportName' : 'arrAirportName')?.textContent || '';
-    if (airName && airName !== '—') T(airName, cx+CW-3, cy+5, 7.5, true, WHITE, 'right');
-    const icao = get(dep ? 'depIcao' : 'arrIcao').toUpperCase();
-    T(icao, cx+3, cy+9.5, 5.5, false, [200,220,255]);
-    cy += 11 + 2;
-
-    // ── Verdict principal ──
-    const chip   = document.getElementById(dep ? 'toChip' : 'ldgChip');
-    const isOk   = chip?.classList.contains('is-ok-chip');
-    const isBad  = chip?.classList.contains('is-bad-chip');
-    const vBg    = isOk ? GREEN_L : isBad ? RED_L : BG;
-    const vBord  = isOk ? [134,239,172] : isBad ? [252,165,165] : BORDER;
-    const vColor = isOk ? GREEN : isBad ? RED : GRAY;
-    const vText  = isOk ? '✓  VOL FAISABLE' : isBad ? '✗  REFUS' : '—  NON CALCULÉ';
-    const reqTxt = txt(dep ? 'toKpiVal' : 'ldgKpiVal');
-    const dispTxt= txt(dep ? 'todaMini' : 'ldaMini');
-
-    F(cx, cy, CW, 18, vBg);
-    doc.setDrawColor(...vBord); doc.setLineWidth(.4); doc.rect(cx, cy, CW, 18, 'S');
-    // Verdict
-    T(vText, cx+4, cy+6, 10, true, vColor);
-    // Distance requise
-    T('Distance requise (marge incluse)', cx+4, cy+11, 5, false, GRAY);
-    T(reqTxt, cx+4, cy+16.5, 13, true, vColor);
-    // TODA/LDA
-    T(DIST + ' disponible : ' + dispTxt, cx+CW-4, cy+16.5, 6, false, GRAY, 'right');
-    cy += 18 + 3;
-
-    // ── Paramètres piste ──
-    F(cx, cy, CW, 5, colBg);
-    T('PISTE & SURFACE', cx+3, cy+3.5, 5.5, true, colC);
-    cy += 5;
-    const pRows = [
-      ['QFU', get(dep ? 'depQfu' : 'arrQfu') + '°'],
-      [DIST, get(dep ? 'depToda' : 'arrLda') + ' m'],
-      ['Élévation', get(dep ? 'depAlt' : 'arrAlt') + ' ft'],
-    ];
-    pRows.forEach(([k,v], i) => {
-      if(i%2===1) F(cx, cy, CW, 5, BG);
-      T(k, cx+3, cy+3.5, 5.5, false, GRAY);
-      T(v, cx+CW-3, cy+3.5, 6, true, DARK, 'right');
-      if(i<pRows.length-1) H(cx, cy+5, cx+CW, cy+5);
-      cy += 5;
-    });
-    R(cx, cy-pRows.length*5, CW, pRows.length*5, BORDER);
-    cy += 2;
-
-    // ── Conditions ──
-    F(cx, cy, CW, 5, colBg);
-    T('PARAMÈTRES AVION', cx+3, cy+3.5, 5.5, true, colC);
-    cy += 5;
-    const wdir  = get(dep ? 'depWindDir' : 'arrWindDir') || '000';
-    const wkt   = get(dep ? 'depWindKt'  : 'arrWindKt') || '0';
-    const wgust = get(dep ? 'depWindGust': 'arrWindGust');
-    const windStr = wdir + '/' + wkt + 'kt' + (wgust && +wgust > 0 ? ' (rafales ' + wgust + 'kt)' : '');
-    const surfStr = dep
-      ? (depSurface === 'grass' ? 'Herbe' : 'Revêtue') + (depWetFactor > 1 ? (' ×' + depWetFactor.toFixed(2)) : '')
-      : (landingMode === 'nobrake_grass' ? 'Sans freins' : 'Freinage normal') + (arrWetFactor > 1 ? (' ×' + arrWetFactor.toFixed(2)) : '');
-    const cRows = [
-      ['OAT', get(dep ? 'depOat' : 'arrOat') + ' °C'],
-      ['Masse', get(dep ? 'depTow' : 'arrLdw') + ' kg'],
-      ['Vent', windStr],
-      ['Surface', surfStr],
-    ];
-    cRows.forEach(([k,v], i) => {
-      if(i%2===1) F(cx, cy, CW, 5, BG);
-      T(k, cx+3, cy+3.5, 5.5, false, GRAY);
-      const lines = SPLIT(v, CW-6, 5.5);
-      if(lines.length > 1) {
-        T(lines[0], cx+CW-3, cy+3.5, 5.5, true, DARK, 'right');
-      } else {
-        T(v, cx+CW-3, cy+3.5, 5.5, true, DARK, 'right');
-      }
-      if(i<cRows.length-1) H(cx, cy+5, cx+CW, cy+5);
-      cy += 5;
-    });
-    R(cx, cy-cRows.length*5, CW, cRows.length*5, BORDER);
-    cy += 2;
-
-    // ── Détail calcul ──
-    F(cx, cy, CW, 5, colBg);
-    T('DÉTAIL DU CALCUL', cx+3, cy+3.5, 5.5, true, colC);
-    cy += 5;
-    const dRows = dep ? [
-      ['Passage 15 m (sans marge)', txt('toBasePass')],
-      ['Facteur vent', txt('toWindF')],
-      ['Carénages', txt('toSpat')],
-      ['Résultat sans marge', txt('toRes')],
-    ] : [
-      ['Passage 15 m (sans marge)', txt('ldgBasePass')],
-      ['Facteur vent', txt('ldgWindF')],
-      ['Résultat sans marge', txt('ldgRes')],
-    ];
-    dRows.forEach(([k,v], i) => {
-      if(i%2===1) F(cx, cy, CW, 5, BG);
-      T(k, cx+3, cy+3.5, 5.5, i===dRows.length-1, i===dRows.length-1 ? DARK : GRAY);
-      T(v, cx+CW-3, cy+3.5, 6, true, colC, 'right');
-      if(i<dRows.length-1) H(cx, cy+5, cx+CW, cy+5);
-      cy += 5;
-    });
-    R(cx, cy-dRows.length*5, CW, dRows.length*5, BORDER);
-    cy += 3;
-
-    // ── METAR brut ──
-    const metar = document.getElementById(dep ? 'depMetarMsg' : 'arrMetarMsg')?.textContent?.trim();
-    if (metar && metar.length > 5) {
-      F(cx, cy, CW, 5, colBg);
-      T('METAR / TAF', cx+3, cy+3.5, 5.5, true, colC);
-      cy += 5;
-      const mlines = SPLITM(metar, CW-6, 5);
-      const mh = mlines.length * 4 + 3;
-      F(cx, cy, CW, mh, BG); R(cx, cy, CW, mh, BORDER);
-      mlines.forEach((l, i) => MONO(l, cx+3, cy+3.8+i*4, 5, DARK));
-      cy += mh + 2;
-    }
-
-    return cy;
-  };
-
-  // Dessiner les colonnes
-  let maxY = y;
-  cols.forEach((side, i) => {
-    const cx = i === 0 ? M : M + CW + 5;
-    maxY = Math.max(maxY, drawCol(side, cx));
-  });
-
-  // ── FOOTER ───────────────────────────────────────────
-  const fy = PH - 8;
-  H(M, fy-2, M+W, fy-2, BORDER);
-  T('Généré le ' + stamp + ' · ACBT Performances · Aéroclub de Beauvais-Tillé · LFOB', M, fy+2, 4.5, false, GRAY);
-  T('Le commandant de bord est seul responsable de ses décisions opérationnelles.', M+W, fy+2, 4.5, false, GRAY, 'right');
-
-  // ── SAVE ─────────────────────────────────────────────
-  const fn = 'ACBT_Perfs_' + aircraft.replace(/-/g,'') + '_' + now.toISOString().slice(0,10) + '.pdf';
-  doc.save(fn);
+  document.getElementById('printView').innerHTML = html;
+  window.print();
 }
 
-document.getElementById('btnPrint').addEventListener('click', async () => {
+document.getElementById('btnPrint').addEventListener('click', () => {
   if (!depComputed && !arrComputed) return;
   const btn = document.getElementById('btnPrint');
   btn.disabled = true;
   btn.textContent = '⏳ Génération…';
   try {
-    await generatePDF();
+    generatePDF();
   } catch(err) {
     alert('Erreur PDF : ' + err.message);
   } finally {
@@ -3857,6 +3778,12 @@ function applyGustVisibility(side, gustVal) {
   const row = document.getElementById(side + 'GustRow');
   if (row) row.style.display = (+gustVal > 0) ? 'block' : 'none';
 }
+
+// Initialiser les icônes Lucide
+if (typeof lucide !== 'undefined') lucide.createIcons();
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+});
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
