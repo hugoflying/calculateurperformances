@@ -353,9 +353,18 @@ input[type=number]{-moz-appearance:textfield}
 .taf-period.is-tempo{border-style:dashed;border-color:rgba(217,119,6,.5);background:var(--amber-light)}
 .taf-period.is-inactive{opacity:.3}
 .taf-period.is-excluded{opacity:.45;border-style:dotted}
-.taf-period.is-applied{outline:2px solid var(--amber);outline-offset:-1px;background:var(--amber-light)!important}
-.taf-period.is-applied .tp-apply{color:var(--amber);font-weight:700}
-.taf-period.is-applied .tp-type-col{background:rgba(217,119,6,.12)!important}
+/* is-applied : renforce la bordure existante selon le type de période */
+.taf-period.is-applied{border-width:3px!important;box-shadow:0 0 0 1px currentColor;outline:none}
+/* Période normale (FROM) appliquée → bordure grise renforcée */
+.taf-period.is-applied:not(.is-current):not(.is-eta-other):not(.is-tempo){border-color:var(--border-strong)!important;box-shadow:0 0 0 1px var(--border-strong)}
+/* TEMPO appliqué → bordure orange renforcée, reste dashed */
+.taf-period.is-tempo.is-applied{border-color:var(--amber)!important;border-style:dashed!important;box-shadow:0 0 0 1px var(--amber)}
+/* Période ETA principale appliquée → bordure verte renforcée */
+.taf-period.is-current.is-applied{border-color:var(--green)!important;box-shadow:0 0 0 1px var(--green)}
+/* Période ETA secondaire appliquée → bordure bleue renforcée */
+.taf-period.is-eta-other.is-applied{border-color:var(--blue-mid)!important;box-shadow:0 0 0 1px var(--blue-mid)}
+/* Texte "appliqué" hérite de la couleur de type */
+.taf-period.is-applied .tp-apply{font-weight:800}
 .tp-type-col{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   flex-shrink:0;width:50px;padding:10px 4px;gap:2px;
@@ -2931,19 +2940,26 @@ function buildTafPeriodsFromRaw(raw, refDate = new Date()) {
 
 function periodContainsEta(period, etaHour) {
   if (etaHour === '' || etaHour == null) return false;
-  const raw = parseInt(etaHour, 10);
-  if (isNaN(raw)) return false;
-  const dayOffset = Math.floor(raw / 24);
-  const h = raw % 24;
+  if (etaHour === '' || etaHour == null) return false;
 
   const startDt = period.start_time?.dt ? new Date(period.start_time.dt) : null;
   const endDt   = period.end_time?.dt   ? new Date(period.end_time.dt)   : null;
   if (!startDt || !endDt) return false;
 
-  // Construire ETA selon jour sélectionné (J ou J+1)
-  const now = new Date();
-  const baseDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + dayOffset));
-  let eta = new Date(Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), baseDate.getUTCDate(), h, 0, 0));
+  // Récupérer le timestamp réel depuis l'option (dataset.ts)
+  let eta;
+  const etaSelect = document.getElementById('arrEta');
+  const selectedOpt = etaSelect?.options[etaSelect.selectedIndex];
+  if (selectedOpt?.dataset?.ts) {
+    eta = new Date(parseInt(selectedOpt.dataset.ts, 10));
+  } else {
+    // Fallback ancien mode
+    const raw = parseInt(etaHour, 10);
+    if (isNaN(raw)) return false;
+    const h = raw % 24;
+    const now = new Date();
+    eta = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
+  }
 
   // ── Règle OMA Bartolini tableau 4.13.1 pour BECMG ──────────────────────
   // Comparer le vent BECMG avec le vent FROM précédent (prevWind)
@@ -2986,29 +3002,53 @@ function renderTafPicker(tafData) {
 
   rawEl.style.display = 'none';
 
-  // Générer les options horaires si pas encore fait
-  // Régénérer les options avec J et J+1 séparés par un optgroup
+  // Générer les options ETA limitées à la plage de validité du TAF
   {
     etaSelect.innerHTML = '<option value="">ETA UTC…</option>';
-    const now  = new Date();
-    const todayUTC    = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const tomorrowUTC = new Date(todayUTC.getTime() + 86400000);
+
+    // Détecter la plage de validité du TAF depuis les périodes
+    const allPeriods = buildTafPeriodsFromRaw(tafData.raw || '');
+    let tafStart = null, tafEnd = null;
+    allPeriods.forEach(p => {
+      const s = p.start_time?.dt ? new Date(p.start_time.dt) : null;
+      const e = p.end_time?.dt   ? new Date(p.end_time.dt)   : null;
+      if (s && (!tafStart || s < tafStart)) tafStart = s;
+      if (e && (!tafEnd   || e > tafEnd))   tafEnd   = e;
+    });
+    // Fallback si pas de périodes
+    if (!tafStart) tafStart = new Date();
+    if (!tafEnd)   tafEnd   = new Date(tafStart.getTime() + 24*3600000);
+
     const fmtDate = d => {
       const days = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
       return days[d.getUTCDay()] + ' ' + String(d.getUTCDate()).padStart(2,'0') + '/' + String(d.getUTCMonth()+1).padStart(2,'0');
     };
-    for (let day = 0; day < 2; day++) {
-      const dayDt   = day === 0 ? todayUTC : tomorrowUTC;
-      const grp     = document.createElement('optgroup');
-      grp.label     = day === 0 ? '\u2014 Aujourd\'hui ' + fmtDate(dayDt) + ' \u2014' : '\u2014 Demain ' + fmtDate(dayDt) + ' \u2014';
-      for (let h = 0; h < 24; h++) {
-        const hh  = String(h).padStart(2,'0');
-        const opt = document.createElement('option');
-        opt.value = String(day * 24 + h);
-        opt.textContent = hh + 'h UTC';
-        grp.appendChild(opt);
+    const pad2 = n => String(n).padStart(2,'0');
+
+    // Parcourir heure par heure dans la plage [tafStart, tafEnd[
+    let cur = new Date(Date.UTC(tafStart.getUTCFullYear(), tafStart.getUTCMonth(), tafStart.getUTCDate(), tafStart.getUTCHours()));
+    let lastDayKey = null;
+    let grp = null;
+    const now = new Date();
+    const nowDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    let optIdx = 0;
+
+    while (cur < tafEnd) {
+      const dayKey = cur.getUTCFullYear() + '-' + cur.getUTCMonth() + '-' + cur.getUTCDate();
+      if (dayKey !== lastDayKey) {
+        lastDayKey = dayKey;
+        grp = document.createElement('optgroup');
+        const dayDiff = Math.round((Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth(), cur.getUTCDate()) - nowDay.getTime()) / 86400000);
+        const dayLabel = dayDiff === 0 ? 'Aujourd\'hui' : dayDiff === 1 ? 'Demain' : fmtDate(cur);
+        grp.label = '\u2014 ' + dayLabel + ' ' + fmtDate(cur) + ' \u2014';
+        etaSelect.appendChild(grp);
       }
-      etaSelect.appendChild(grp);
+      const opt = document.createElement('option');
+      opt.value = String(optIdx++);
+      opt.textContent = pad2(cur.getUTCHours()) + 'h UTC';
+      opt.dataset.ts = String(cur.getTime()); // timestamp réel pour periodContainsEta
+      grp.appendChild(opt);
+      cur = new Date(cur.getTime() + 3600000);
     }
   }
 
