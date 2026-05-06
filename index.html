@@ -517,6 +517,7 @@ input[type=number]{-moz-appearance:textfield}
 ═══════════════════════════════════ */
 #printView{display:none}
 @media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
   .pv-page{padding:0;min-height:297mm;position:relative}
@@ -3749,15 +3750,15 @@ function generatePDF() {
 
   const html = `
   <div class="pv-page" style="padding:0">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;margin-bottom:0">
-      <tr>
-        <td style="padding:10mm 14mm;vertical-align:middle">
-          <div style="font:800 18pt Arial,sans-serif;color:#fff;letter-spacing:-.02em">FICHE DE PERFORMANCES</div>
-          <div style="font:400 8pt Arial,sans-serif;color:rgba(255,255,255,.65);margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB · Calcul préparatoire au vol</div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;margin-bottom:0">
+      <tr style="background-color:#1e3a5f">
+        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:10mm 14mm;vertical-align:middle">
+          <div style="font:800 18pt Arial,sans-serif;color:#ffffff !important;letter-spacing:-.02em">FICHE DE PERFORMANCES</div>
+          <div style="font:400 8pt Arial,sans-serif;color:#93c5fd !important;margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB · Calcul préparatoire au vol</div>
         </td>
-        <td style="padding:10mm 14mm;vertical-align:middle;text-align:right">
-          <div style="font:800 20pt 'Courier New',monospace;color:#fff;letter-spacing:.02em">${aircraft}</div>
-          <div style="font:400 8pt Arial,sans-serif;color:rgba(255,255,255,.65);margin-top:2mm">${stamp}</div>
+        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:10mm 14mm;vertical-align:middle;text-align:right">
+          <div style="font:800 20pt 'Courier New',monospace;color:#ffffff !important;letter-spacing:.02em">${aircraft}</div>
+          <div style="font:400 8pt Arial,sans-serif;color:#93c5fd !important;margin-top:2mm">${stamp}</div>
         </td>
       </tr>
     </table>
