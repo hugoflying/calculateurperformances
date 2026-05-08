@@ -2813,6 +2813,11 @@ async function loadMetarFor(side) {
   const msgEl  = document.getElementById(side+'MetarMsg');
   const rwWrap = document.getElementById(side+'RunwayPicker');
 
+  if (!icao || icao.length < 4) {
+    setMetarMsg(msgEl, 'Veuillez d'abord insérer un code OACI.');
+    return;
+  }
+
   // Tout effacer avant de charger
   resetSideFields(side);
   setMetarMsg(msgEl, 'Chargement…');
@@ -3701,7 +3706,7 @@ async function loadTafFor(side) {
   const icao   = (document.getElementById(side + 'Icao').value || '').toUpperCase();
   const msgEl  = document.getElementById(side + 'MetarMsg');
   const rwWrap = document.getElementById(side + 'RunwayPicker');
-  if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Saisir un ICAO avant de charger le TAF.'); return; }
+  if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Veuillez d\'abord insérer un code OACI.'); return; }
 
   // Tout effacer avant de charger
   resetSideFields(side);
@@ -3769,7 +3774,7 @@ async function loadTafFor(side) {
   } catch(e) {
     const msg = e?.message || '';
     if (msg.includes('404') || msg.includes('400')) {
-      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + (document.getElementById('arrIcao')?.value||'').toUpperCase());
+      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + icao);
     } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
       setMetarMsg(msgEl, 'TAF indisponible — vérifier la connexion réseau');
     } else {
