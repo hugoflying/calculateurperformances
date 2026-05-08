@@ -2853,7 +2853,14 @@ async function loadMetarFor(side) {
       : (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
-    setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
+    const msg = e?.message || '';
+    if (msg.includes('404') || msg.includes('400')) {
+      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + icao);
+    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
+      setMetarMsg(msgEl, 'METAR indisponible — vérifier la connexion réseau');
+    } else {
+      setMetarMsg(msgEl, 'METAR indisponible (' + msg + ')');
+    }
   }
 }
 
@@ -3760,7 +3767,14 @@ async function loadTafFor(side) {
       if (wrap) wrap.classList.add('visible');
     }
   } catch(e) {
-    setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
+    const msg = e?.message || '';
+    if (msg.includes('404') || msg.includes('400')) {
+      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + (document.getElementById('arrIcao')?.value||'').toUpperCase());
+    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
+      setMetarMsg(msgEl, 'TAF indisponible — vérifier la connexion réseau');
+    } else {
+      setMetarMsg(msgEl, 'TAF indisponible (' + msg + ')');
+    }
   }
 }
 
