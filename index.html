@@ -1226,14 +1226,7 @@ document.getElementById('aircraftSel')?.addEventListener('change', () => {
     const rowEl = document.getElementById(side + 'VrbRow');
     if (dirEl && rowEl) {
       dirEl.addEventListener('input', () => {
-        const isVrb = dirEl.value.toUpperCase().includes('VRB');
-        rowEl.style.display = isVrb ? '' : 'none';
-        if (!isVrb) {
-          const from = document.getElementById(side + 'VrbFrom');
-          const to   = document.getElementById(side + 'VrbTo');
-          if (from) from.value = '';
-          if (to)   to.value   = '';
-        }
+        rowEl.style.display = dirEl.value.toUpperCase().includes('VRB') ? '' : 'none';
       });
     }
   });
@@ -1314,7 +1307,7 @@ const DR300_TEMPS = [0, 15, 30, 45];
 
 function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
-  const _DATA = {"F-GCAL":{"immat":"F-GCAL","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,255,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BXEK":{"immat":"F-BXEK","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,255,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BTBS":{"immat":"F-BTBS","puissance":"120cv","helice":"Mc Cauley 1A 135 JCM 7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[350,390,430,470],[385,430,475,520],[430,480,530,580]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,840,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,565],[460,515,570,625],[515,575,635,695]],"pass":[[595,660,735,805],[675,755,830,915],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-BTXS":{"immat":"F-BTXS","puissance":"120cv","helice":"Mc Cauley 1A 135 JCM 7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[350,390,430,470],[385,430,475,520],[430,480,530,580]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,840,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,565],[460,515,570,625],[515,575,635,695]],"pass":[[595,660,735,805],[675,755,830,915],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-GOVB":{"immat":"F-GOVB","puissance":"120cv","helice":"NC","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,255,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[150,167,190],"pass":[328,362,397]},"kg900":{"roll":[259,293,328],"pass":[552,615,678]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[201,224,253],"pass":[431,477,529]},"kg900":{"roll":[351,397,448],"pass":[742,828,920]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[270,305,345],"pass":[575,644,713]},"kg900":{"roll":[489,546,615],"pass":[1023,1150,1294]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[167,178,190],"pass":[420,443,460]},"kg900":{"roll":[213,230,242],"pass":[500,529,558]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[184,201,213],"pass":[454,483,506]},"kg900":{"roll":[236,259,276],"pass":[546,581,615]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[207,224,241],"pass":[494,529,558]},"kg900":{"roll":[270,288,310],"pass":[604,638,678]}}}}}};
+  const _DATA = {"F-GCAL":{"immat":"F-GCAL","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BXEK":{"immat":"F-BXEK","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}}},"F-BTBS":{"immat":"F-BTBS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-BTXS":{"immat":"F-BTXS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[145,155,165,175],[160,175,185,195],[180,195,210,220],[195,210,230,240]],"pass":[[365,385,400,415],[395,420,440,460],[430,460,485,510],[465,495,520,545]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[215,230,250,265],[240,260,285,300],[275,290,315,335],[300,325,355,375]],"pass":[[435,460,485,510],[475,505,530,555],[525,555,590,620],[575,610,645,680]]}}},"F-GOVB":{"immat":"F-GOVB","puissance":"120cv","helice":"Sensenich 72CK-0-56","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[150,167,190],"pass":[328,362,397]},"kg900":{"roll":[259,270,328],"pass":[552,615,678]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[201,224,253],"pass":[431,477,529]},"kg900":{"roll":[351,397,448],"pass":[742,828,920]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[270,305,345],"pass":[575,644,713]},"kg900":{"roll":[489,546,615],"pass":[1023,1150,1294]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[145,200,240],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[167,178,190],"pass":[420,443,460]},"kg900":{"roll":[167,230,276],"pass":[500,529,558]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,250],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[184,201,213],"pass":[454,483,506]},"kg900":{"roll":[236,259,288],"pass":[546,581,615]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[207,224,241],"pass":[494,529,558]},"kg900":{"roll":[270,288,310],"pass":[604,638,678]}}}}}};
   Object.assign(aircraftData, _DATA);
   // Options déjà dans le HTML — on charge juste les données en mémoire
   if (sel.options.length > 0) applyAircraftData(sel.value);
@@ -1767,11 +1760,14 @@ function updateWindDisplay(side) {
             : '⚠ Appliquer 5 kt de vent arrière (plus restrictif que le vent METAR)';
           suggestEl.style.display = 'block';
           suggestEl.innerHTML = `<button class="tw-assume-btn${isActive ? ' active' : ''}" onclick="tafToggleTw5()">
-            <span class="assume-icon">⚠️</span>
-            <span class="assume-text">
-              <span class="assume-title">Appliquer 5 kt de vent arrière</span>
-              <span class="assume-sub">${label.replace('⚠ Appliquer 5 kt de vent arrière (plus restrictif que le ', '').replace(')', '')}</span>
+            <span class="assume-left">
+              <span class="assume-icon">⚠️</span>
+              <span class="assume-text">
+                <span class="assume-title">Appliquer 5 kt de vent arrière</span>
+                <span class="assume-sub">${label.replace('⚠ Appliquer 5 kt de vent arrière (plus restrictif que le ', '').replace(')', '')}</span>
+              </span>
             </span>
+            <span class="tw-switch"></span>
           </button>`;
         } else {
           suggestEl.style.display = 'none';
@@ -2137,32 +2133,15 @@ function computeArrPerf() {
   const st      = parseInt(document.getElementById('arrVrbTo').value||'0',10);
   const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('arr', qfu, arrAssumeTA);
 
+  if (profile === 'DR300' && !LDG_DR300) throw new Error('Tables DR300 non chargées — sélectionner un avion');
   if (profile !== 'DR300' && !LDG_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
 
-  // DR300 : une seule valeur manuelle — 280 m roulement freinage moyen à 865 kg (masse max)
-  if (profile === 'DR300') {
-    const rollDR300 = 280;
-    const ldgMarginDR300 = Math.round(rollDR300 * (1 + safety / 100));
-    document.getElementById('ldgBasePass').textContent = '—';
-    document.getElementById('ldgBaseRoll').textContent = rollDR300 + ' m (masse max 865 kg, freinage moyen)';
-    document.getElementById('ldgWindF').textContent    = 'N/A — données manuelles non disponibles';
-    document.getElementById('ldgExtra').textContent    = '—';
-    document.getElementById('ldgRes').textContent      = rollDR300 + ' m';
-    document.getElementById('ldaMini').textContent     = arrLda ? arrLda + ' m' : '—';
-    document.getElementById('ldgKpiVal').textContent   = ldgMarginDR300 + ' m';
-    const st2dr = arrLda ? (ldgMarginDR300 <= arrLda ? 'ok' : 'bad') : 'neutral';
-    setChip(document.getElementById('ldgChip'), st2dr);
-    const kpidr = document.getElementById('ldgKpi');
-    kpidr.className = 'kpi-bar' + (st2dr === 'ok' ? ' is-ok' : st2dr === 'bad' ? ' is-bad' : '');
-    document.getElementById('ldgExplain').textContent =
-      '⚠ DR300 : seule la distance de roulement avec freinage moyen à la masse maximale (865 kg) est disponible dans le manuel (280 m). Aucun facteur vent ni température ne peut être appliqué.';
-    arrComputed = true;
-    updatePdfBtn();
-    return;
-  }
-
-  const baseLDG_pass = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
-  const baseLDG_roll = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
+  const baseLDG_pass = profile === 'DR300'
+    ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
+    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+  const baseLDG_roll = profile === 'DR300'
+    ? interpGridLDG_DR300(landingMode, 'roll', arrAlt, arrOat, arrLdw)
+    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
   const arrWindF     = windDistanceFactor(headwindForCalc);
   const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra * arrWetFactor);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
@@ -2813,11 +2792,6 @@ async function loadMetarFor(side) {
   const msgEl  = document.getElementById(side+'MetarMsg');
   const rwWrap = document.getElementById(side+'RunwayPicker');
 
-  if (!icao || icao.length < 4) {
-    setMetarMsg(msgEl, "Veuillez d'abord insérer un code OACI.");
-    return;
-  }
-
   // Tout effacer avant de charger
   resetSideFields(side);
   setMetarMsg(msgEl, 'Chargement…');
@@ -2858,14 +2832,7 @@ async function loadMetarFor(side) {
       : (metar?.raw||'—'));
     updateWindDisplay(side);
   } catch (e) {
-    const msg = e?.message || '';
-    if (msg.includes('404') || msg.includes('400')) {
-      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + icao);
-    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
-      setMetarMsg(msgEl, 'METAR indisponible — vérifier la connexion réseau');
-    } else {
-      setMetarMsg(msgEl, 'METAR indisponible (' + msg + ')');
-    }
+    setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
   }
 }
 
@@ -3377,8 +3344,7 @@ function renderTafPicker(tafData) {
     if (!period?.wind) return null;
     // Vérifier que les tables avion sont chargées
     if (profile === 'DR400' && !LDG_DR400) return null;
-    if (profile === 'DR300') return 280; // valeur unique manuelle, pas de facteur vent disponible
-    if (profile === 'DR400' && !LDG_DR400) return null;
+    if (profile === 'DR300' && !LDG_DR300) return null;
     const qfu = normQFU(document.getElementById('arrQfu').value);
     if (!qfu) return null;
 
@@ -3395,7 +3361,9 @@ function renderTafPicker(tafData) {
     const hw = c.hwSigned ?? 0;
     const wf = windDistanceFactor(hw);
 
-    const baseLDG = interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+    const baseLDG = profile === 'DR300'
+      ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
+      : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
 
     return Math.round(baseLDG * wf * arrExtra);
   }
@@ -3706,7 +3674,7 @@ async function loadTafFor(side) {
   const icao   = (document.getElementById(side + 'Icao').value || '').toUpperCase();
   const msgEl  = document.getElementById(side + 'MetarMsg');
   const rwWrap = document.getElementById(side + 'RunwayPicker');
-  if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Veuillez d\'abord insérer un code OACI.'); return; }
+  if (!icao || icao.length < 4) { setMetarMsg(msgEl, 'Saisir un ICAO avant de charger le TAF.'); return; }
 
   // Tout effacer avant de charger
   resetSideFields(side);
@@ -3772,14 +3740,7 @@ async function loadTafFor(side) {
       if (wrap) wrap.classList.add('visible');
     }
   } catch(e) {
-    const msg = e?.message || '';
-    if (msg.includes('404') || msg.includes('400')) {
-      setMetarMsg(msgEl, 'Code OACI non valide ou inconnu : ' + icao);
-    } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Network')) {
-      setMetarMsg(msgEl, 'TAF indisponible — vérifier la connexion réseau');
-    } else {
-      setMetarMsg(msgEl, 'TAF indisponible (' + msg + ')');
-    }
+    setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
   }
 }
 
