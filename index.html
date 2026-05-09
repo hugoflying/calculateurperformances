@@ -1881,9 +1881,9 @@ function interpTemp(rowTemps, arr, oat) {
 
 // ── Interpolation DR400/160 ────────────────────────────────────────────────
 function interpDR400_160(side, altFt, oat, massKg, surface, kind) {
-  // aircraftData est le dict global de l'avion sélectionné (DR400_160)
-  const d = aircraftData;
-  const tbl = side === 'dep' ? d.to : d.ldg;
+  // TO_DR400 et LDG_DR400 sont les tables chargées par applyAircraftData
+  const tbl = side === 'dep' ? TO_DR400 : LDG_DR400;
+  if (!tbl || typeof tbl !== 'object') throw new Error('Tables DR400_160 non chargées (tbl=' + JSON.stringify(tbl) + ', side=' + side + ')');
   const altKeys = [0, 4000, 8000];
 
   // Clamper altitude
@@ -1898,6 +1898,7 @@ function interpDR400_160(side, altFt, oat, massKg, surface, kind) {
 
   const valAt = (altKey) => {
     const sec = tbl[String(altKey)];
+    if (!sec) throw new Error('Section altitude manquante dans tables DR400_160: alt=' + altKey + ', tbl keys=' + Object.keys(tbl).join(','));
     const surKey = (surface === 'grass') ? 'hard' : 'hard'; // seule "hard" dans le manuel
     const low = sec[surKey]['kg850'][kind];
     const high = sec[surKey]['kg1050'][kind];
