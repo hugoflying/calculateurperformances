@@ -1881,7 +1881,8 @@ function interpTemp(rowTemps, arr, oat) {
 
 // ── Interpolation DR400/160 ────────────────────────────────────────────────
 function interpDR400_160(side, altFt, oat, massKg, surface, kind) {
-  const d = _DATA['F-GTPE'];
+  // aircraftData est le dict global de l'avion sélectionné (DR400_160)
+  const d = aircraftData;
   const tbl = side === 'dep' ? d.to : d.ldg;
   const altKeys = [0, 4000, 8000];
 
