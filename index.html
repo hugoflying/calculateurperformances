@@ -1953,8 +1953,10 @@ function interpTO_DR400(altFt, oat, massKg, surface, kind) {
   function valAt(alt) {
     const tbl = TO_DR400[String(alt)];
     if (!tbl) throw new Error('Table TO DR400 manquante pour alt=' + alt);
-    const v700 = interpTemp(tbl.temps, tbl[surface].kg700[kind], oat);
-    const v900 = interpTemp(tbl.temps, tbl[surface].kg900[kind], oat);
+    const surf = tbl[surface] ? surface : 'hard'; // fallback si surface grass manquante
+    if (!tbl[surf]?.kg700?.[kind]) throw new Error('Structure table TO DR400 invalide — vérifier profil avion');
+    const v700 = interpTemp(tbl.temps, tbl[surf].kg700[kind], oat);
+    const v900 = interpTemp(tbl.temps, tbl[surf].kg900[kind], oat);
     return lerp(0, v700, 1, v900, alpha);
   }
   if (low === high) return valAt(low);
@@ -1969,8 +1971,10 @@ function interpLDG_DR400(altFt, oat, massKg, mode, kind) {
   function valAt(alt) {
     const tbl = LDG_DR400[String(alt)];
     if (!tbl) throw new Error('Table LDG DR400 manquante pour alt=' + alt);
-    const v700 = interpTemp(tbl.temps, tbl[mode].kg700[kind], oat);
-    const v900 = interpTemp(tbl.temps, tbl[mode].kg900[kind], oat);
+    const md = tbl[mode] ? mode : 'moderate';
+    if (!tbl[md]?.kg700?.[kind]) throw new Error('Structure table LDG DR400 invalide — vérifier profil avion');
+    const v700 = interpTemp(tbl.temps, tbl[md].kg700[kind], oat);
+    const v900 = interpTemp(tbl.temps, tbl[md].kg900[kind], oat);
     return lerp(0, v700, 1, v900, alpha);
   }
   if (low === high) return valAt(low);
