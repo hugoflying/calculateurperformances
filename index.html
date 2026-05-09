@@ -2233,8 +2233,8 @@ function computeArrPerf() {
   let baseLDG_pass, baseLDG_roll;
   if (profile === 'AT01') {
     const _rLDG = interpAT01('arr', arrAlt, arrOat, arrLdw, 'hard',
-      resolvedHead > 0 ? resolvedHead : 0,
-      resolvedHead < 0 ? -resolvedHead : 0, 15);
+      headwindForCalc > 0 ? headwindForCalc : 0,
+      headwindForCalc < 0 ? -headwindForCalc : 0, 15);
     baseLDG_pass = _rLDG.pass; baseLDG_roll = _rLDG.roll;
   } else {
     baseLDG_pass = profile === 'DR300'
@@ -2250,7 +2250,7 @@ function computeArrPerf() {
   }
   const arrWindF = profile === 'AT01' ? 1.0
     : profile === 'DR400_160'
-      ? windFactorDR400_160(resolvedHead > 0 ? resolvedHead : 0, resolvedHead < 0 ? -resolvedHead : 0)
+      ? windFactorDR400_160(headwindForCalc > 0 ? headwindForCalc : 0, headwindForCalc < 0 ? -headwindForCalc : 0)
       : windDistanceFactor(headwindForCalc);
   const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra * arrWetFactor);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
