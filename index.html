@@ -1319,10 +1319,9 @@ function applyAircraftData(immat) {
   const d = aircraftData[immat];
   if (!d) return;
 
-  
   profile = d.profil || 'DR400';
 
-  if (d.profil === 'DR400') {
+  if (d.profil === 'DR400' || d.profil === 'DR400_160') {
     TO_DR400  = d.to;
     LDG_DR400 = d.ldg;
     TO_DR300  = null;
@@ -1333,6 +1332,23 @@ function applyAircraftData(immat) {
     TO_DR400  = null;
     LDG_DR400 = null;
   }
+
+  // Pré-remplir les masses par défaut selon l'avion
+  const masseTOdefault  = d.masse_max     || (d.profil === 'DR300' ? 865 : 900);
+  const masseLDGdefault = d.masse_max_ldg || masseTOdefault;
+
+  const depTowEl = document.getElementById('depTow');
+  const arrLdwEl = document.getElementById('arrLdw');
+  if (depTowEl) depTowEl.value = String(masseTOdefault);
+  if (arrLdwEl) arrLdwEl.value = String(masseLDGdefault);
+
+  // Synchro affichage ARR marge
+  const arrDisp = document.getElementById('arrMargeDisplay');
+  const safety  = document.getElementById('safety')?.value || '30';
+  if (arrDisp) arrDisp.textContent = safety + ' %';
+
+  resetComputedState('dep');
+  resetComputedState('arr');
 }
 
 // Tables statiques retirées — données venant des fichiers JSON
@@ -2730,13 +2746,20 @@ function renderRunwayPicker(side, runways) {
   // Calculer la piste préférentielle selon le vent
   const windDir = parseInt(document.getElementById(side + 'WindDir')?.value || '0') || 0;
   const windKt  = +(document.getElementById(side + 'WindKt')?.value || 0);
-  let bestIdx = -1;
   let bestHead = -Infinity;
+  let prefIndices = new Set();
   if (windKt > 0) {
+    // Trouver la meilleure composante de vent de face
     runways.forEach((rwy, i) => {
       const diff = ((windDir - rwy.qfu + 180 + 360) % 360) - 180;
       const head = Math.cos(diff * Math.PI / 180) * windKt;
-      if (head > bestHead) { bestHead = head; bestIdx = i; }
+      if (head > bestHead) bestHead = head;
+    });
+    // Marquer toutes les pistes avec la même composante (même QFU ± 2°) comme préférentielles
+    runways.forEach((rwy, i) => {
+      const diff = ((windDir - rwy.qfu + 180 + 360) % 360) - 180;
+      const head = Math.cos(diff * Math.PI / 180) * windKt;
+      if (Math.abs(head - bestHead) < 1) prefIndices.add(i);
     });
   }
 
@@ -2746,7 +2769,7 @@ function renderRunwayPicker(side, runways) {
     <div class="rwy-list">
       ${runways.map((rwy, i) => {
         const isGrass   = rwy.surfaceType === 'grass';
-        const isPref    = i === bestIdx && windKt > 0;
+        const isPref    = prefIndices.has(i) && windKt > 0;
         const surfLabel = isGrass
           ? '<span style="display:inline-block;width:9px;height:9px;background:#16a34a;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Herbe'
           : '<span style="display:inline-block;width:9px;height:9px;background:#64748b;border-radius:2px;margin-right:3px;vertical-align:middle"></span>Revêtue';
