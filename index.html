@@ -1792,7 +1792,7 @@ function updateWindDisplay(side) {
           if (arrAssumeTA) {
             arrAssumeTA = false;
             const btn = document.getElementById('arrTwAssumeBtn');
-            if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+            if (btn) { btn.classList.remove('active'); }
           }
         }
       }
@@ -1806,7 +1806,7 @@ function updateWindDisplay(side) {
         twAssumeWrap.classList.remove('visible');
         depAssumeTA = false;
         const btn = document.getElementById('depTwAssumeBtn');
-        if (btn) { btn.classList.remove('active'); btn.querySelector('.tw-check').textContent = '☐'; }
+        if (btn) { btn.classList.remove('active'); }
       }
     }
   }
@@ -2160,7 +2160,7 @@ function computeDepPerf() {
   const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('dep', qfu, depAssumeTA);
 
   if (profile === 'DR300' && !LDG_DR300 && !TO_DR300) throw new Error('Tables DR300 non chargées — sélectionner un avion');
-  if (profile !== 'DR300' && !TO_DR400)                 throw new Error('Tables DR400 non chargées — sélectionner un avion');
+  if (profile !== 'DR300' && profile !== 'DR400_160' && !TO_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
 
   let baseTO_pass, baseTO_roll;
   if (profile === 'DR300') {
@@ -2215,14 +2215,18 @@ function computeArrPerf() {
   const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('arr', qfu, arrAssumeTA);
 
   if (profile === 'DR300' && !LDG_DR300) throw new Error('Tables DR300 non chargées — sélectionner un avion');
-  if (profile !== 'DR300' && !LDG_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
+  if (profile !== 'DR300' && profile !== 'DR400_160' && !LDG_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
 
   const baseLDG_pass = profile === 'DR300'
     ? interpGridLDG_DR300(landingMode, 'pass', arrAlt, arrOat, arrLdw)
-    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+    : profile === 'DR400_160'
+      ? interpDR400_160('arr', arrAlt, arrOat, arrLdw, 'hard', 'pass')
+      : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'pass');
   const baseLDG_roll = profile === 'DR300'
     ? interpGridLDG_DR300(landingMode, 'roll', arrAlt, arrOat, arrLdw)
-    : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
+    : profile === 'DR400_160'
+      ? interpDR400_160('arr', arrAlt, arrOat, arrLdw, 'hard', 'roll')
+      : interpLDG_DR400(arrAlt, arrOat, arrLdw, landingMode, 'roll');
   const arrWindF     = windDistanceFactor(headwindForCalc);
   const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra * arrWetFactor);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
