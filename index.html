@@ -2174,7 +2174,7 @@ function computeDepPerf() {
   if (profile === 'AT01') {
     const _rTO = interpAT01('dep', depAlt, depOat, depTow, depSurface,
       headwindForCalc > 0 ? headwindForCalc : 0,
-      headwindForCalc < 0 ? -headwindForCalc : 0, 15);
+      headwindForCalc < 0 ? -headwindForCalc : 0, 50);
     baseTO_pass = _rTO.pass; baseTO_roll = _rTO.roll;
   } else if (profile === 'DR300') {
     baseTO_pass = interpGridDR300(depSurface, 'pass', depAlt, depOat, depTow);
@@ -2234,7 +2234,7 @@ function computeArrPerf() {
   if (profile === 'AT01') {
     const _rLDG = interpAT01('arr', arrAlt, arrOat, arrLdw, 'hard',
       headwindForCalc > 0 ? headwindForCalc : 0,
-      headwindForCalc < 0 ? -headwindForCalc : 0, 15);
+      headwindForCalc < 0 ? -headwindForCalc : 0, 50);
     baseLDG_pass = _rLDG.pass; baseLDG_roll = _rLDG.roll;
   } else {
     baseLDG_pass = profile === 'DR300'
