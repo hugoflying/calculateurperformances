@@ -2759,12 +2759,14 @@ async function fetchRunways(icao) {
       };
     })
     .sort((a, b) => {
-      // Trier par surface d'abord (revêtue avant herbe), puis par numéro de piste
-      if (a.surfaceType !== b.surfaceType) {
-        return a.surfaceType === 'hard' ? -1 : 1;
-      }
+      // Regrouper par paire physique (04/22, 12/30), puis surface dans la paire
       const n = d => parseInt(d) || 0;
-      return n(a.designator) - n(b.designator);
+      const pairKey = d => { const q = n(d); return Math.min(q, q > 18 ? q - 18 : q + 18); };
+      const pa = pairKey(a.designator), pb = pairKey(b.designator);
+      if (pa !== pb) return pa - pb;                          // trier les paires entre elles
+      if (a.surfaceType !== b.surfaceType)                   // dans la paire : revêtue d'abord
+        return a.surfaceType === 'hard' ? -1 : 1;
+      return n(a.designator) - n(b.designator);              // puis par numéro croissant
     });
 }
 
