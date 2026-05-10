@@ -2184,7 +2184,10 @@ function computeDepPerf() {
     baseTO_roll = interpTO_DR400(depAlt, depOat, depTow, depSurface, 'roll');
   }
 
-  const depWindF = windDistanceFactor(headwindForCalc);
+  const depWindF = profile === 'AT01' ? 1.0
+    : profile === 'DR400_160'
+      ? windFactorDR400_160(headwindForCalc > 0 ? headwindForCalc : 0, headwindForCalc < 0 ? -headwindForCalc : 0)
+      : windDistanceFactor(headwindForCalc);
   const spatsF   = withSpats ? 1.00 : 1.03;
   const toCalc   = Math.round(baseTO_pass * depWindF * depExtra * spatsF * depWetFactor);
   const toMargin = Math.round(toCalc * (1 + safety / 100));
