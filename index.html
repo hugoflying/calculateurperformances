@@ -1558,7 +1558,11 @@ $('#arrLda').addEventListener('input',  () => { const s=$('#arrLda').value.repla
 function checkMassWarn(inputId, warnId) {
   const mass = parseFloat(document.getElementById(inputId).value) || 0;
   const warn = document.getElementById(warnId);
-  if (mass > 0 && (mass < 700 || mass > 900)) warn.classList.add('visible');
+  if (!warn) return;
+  // Utiliser les limites de l'avion sélectionné
+  const minMass = aircraftData[document.getElementById('aircraftSel')?.value]?.masse_min_perf || 550;
+  const maxMass = aircraftData[document.getElementById('aircraftSel')?.value]?.masse_max      || 1050;
+  if (mass > 0 && (mass < minMass || mass > maxMass)) warn.classList.add('visible');
   else warn.classList.remove('visible');
 }
 $('#depTow').addEventListener('input', () => checkMassWarn('depTow', 'depTowWarn'));
