@@ -778,7 +778,7 @@ input[type=number]{-moz-appearance:textfield}
           </select>
         </div>
         <div class="row-2">
-          <div class="field"><label class="field-label">Masse (kg)</label><input id="depTow" class="field-input" type="number" value="900"/><span id="depTowWarn" class="field-warn">⚠ Hors plage</span></div>
+          <div class="field"><label class="field-label">Masse (kg)</label><input id="depTow" class="field-input" type="number"/><span id="depTowWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><input id="safety" class="field-input" type="number" value="30" min="0"/></div>
         </div>
         <div class="toggle-wrap">
@@ -802,17 +802,18 @@ input[type=number]{-moz-appearance:textfield}
           <div class="field"><label class="field-label">Vitesse (kt)</label><input id="depWindKt" class="field-input" type="number"/></div>
           <div class="field"><label class="field-label">OAT (°C)</label><input id="depOat" class="field-input" type="number"/></div>
         </div>
-        <div id="depGustRow" style="display:none">
-          <div class="field"><label class="field-label" style="display:flex;align-items:center;gap:5px">Rafale <span style="font:400 9px 'Inter';color:var(--amber)">gust détecté</span></label><input id="depWindGust" class="field-input" type="number" oninput="toggleGustVisible('dep',this.value)"/></div>
-        </div>
-        <div id="depVrbRow" style="display:none;align-items:flex-end;gap:0">
-          <div class="field" style="flex:1">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:flex-end">
+          <div style="grid-column:span 2">
             <label class="field-label">Secteur variable</label>
             <div style="display:flex;align-items:center">
-              <input id="depVrbFrom" class="field-input" type="number" style="border-radius:var(--radius-sm) 0 0 var(--radius-sm);text-align:center"/>
-              <div style="padding:0 6px;font:700 13px 'JetBrains Mono',monospace;color:var(--text-3);background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);height:43px;display:flex;align-items:center">V</div>
-              <input id="depVrbTo" class="field-input" type="number" style="border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:center"/>
+              <input id="depVrbFrom" class="field-input" type="number" style="border-radius:var(--radius-sm) 0 0 var(--radius-sm);text-align:center" placeholder="—"/>
+              <div style="padding:0 6px;font:700 13px 'JetBrains Mono',monospace;color:var(--text-3);background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);height:43px;display:flex;align-items:center;flex-shrink:0">V</div>
+              <input id="depVrbTo" class="field-input" type="number" style="border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:center" placeholder="—"/>
             </div>
+          </div>
+          <div class="field">
+            <label class="field-label" style="display:flex;align-items:center;gap:5px">Rafale (kt)<span id="depGustTag" style="font:400 9px 'Inter';color:var(--amber);display:none">gust</span></label>
+            <input id="depWindGust" class="field-input" type="number" oninput="toggleGustVisible('dep',this.value)" placeholder="—"/>
           </div>
         </div>
         <div class="wind-strip">
@@ -962,7 +963,7 @@ input[type=number]{-moz-appearance:textfield}
           </select>
         </div>
         <div class="row-2">
-          <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number" value="900"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
+          <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><div class="field-input" style="display:flex;align-items:center;color:var(--text);font:700 15px 'JetBrains Mono',monospace" id="arrMargeDisplay">30 %</div></div>
         </div>
         <div class="toggle-wrap">
@@ -985,17 +986,18 @@ input[type=number]{-moz-appearance:textfield}
           <div class="field"><label class="field-label">Vitesse (kt)</label><input id="arrWindKt" class="field-input" type="number"/></div>
           <div class="field"><label class="field-label">OAT (°C)</label><input id="arrOat" class="field-input" type="number"/></div>
         </div>
-        <div id="arrGustRow" style="display:none">
-          <div class="field"><label class="field-label" style="display:flex;align-items:center;gap:5px">Rafale <span style="font:400 9px 'Inter';color:var(--amber)">gust détecté</span></label><input id="arrWindGust" class="field-input" type="number" oninput="toggleGustVisible('arr',this.value)"/></div>
-        </div>
-        <div id="arrVrbRow" style="display:none;align-items:flex-end;gap:0">
-          <div class="field" style="flex:1">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:flex-end">
+          <div style="grid-column:span 2">
             <label class="field-label">Secteur variable</label>
             <div style="display:flex;align-items:center">
-              <input id="arrVrbFrom" class="field-input" type="number" style="border-radius:var(--radius-sm) 0 0 var(--radius-sm);text-align:center"/>
-              <div style="padding:0 6px;font:700 13px 'JetBrains Mono',monospace;color:var(--text-3);background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);height:43px;display:flex;align-items:center">V</div>
-              <input id="arrVrbTo" class="field-input" type="number" style="border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:center"/>
+              <input id="arrVrbFrom" class="field-input" type="number" style="border-radius:var(--radius-sm) 0 0 var(--radius-sm);text-align:center" placeholder="—"/>
+              <div style="padding:0 6px;font:700 13px 'JetBrains Mono',monospace;color:var(--text-3);background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);height:43px;display:flex;align-items:center;flex-shrink:0">V</div>
+              <input id="arrVrbTo" class="field-input" type="number" style="border-radius:0 var(--radius-sm) var(--radius-sm) 0;text-align:center" placeholder="—"/>
             </div>
+          </div>
+          <div class="field">
+            <label class="field-label" style="display:flex;align-items:center;gap:5px">Rafale (kt)<span id="arrGustTag" style="font:400 9px 'Inter';color:var(--amber);display:none">gust</span></label>
+            <input id="arrWindGust" class="field-input" type="number" oninput="toggleGustVisible('arr',this.value)" placeholder="—"/>
           </div>
         </div>
         <div class="wind-strip">
@@ -1319,7 +1321,23 @@ function loadAllAircraft() {
 
 function applyAircraftData(immat) {
   const d = aircraftData[immat];
-  if (!d) return;
+  if (!d) {
+    // Avion désélectionné : vider les masses
+    const depTow = document.getElementById('depTow');
+    const arrLdw = document.getElementById('arrLdw');
+    if (depTow) depTow.value = '';
+    if (arrLdw) arrLdw.value = '';
+    return;
+  }
+
+  // Pré-remplir les masses avec la masse max de l'avion
+  const depTow = document.getElementById('depTow');
+  const arrLdw = document.getElementById('arrLdw');
+  if (depTow && !depTow.value) depTow.value = d.masse_max || '';
+  if (arrLdw && !arrLdw.value) arrLdw.value = d.masse_max_ldg || d.masse_max || '';
+  // Synchro ARR select
+  const arrSel = document.getElementById('aircraftSelArr');
+  if (arrSel && arrSel.value !== immat) arrSel.value = immat;
 
   profile = d.profil || 'DR400';
 
@@ -1460,9 +1478,7 @@ $('#aircraftSel').addEventListener('change', () => {
   updateWindDisplay('arr');
   resetComputedState('dep');
   resetComputedState('arr');
-  // Synchro avec le select ARR
-  const arrSel = document.getElementById('aircraftSelArr');
-  if (arrSel && arrSel.value !== immat) arrSel.value = immat;
+
 });
 
 /* ===================== TOGGLES ===================== */
@@ -1604,6 +1620,8 @@ function validateVrb(side) {
         if (v) {
           const n = Math.max(10, Math.min(360, parseInt(v, 10)));
           el.value = pad3(n);
+        } else {
+          el.value = ''; // s'assurer que c'est bien vide
         }
         validateVrb(side);
         updateWindDisplay(side);
@@ -1694,9 +1712,7 @@ function updateWindDisplay(side) {
     const dir = (dirEl.value || '').toUpperCase();
     const fromEl = document.getElementById(side + 'VrbFrom');
     const toEl   = document.getElementById(side + 'VrbTo');
-    const hasSector = fromEl?.value && toEl?.value;
-    const rowEl = document.getElementById(side + 'VrbRow');
-    if (rowEl) rowEl.style.display = (dir.includes('VRB') || hasSector) ? 'flex' : 'none';
+    // VRB et Rafale toujours visibles — rien à faire ici
   }
   const qfu    = normQFU(document.getElementById(side+'Qfu').value);
   const dirStr = (document.getElementById(side+'WindDir').value||'');
@@ -4130,8 +4146,8 @@ function switchToOtherSide() {
 }
 
 function toggleGustVisible(side, val) {
-  const row = document.getElementById(side + 'GustRow');
-  if (row) row.style.display = (+val > 0) ? 'block' : 'none';
+  const tag = document.getElementById(side + 'GustTag');
+  if (tag) tag.style.display = +val > 0 ? 'inline' : 'none';
   updateWindDisplay(side);
 }
 // Appeler depuis applyMetar pour afficher gust si présent
