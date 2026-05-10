@@ -1927,7 +1927,7 @@ function interpDR400_160(side, altFt, oat, massKg, surface, kind) {
   const valAt = (altKey) => {
     const sec = tbl[String(altKey)];
     if (!sec) throw new Error('Section altitude manquante dans tables DR400_160: alt=' + altKey + ', tbl keys=' + Object.keys(tbl).join(','));
-    const surKey = (surface === 'grass') ? 'hard' : 'hard'; // seule "hard" dans le manuel
+    const surKey = 'hard'; // seule table disponible dans le manuel DR400/160
     const low = sec[surKey]['kg850'][kind];
     const high = sec[surKey]['kg1050'][kind];
     const temps = sec.temps;
