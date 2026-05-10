@@ -2194,7 +2194,7 @@ function computeDepPerf() {
   const { w, headwindForCalc, taActive, note: windNote } = resolveWindForCalc('dep', qfu, depAssumeTA);
 
   if (profile === 'DR300' && !LDG_DR300 && !TO_DR300) throw new Error('Tables DR300 non chargées — sélectionner un avion');
-  if (profile !== 'DR300' && profile !== 'DR400_160' && !TO_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
+  if (profile !== 'DR300' && profile !== 'DR400_160' && profile !== 'AT01' && !TO_DR400) throw new Error('Tables DR400 non chargées — sélectionner un avion');
 
   let baseTO_pass, baseTO_roll;
   if (profile === 'AT01') {
@@ -2205,6 +2205,9 @@ function computeDepPerf() {
   } else if (profile === 'DR300') {
     baseTO_pass = interpGridDR300(depSurface, 'pass', depAlt, depOat, depTow);
     baseTO_roll = interpGridDR300(depSurface, 'roll', depAlt, depOat, depTow);
+  } else if (profile === 'DR400_160') {
+    baseTO_pass = interpDR400_160('dep', depAlt, depOat, depTow, depSurface, 'pass');
+    baseTO_roll = interpDR400_160('dep', depAlt, depOat, depTow, depSurface, 'roll');
   } else {
     baseTO_pass = interpTO_DR400(depAlt, depOat, depTow, depSurface, 'pass');
     baseTO_roll = interpTO_DR400(depAlt, depOat, depTow, depSurface, 'roll');
