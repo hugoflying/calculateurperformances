@@ -700,7 +700,10 @@ input[type=number]{-moz-appearance:textfield}
   <div class="topbar-brand">
     <span class="topbar-title">ACBT — Calculateur de performances</span>
   </div>
-  <button id="btnDark" onclick="toggleDark()" title="Mode sombre" style="flex-shrink:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);width:32px;height:32px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer">🌙</button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button id="btnHistory" onclick="openHistory()" title="Historique des calculs" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font:600 11px 'Inter';padding:0 10px;height:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);cursor:pointer;white-space:nowrap"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Historique</button>
+    <button id="btnDark" onclick="toggleDark()" title="Mode sombre" style="flex-shrink:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);width:32px;height:32px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer">🌙</button>
+  </div>
 </header>
 
 <!-- Settings bar supprimée - marge dans Paramètres avion -->
@@ -4543,14 +4546,14 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <!-- Modal Historique -->
-<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.5);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
-  <div style="background:var(--surface-1);border-radius:12px;width:100%;max-width:680px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.55);align-items:center;justify-content:center">
+  <div style="background:var(--surface-1);border-radius:14px;width:calc(100% - 32px);max-width:660px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
       <div style="font:700 14px 'Inter';color:var(--text-1)">Historique des calculs</div>
-      <button onclick="closeHistory()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;line-height:1">✕</button>
+      <button onclick="closeHistory()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:22px;line-height:1;padding:2px 6px">×</button>
     </div>
-    <div id="historyList" style="padding:12px;max-height:70vh;overflow-y:auto"></div>
-    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+    <div id="historyList" style="padding:12px;overflow-y:auto;flex:1"></div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;flex-shrink:0">
       <button onclick="clearHistory()" style="font:500 11px 'Inter';color:var(--text-3);background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer">Effacer l'historique</button>
     </div>
   </div>
