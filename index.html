@@ -625,6 +625,19 @@ input[type=number]{-moz-appearance:textfield}
   .pv-metar{font:400 6.5pt 'JetBrains Mono',monospace;padding:3mm 4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:1.5mm;white-space:pre-wrap;word-break:break-all;margin-top:2mm;color:#475569}
   .pv-footer{position:fixed;bottom:10mm;left:14mm;right:14mm;display:flex;justify-content:space-between;font:400 6pt 'Inter';color:#94a3b8;border-top:1pt solid #e2e8f0;padding-top:2mm}
 }
+
+.hist-card { background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:box-shadow .15s; }
+.hist-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.1); border-color:var(--blue-mid); }
+.hist-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.hist-card-ac { font:700 12px 'JetBrains Mono',monospace; color:var(--text-1); }
+.hist-card-date { font:400 10px 'Inter'; color:var(--text-3); }
+.hist-card-rows { display:flex; gap:8px; flex-wrap:wrap; }
+.hist-chip { font:500 10px 'Inter'; padding:2px 7px; border-radius:10px; }
+.hist-chip.dep { background:#dbeafe; color:#1e40af; }
+.hist-chip.arr { background:#d1fae5; color:#065f46; }
+.hist-chip.bad { background:#fee2e2; color:#991b1b; }
+.hist-meta { font:400 10px 'Inter'; color:var(--text-3); margin-top:4px; }
+
 </style>
 </head>
 <body>
@@ -2238,6 +2251,7 @@ function computeDepPerf() {
     'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   depComputed = true;
   updatePdfBtn();
+  setTimeout(() => saveToHistory('dep'), 100);
 }
 
 /* ===================== CALCUL ATTERRISSAGE ===================== */
@@ -2306,6 +2320,7 @@ function computeArrPerf() {
     'Vent utilisé : le plus contraignant (moyen, rafales, secteur variable, TEMPO).';
   arrComputed = true;
   updatePdfBtn();
+  setTimeout(() => saveToHistory('arr'), 100);
 }
 
 /* ===================== RESULTS MODAL ===================== */
@@ -4206,6 +4221,202 @@ function interpAT01(side, altFt, oat, massKg, surface, headKt, tailKt, obsFt) {
   return { roll: Math.round(roll), pass: Math.round(dist) };
 }
 
+
+/* ===================== HISTORIQUE DES CALCULS ===================== */
+const HIST_KEY = 'acbt-calc-history';
+const HIST_MAX = 20;
+
+function saveToHistory(side) {
+  const ac   = document.getElementById('aircraftSel')?.value || '—';
+  const icao = document.getElementById(side+'Icao')?.value?.toUpperCase() || '—';
+  const name = document.getElementById(side+'AirportName')?.textContent || '';
+  const qfu  = document.getElementById(side+'Qfu')?.value || '—';
+  const dist = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda')?.value || '—';
+  const mass = document.getElementById(side === 'dep' ? 'depTow' : 'arrLdw')?.value || '—';
+  const oat  = document.getElementById(side+'Oat')?.value || '—';
+  const alt  = document.getElementById(side+'Alt')?.value || '—';
+  const wdir = document.getElementById(side+'WindDir')?.value || '—';
+  const wkt  = document.getElementById(side+'WindKt')?.value || '—';
+  const wgust= document.getElementById(side+'WindGust')?.value || '';
+  const marge= document.getElementById('safety')?.value || '30';
+  const surf = side === 'dep' ? depSurface : landingMode;
+
+  const chip = document.getElementById(side === 'dep' ? 'toChip' : 'ldgChip');
+  const isOk  = chip?.classList.contains('is-ok-chip');
+  const isBad = chip?.classList.contains('is-bad-chip');
+  const verdict = isOk ? 'ok' : isBad ? 'bad' : 'neu';
+
+  const reqEl  = document.getElementById(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal');
+  const availEl= document.getElementById(side === 'dep' ? 'todaMini' : 'ldaMini');
+
+  const entry = {
+    id: Date.now(),
+    ts: new Date().toISOString(),
+    side,
+    ac, icao, name, qfu, dist, mass, oat, alt,
+    wind: wdir + '/' + wkt + (wgust ? 'G'+wgust : '') + 'kt',
+    marge, surf,
+    verdict,
+    requis: reqEl?.textContent || '—',
+    avail: availEl?.textContent || '—',
+    // Snapshot paramètres complets pour rappel
+    snap: {
+      aircraftSel: ac,
+      depTow: side==='dep' ? mass : undefined,
+      arrLdw: side==='arr' ? mass : undefined,
+      depQfu: side==='dep' ? qfu : undefined,
+      arrQfu: side==='arr' ? qfu : undefined,
+      depToda: side==='dep' ? dist : undefined,
+      arrLda:  side==='arr' ? dist : undefined,
+      depAlt:  side==='dep' ? alt : undefined,
+      arrAlt:  side==='arr' ? alt : undefined,
+      depOat:  side==='dep' ? oat : undefined,
+      arrOat:  side==='arr' ? oat : undefined,
+      depWindDir: side==='dep' ? wdir : undefined,
+      arrWindDir: side==='arr' ? wdir : undefined,
+      depWindKt:  side==='dep' ? wkt : undefined,
+      arrWindKt:  side==='arr' ? wkt : undefined,
+      depIcao: side==='dep' ? icao : undefined,
+      arrIcao: side==='arr' ? icao : undefined,
+      safety: marge,
+    }
+  };
+
+  try {
+    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    hist.unshift(entry);
+    if (hist.length > HIST_MAX) hist.splice(HIST_MAX);
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+    // Mettre à jour le badge
+    updateHistoryBadge(hist.length);
+  } catch(e) { console.warn('Historique:', e); }
+}
+
+function updateHistoryBadge(n) {
+  const btn = document.getElementById('btnHistory');
+  if (!btn) return;
+  const badge = btn.querySelector('.hist-badge') || (() => {
+    const b = document.createElement('span');
+    b.className = 'hist-badge';
+    b.style.cssText = 'background:#2563eb;color:#fff;font:700 9px Inter;border-radius:8px;padding:1px 5px;margin-left:2px';
+    btn.appendChild(b); return b;
+  })();
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'inline' : 'none';
+}
+
+function openHistory() {
+  const modal = document.getElementById('historyModal');
+  const list  = document.getElementById('historyList');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  try {
+    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    if (!hist.length) {
+      list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-3);font:400 13px Inter">Aucun calcul enregistré</div>';
+      return;
+    }
+    list.innerHTML = hist.map((e, i) => {
+      const dt  = new Date(e.ts);
+      const pad2= n => String(n).padStart(2,'0');
+      const dateStr = pad2(dt.getDate())+'/'+pad2(dt.getMonth()+1)+'/'+dt.getFullYear()+' '+pad2(dt.getHours())+':'+pad2(dt.getMinutes());
+      const sideLabel = e.side === 'dep' ? 'Décollage' : 'Atterrissage';
+      const verdict = e.verdict === 'ok' ? '✓ Possible' : e.verdict === 'bad' ? '✗ Insuffisant' : '—';
+      const chipCls = e.verdict === 'ok' ? 'dep' : e.verdict === 'bad' ? 'bad' : '';
+      const icaoDisp = e.icao !== '—' ? e.icao : '';
+      const nameDisp = e.name && e.name !== '—' ? ' — ' + e.name : '';
+      return `<div class="hist-card" onclick="restoreFromHistory(${i})" title="Cliquer pour rappeler ces paramètres">
+        <div class="hist-card-top">
+          <div class="hist-card-ac">${e.ac} <span style="font-weight:400;color:var(--text-3)">${icaoDisp}${nameDisp}</span></div>
+          <div class="hist-card-date">${dateStr}</div>
+        </div>
+        <div class="hist-card-rows">
+          <span class="hist-chip ${e.side}">${sideLabel}</span>
+          <span class="hist-chip ${chipCls}">${verdict}</span>
+          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">QFU ${e.qfu}</span>
+          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.mass} kg</span>
+          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.wind}</span>
+          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.oat}°C / ${e.alt}ft</span>
+        </div>
+        <div class="hist-meta">Requis (marge ${e.marge}%) : ${e.requis} · ${e.side==='dep'?'TODA':'LDA'} dispo : ${e.avail}</div>
+      </div>`;
+    }).join('');
+    updateHistoryBadge(hist.length);
+  } catch(e) {
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-3)">Erreur de lecture</div>';
+  }
+}
+
+function closeHistory() {
+  document.getElementById('historyModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function restoreFromHistory(idx) {
+  try {
+    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    const e = hist[idx];
+    if (!e) return;
+
+    const { snap, side } = e;
+
+    // Restaurer avion
+    const acSel = document.getElementById('aircraftSel');
+    if (acSel && snap.aircraftSel) {
+      acSel.value = snap.aircraftSel;
+      document.getElementById('depTow').value = '';
+      document.getElementById('arrLdw').value  = '';
+      applyAircraftData(snap.aircraftSel);
+    }
+
+    // Restaurer les champs
+    const setVal = (id, val) => {
+      if (val !== undefined && val !== null) {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      }
+    };
+    Object.entries(snap).forEach(([id, val]) => {
+      if (id !== 'aircraftSel') setVal(id, val);
+    });
+
+    // Switcher sur le bon onglet mobile
+    if (window.innerWidth < 900) switchTab(side);
+
+    updateWindDisplay('dep');
+    updateWindDisplay('arr');
+    closeHistory();
+
+    // Scroller vers la section
+    setTimeout(() => {
+      const btn = document.getElementById(side === 'dep' ? 'btnCalcDep' : 'btnCalcArr');
+      btn?.scrollIntoView({ behavior:'smooth', block:'center' });
+    }, 300);
+  } catch(e) { console.warn('Restore:', e); }
+}
+
+function clearHistory() {
+  if (!confirm('Effacer tout l\'historique ?')) return;
+  localStorage.removeItem(HIST_KEY);
+  document.getElementById('historyList').innerHTML =
+    '<div style="padding:24px;text-align:center;color:var(--text-3);font:400 13px Inter">Aucun calcul enregistré</div>';
+  updateHistoryBadge(0);
+}
+
+// Clic outside pour fermer
+document.getElementById('historyModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeHistory();
+});
+
+// Init badge au chargement
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    updateHistoryBadge(hist.length);
+  } catch(e) {}
+});
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -4330,5 +4541,20 @@ if ('serviceWorker' in navigator) {
   obs.observe(fill, { attributes: true, attributeFilter: ['class'] });
 })();
 </script>
+
+<!-- Modal Historique -->
+<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.5);align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface-1);border-radius:12px;width:100%;max-width:680px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <div style="font:700 14px 'Inter';color:var(--text-1)">Historique des calculs</div>
+      <button onclick="closeHistory()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;line-height:1">✕</button>
+    </div>
+    <div id="historyList" style="padding:12px;max-height:70vh;overflow-y:auto"></div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+      <button onclick="clearHistory()" style="font:500 11px 'Inter';color:var(--text-3);background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer">Effacer l'historique</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
