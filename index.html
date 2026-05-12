@@ -363,6 +363,10 @@ input[type=number]{-moz-appearance:textfield}
   box-shadow:var(--shadow-sm);font-weight:700;
 }
 .toggle-btn.is-grass-selected{background:#fff;color:var(--green);box-shadow:var(--shadow-sm);font-weight:700}
+[data-theme="dark"] .toggle-btn.is-selected,
+[data-theme="dark"] .toggle-btn.is-primary{background:rgba(255,255,255,.12);color:#f1f5f9;box-shadow:none}
+[data-theme="dark"] .toggle-btn.is-grass-selected{background:#14532d;color:#86efac;box-shadow:none}
+[data-theme="dark"] .toggle-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
 
 .toggle-wrap{display:flex;flex-direction:column;gap:6px}
 .toggle-label{font:600 11px 'Inter';text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
@@ -626,17 +630,27 @@ input[type=number]{-moz-appearance:textfield}
   .pv-footer{position:fixed;bottom:10mm;left:14mm;right:14mm;display:flex;justify-content:space-between;font:400 6pt 'Inter';color:#94a3b8;border-top:1pt solid #e2e8f0;padding-top:2mm}
 }
 
-.hist-card { background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:box-shadow .15s; }
+.hist-card { background:var(--surface-2,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:box-shadow .15s; }
 .hist-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.1); border-color:var(--blue-mid); }
+@media (max-width:860px) {
+  #historySheet { width:100% !important; max-width:100% !important; max-height:100% !important; height:100% !important; border-radius:0 !important; }
+  #historyModal { align-items:stretch !important; }
+}
+[data-theme="dark"] #historySheet { background:#1e293b !important; }
+[data-theme="dark"] .hist-card { background:#0f172a; border-color:#334155; }
+[data-theme="dark"] .hist-card-ac { color:#f1f5f9; }
+[data-theme="dark"] .hist-card-date, [data-theme="dark"] .hist-meta { color:#94a3b8; }
+[data-theme="dark"] #historySheet > div { border-color:#334155 !important; color:#f1f5f9; }
+[data-theme="dark"] #historySheet > div:first-child div { color:#f1f5f9 !important; }
 .hist-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-.hist-card-ac { font:700 12px 'JetBrains Mono',monospace; color:var(--text-1); }
-.hist-card-date { font:400 10px 'Inter'; color:var(--text-3); }
+.hist-card-ac { font:700 12px 'JetBrains Mono',monospace; color:var(--text-1,#1a2332); }
+.hist-card-date { font:400 10px 'Inter'; color:var(--text-3,#64748b); }
 .hist-card-rows { display:flex; gap:8px; flex-wrap:wrap; }
 .hist-chip { font:500 10px 'Inter'; padding:2px 7px; border-radius:10px; }
 .hist-chip.dep { background:#dbeafe; color:#1e40af; }
 .hist-chip.arr { background:#d1fae5; color:#065f46; }
 .hist-chip.bad { background:#fee2e2; color:#991b1b; }
-.hist-meta { font:400 10px 'Inter'; color:var(--text-3); margin-top:4px; }
+.hist-meta { font:400 10px 'Inter'; color:var(--text-3,#64748b); margin-top:4px; }
 
 </style>
 </head>
@@ -4252,6 +4266,10 @@ function saveToHistory(side) {
   const reqEl  = document.getElementById(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal');
   const availEl= document.getElementById(side === 'dep' ? 'todaMini' : 'ldaMini');
 
+  // Sauvegarder le METAR/TAF affiché
+  const depMetarTxt = document.getElementById('depMetarMsg')?.textContent?.trim() || '';
+  const arrMetarTxt = document.getElementById('arrMetarMsg')?.textContent?.trim() || '';
+
   const entry = {
     id: Date.now(),
     ts: new Date().toISOString(),
@@ -4262,7 +4280,8 @@ function saveToHistory(side) {
     verdict,
     requis: reqEl?.textContent || '—',
     avail: availEl?.textContent || '—',
-    // Snapshot paramètres complets pour rappel
+    depMetar: depMetarTxt,
+    arrMetar: arrMetarTxt,
     snap: {
       aircraftSel: ac,
       depTow: side==='dep' ? mass : undefined,
@@ -4313,6 +4332,9 @@ function openHistory() {
   const list  = document.getElementById('historyList');
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const title = document.getElementById('historyTitle');
+  if (title) title.style.color = isDark ? '#f1f5f9' : '#1a2332';
 
   try {
     const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
@@ -4337,12 +4359,13 @@ function openHistory() {
         <div class="hist-card-rows">
           <span class="hist-chip ${e.side}">${sideLabel}</span>
           <span class="hist-chip ${chipCls}">${verdict}</span>
-          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">QFU ${e.qfu}</span>
-          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.mass} kg</span>
-          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.wind}</span>
-          <span class="hist-chip" style="background:var(--surface-1);color:var(--text-2)">${e.oat}°C / ${e.alt}ft</span>
+          <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">QFU ${e.qfu}</span>
+          <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.mass} kg</span>
+          <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.wind}</span>
+          <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.oat}°C / ${e.alt}ft</span>
         </div>
         <div class="hist-meta">Requis (marge ${e.marge}%) : ${e.requis} · ${e.side==='dep'?'TODA':'LDA'} dispo : ${e.avail}</div>
+        ${(e.side==='dep'&&e.depMetar)||(e.side==='arr'&&e.arrMetar) ? `<div class="hist-meta" style="margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7">${e.side==='dep'?e.depMetar:e.arrMetar}</div>` : ''}
       </div>`;
     }).join('');
     updateHistoryBadge(hist.length);
@@ -4383,6 +4406,15 @@ function restoreFromHistory(idx) {
     Object.entries(snap).forEach(([id, val]) => {
       if (id !== 'aircraftSel') setVal(id, val);
     });
+
+    // Restaurer les METAR affichés
+    const setMetarDisplay = (side2, txt) => {
+      if (!txt) return;
+      const el = document.getElementById(side2 + 'MetarMsg');
+      if (el) { el.textContent = txt; el.style.display = 'block'; }
+    };
+    setMetarDisplay('dep', e.depMetar);
+    setMetarDisplay('arr', e.arrMetar);
 
     // Switcher sur le bon onglet mobile
     if (window.innerWidth < 900) switchTab(side);
@@ -4546,10 +4578,10 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <!-- Modal Historique -->
-<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.55);align-items:center;justify-content:center">
-  <div style="background:var(--surface-1);border-radius:14px;width:calc(100% - 32px);max-width:660px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
-      <div style="font:700 14px 'Inter';color:var(--text-1)">Historique des calculs</div>
+<div id="historyModal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center">
+  <div id="historySheet" style="background:var(--surface-1,#fff);border-radius:14px;width:calc(100% - 32px);max-width:660px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border,#e2e8f0);flex-shrink:0">
+      <div id="historyTitle" style="font:700 14px 'Inter';color:var(--text-1,#1a2332)">Historique des calculs</div>
       <button onclick="closeHistory()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:22px;line-height:1;padding:2px 6px">×</button>
     </div>
     <div id="historyList" style="padding:12px;overflow-y:auto;flex:1"></div>
