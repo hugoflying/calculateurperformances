@@ -1129,6 +1129,24 @@ input[type=number]{-moz-appearance:textfield}
          <strong>BECMG amélioration</strong> (vent qui s'améliore) → appliqué seulement à la fin de la transition.</p>
     </div>
 
+    <div class="readme-section">
+      <h3>Historique des calculs</h3>
+      <p>Chaque calcul effectué est <strong>automatiquement sauvegardé</strong> en local (jusqu'à 20 entrées). Accessible via le bouton <strong>⏱</strong> en haut à droite.</p>
+      <p>Chaque fiche affiche : avion, aéroport, QFU, masse, vent, OAT/altitude, résultat requis avec marge, METAR ou TAF utilisé.</p>
+      <p><strong>Rappel d'un calcul :</strong> cliquer sur une fiche restaure tous les paramètres dans les champs (avion, piste, masse, vent) et réaffiche le METAR correspondant. Pratique pour comparer deux configurations ou reprendre un calcul interrompu.</p>
+      <p>L'historique est stocké dans le navigateur (<em>localStorage</em>) — il persiste entre les sessions mais reste sur l'appareil.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Saisie manuelle de la rafale</h3>
+      <p>Le champ <strong>Rafale (kt)</strong> est toujours visible en 3e colonne de la section Météo. Il peut être renseigné :</p>
+      <ul>
+        <li><strong>Automatiquement</strong> via le METAR (si une rafale est détectée, ex. <em>24015G28KT</em>)</li>
+        <li><strong>Manuellement</strong> en saisissant directement la valeur (ex. TEMPO VRB15G25KT d'un METAR)</li>
+      </ul>
+      <p>Le calculateur retient toujours le <strong>maximum entre vent moyen et rafale</strong> pour calculer les composantes face/arrière/travers.</p>
+    </div>
+
   </div>
 </div>
 
