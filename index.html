@@ -972,20 +972,6 @@ input[type=number]{-moz-appearance:textfield}
             <button id="arrGrassWetShort" class="toggle-btn" style="display:none">Très courte ×1,60</button>
           </div>
         </div>
-        <!-- Panne volets — DR300 / DR400 uniquement -->
-        <div id="arrFlapsWrap" class="toggle-wrap" style="margin-top:6px;display:none">
-          <span class="toggle-label">Volets</span>
-          <div class="toggle-group">
-            <button id="arrFlapsNormal" class="toggle-btn is-selected is-primary">Normaux</button>
-            <button id="arrFlapsFail"   class="toggle-btn" style="color:var(--amber)">Panne (×1,30)</button>
-          </div>
-        </div>
-        <div id="arrFlapsAlert" style="display:none;background:var(--amber-light);border:1px solid var(--amber);border-radius:var(--radius-sm);padding:10px 12px;font:500 11px 'Inter';color:var(--amber);line-height:1.7;margin-top:6px">
-          ⚠ <strong>Panne volets — atterrissage volets rentrés</strong><br>
-          Vitesse d'approche : <strong>122 km/h (66 kt)</strong><br>
-          Courte finale : <strong>113 km/h (61 kt)</strong><br>
-          Distance d'atterrissage augmentée de <strong>30 %</strong>
-        </div>
       </div>
     </div>
 
@@ -1090,7 +1076,6 @@ input[type=number]{-moz-appearance:textfield}
         <div class="pf-row"><span class="pf-label">Facteur vent</span><span class="pf-val" id="ldgWindF">—</span></div>
         <div class="pf-row"><span class="pf-label">Carénages</span><span class="pf-val" id="ldgExtra">—</span></div>
         <div id="ldgSurfRow" class="pf-row" style="display:none"><span class="pf-label">Majoration état piste</span><span class="pf-val" id="ldgSurf">—</span></div>
-        <div id="ldgFlapsRow" class="pf-row" style="display:none"><span class="pf-label" style="color:var(--amber)">⚠ Panne volets (rentrés)</span><span class="pf-val" id="ldgFlapsF" style="color:var(--amber)">—</span></div>
         <div class="pf-row"><span class="pf-label" style="font-weight:600;color:var(--text)">Résultat sans marge</span><span class="pf-val" id="ldgRes">—</span></div>
         <div id="ldgExplain" style="font:400 11px 'Inter';color:var(--text-3);padding-top:4px;line-height:1.5"></div>
       </div>
@@ -1432,21 +1417,6 @@ function applyAircraftData(immat) {
 
   resetComputedState('dep');
   resetComputedState('arr');
-
-  // Afficher le toggle volets seulement pour DR300/DR400 (pas AT01)
-  const flapsWrap = document.getElementById('arrFlapsWrap');
-  if (flapsWrap) {
-    const showFlaps = d.profil === 'DR400' || d.profil === 'DR300' || d.profil === 'DR400_160';
-    flapsWrap.style.display = showFlaps ? '' : 'none';
-    if (!showFlaps && flapsFailFactor > 1.0) {
-      flapsFailFactor = 1.0;
-      const btnNormal = document.getElementById('arrFlapsNormal');
-      const btnFail   = document.getElementById('arrFlapsFail');
-      if (btnNormal && btnFail) setToggleActive(btnNormal, btnFail);
-      const alertEl = document.getElementById('arrFlapsAlert');
-      if (alertEl) alertEl.style.display = 'none';
-    }
-  }
 }
 
 // Tables statiques retirées — données venant des fichiers JSON
@@ -1459,7 +1429,6 @@ let profile      = 'DR400';
 let depSurface   = 'hard';
 let depWetFactor = 1.0;   // 1.0 sèche | 1.15 mouillée | 1.60 très courte mouillée
 let arrWetFactor = 1.0;
-let flapsFailFactor = 1.0; // 1.0 normal | 1.30 panne volets rentrés (DR300/DR400)
 let useRegWind    = false; // facteur réglementaire : ×50% face / ×150% arrière (EASA CAT.POL.A)
 let useRegWindDep = false; // vent réglementaire côté décollage (indépendant)
 let useRegWindArr = false; // vent réglementaire côté atterrissage (indépendant)
@@ -1589,20 +1558,6 @@ $('#arrNoBrake').onclick   = () => { landingMode = 'nobrake_grass'; setToggleGra
 $('#arrGrassDry').onclick       = () => { arrWetFactor = 1.0;  setToggleActive($('#arrGrassDry'), $('#arrGrassWet'), $('#arrGrassWetShort')); resetComputedState('arr'); };
 $('#arrGrassWet').onclick       = () => { arrWetFactor = 1.15; setToggleActive($('#arrGrassWet'), $('#arrGrassDry'), $('#arrGrassWetShort')); resetComputedState('arr'); };
 $('#arrGrassWetShort').onclick  = () => { arrWetFactor = 1.60; setToggleActive($('#arrGrassWetShort'), $('#arrGrassDry'), $('#arrGrassWet')); resetComputedState('arr'); };
-
-/* Panne volets — DR300/DR400 */
-$('#arrFlapsNormal').onclick = () => {
-  flapsFailFactor = 1.0;
-  setToggleActive($('#arrFlapsNormal'), $('#arrFlapsFail'));
-  document.getElementById('arrFlapsAlert').style.display = 'none';
-  resetComputedState('arr');
-};
-$('#arrFlapsFail').onclick = () => {
-  flapsFailFactor = 1.30;
-  setToggleActive($('#arrFlapsFail'), $('#arrFlapsNormal'));
-  document.getElementById('arrFlapsAlert').style.display = '';
-  resetComputedState('arr');
-};
 
 $('#btnRegWindOff').onclick = () => { useRegWindDep = false; useRegWind = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); };
 $('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  useRegWind = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); };
@@ -2378,7 +2333,7 @@ function computeArrPerf() {
     : profile === 'DR400_160'
       ? windFactorDR400_160(headwindForCalc > 0 ? headwindForCalc : 0, headwindForCalc < 0 ? -headwindForCalc : 0)
       : windDistanceFactor(headwindForCalc);
-  const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra * arrWetFactor * flapsFailFactor);
+  const ldgCalc      = Math.round(baseLDG_pass * arrWindF * arrExtra * arrWetFactor);
   const ldgMargin    = Math.round(ldgCalc * (1 + safety / 100));
 
   // Avertissement DR300 : le manuel ne donne que le roulement (pas le passage 15m)
@@ -2388,18 +2343,6 @@ function computeArrPerf() {
   document.getElementById('ldgBaseRoll').textContent = Math.round(baseLDG_roll) + ' m';
   document.getElementById('ldgWindF').textContent    = arrWindF.toFixed(2) + '×' + (useRegWind ? ' (régl.)' : '') + (taActive ? ' (5 kt arrière)' : '');
   document.getElementById('ldgExtra').textContent    = arrWetFactor > 1 ? `×${arrWetFactor.toFixed(2)} (piste mouillée)` : '×1,00';
-
-  // Panne volets
-  const ldgFlapsRow = document.getElementById('ldgFlapsRow');
-  const ldgFlapsF   = document.getElementById('ldgFlapsF');
-  if (ldgFlapsRow && ldgFlapsF) {
-    if (flapsFailFactor > 1.0 && profile !== 'AT01') {
-      ldgFlapsRow.style.display = '';
-      ldgFlapsF.textContent = `×${flapsFailFactor.toFixed(2)} (volets rentrés)`;
-    } else {
-      ldgFlapsRow.style.display = 'none';
-    }
-  }
   document.getElementById('ldgRes').textContent      = ldgCalc + ' m';
   document.getElementById('ldaMini').textContent     = arrLda ? arrLda + ' m' : '—';
   document.getElementById('ldgKpiVal').textContent   = ldgMargin + ' m';
@@ -3086,9 +3029,24 @@ async function loadMetarFor(side) {
     // Nom aéroport depuis AVWX (priorité), fallback OpenAIP
     setAirportName(side, null, icao);
     applyMetar(side, metar);
-    setMetarMsg(msgEl, isNearest
+
+    // ── Vérification fraîcheur METAR (valable 2h à partir de l'émission) ──
+    const metarTimeDt    = metar?.time?.dt ? new Date(metar.time.dt) : null;
+    const metarAgeMs     = metarTimeDt ? Date.now() - metarTimeDt.getTime() : null;
+    const METAR_MAX_MS   = 2 * 3600 * 1000;
+    const metarExpired   = metarAgeMs !== null && metarAgeMs > METAR_MAX_MS;
+    let metarStaleWarn   = '';
+    if (metarExpired) {
+      const totalMin = Math.round(metarAgeMs / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      const ageTxt = h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'min' : m + 'min';
+      metarStaleWarn = `⛔ METAR PÉRIMÉ — émis il y a ${ageTxt} (validité max : 2h). Données météo potentiellement invalides.\n`;
+    }
+
+    setMetarMsg(msgEl, metarStaleWarn + (isNearest
       ? '⚠ Station la plus proche (' + usedIcao + distTxt + ') — ' + (metar?.raw||'—')
-      : (metar?.raw||'—'));
+      : (metar?.raw||'—')));
     updateWindDisplay(side);
   } catch (e) {
     setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
@@ -3987,9 +3945,35 @@ async function loadTafFor(side) {
     if (!taf || typeof taf !== 'object') throw new Error('Réponse TAF invalide');
     if (taf.error) throw new Error(taf.error);
     if (!taf.raw && (!taf.forecast || !taf.forecast.length)) throw new Error('TAF vide ou sans prévisions');
+
+    // ── Vérification validité du TAF (période DDHH/DDHH inscrite dans le TAF) ──
+    const tafValidity  = parseTafValidity(taf.raw || '');
+    const tafStartDt   = tafValidity?.start?.dt ? new Date(tafValidity.start.dt) : null;
+    const tafEndDt     = tafValidity?.end?.dt   ? new Date(tafValidity.end.dt)   : null;
+    const nowTs        = new Date();
+    let tafStaleWarn   = '';
+    if (tafEndDt && nowTs > tafEndDt) {
+      const overMs  = nowTs.getTime() - tafEndDt.getTime();
+      const totalMin = Math.round(overMs / 60000);
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      const overTxt = h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'min' : m + 'min';
+      const endFmt = String(tafEndDt.getUTCDate()).padStart(2,'0') + '/' +
+                     String(tafEndDt.getUTCHours()).padStart(2,'0') + 'z';
+      tafStaleWarn = `⛔ TAF EXPIRÉ — fin de validité le ${endFmt}, dépassée de ${overTxt}. Ne plus utiliser ce TAF.\n`;
+    } else if (tafStartDt && nowTs < tafStartDt) {
+      const waitMs  = tafStartDt.getTime() - nowTs.getTime();
+      const waitMin = Math.round(waitMs / 60000);
+      const wh = Math.floor(waitMin / 60);
+      const wm = waitMin % 60;
+      const startFmt = String(tafStartDt.getUTCDate()).padStart(2,'0') + '/' +
+                       String(tafStartDt.getUTCHours()).padStart(2,'0') + 'z';
+      tafStaleWarn = `⚠ TAF pas encore en vigueur — entrée en vigueur le ${startFmt} (dans ${wh > 0 ? wh + 'h' : ''}${wm}min).\n`;
+    }
+
     const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
     lastArrTafRaw = taf.raw || '—';
-    setMetarMsg(msgEl, prefix + (taf.raw || '—'));
+    setMetarMsg(msgEl, tafStaleWarn + prefix + (taf.raw || '—'));
     try { renderTafPicker(taf); } catch(renderErr) {
       console.error('[TAF] Erreur rendu:', renderErr);
       // Afficher quand même le TAF brut
