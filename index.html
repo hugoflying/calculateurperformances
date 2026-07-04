@@ -1277,88 +1277,6 @@ input[type=number]{-moz-appearance:textfield}
 </div><!-- /layout -->
 
 <!-- README -->
-<div class="readme-wrap">
-  <div class="readme-toggle" onclick="toggleReadme()">
-    <span class="readme-toggle-lbl">📖 Documentation</span>
-    <span id="readmeArrow" class="readme-arrow">▼</span>
-  </div>
-  <div id="readmeBody" class="readme-body">
-
-    <div class="readme-section">
-      <h3>Principe du calcul</h3>
-      <p>Les distances sont issues des tables du manuel de vol de chaque avion. Le calculateur interpole entre les valeurs pour votre altitude-densité, température et masse exactes. La distance affichée est toujours la <strong>distance de franchissement des 15 m</strong> (obstacle clearance), pas le roulement seul.</p>
-      <p>La <strong>marge de sécurité</strong> (30 % par défaut) est appliquée en dernier : <em>Requis = Distance calculée × (1 + marge/100)</em>. C'est cette valeur à comparer avec la TODA ou LDA disponible.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Vent</h3>
-      <p><strong>Composantes :</strong> calculées trigonométriquement depuis le QFU et la direction vent. Alerte travers à ~82% de la limite avion, calcul bloqué à la limite max (15 kt AT01, 22 kt DR400/DR300).</p>
-      <p><strong>Facteur vent :</strong> vent de face réduit la distance (×0,78 à 10 kt, ×0,52 à 30 kt) ; vent arrière l'augmente (+10 % par tranche de 2 kt).</p>
-      <p><strong>VRB avec secteur</strong> (ex. 350V060) : la composante la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : vent arrière pur appliqué — hypothèse conservative.</p>
-      <p><strong>Option 50 % / 150 %</strong> : vent de face crédité à 50 % seulement, vent arrière majoré à 150 %. Conforme aux exigences réglementaires pour les opérations commerciales.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Surface et état de piste</h3>
-      <p>Les tables DR400 distinguent piste dure et herbe au décollage. À l'atterrissage, des facteurs s'ajoutent selon l'état :</p>
-      <ul>
-        <li>Herbe sèche → ×1,00</li>
-        <li>Herbe mouillée → ×1,15</li>
-        <li>Herbe courte mouillée → ×1,60 <em>(atterrissage sans freins uniquement)</em></li>
-      </ul>
-    </div>
-
-    <div class="readme-section">
-      <h3>TAF arrivée — Sélection des périodes</h3>
-      <p>Indiquez votre <strong>heure d'arrivée estimée (ETA UTC)</strong>. Seules les périodes actives à cet horaire sont comparées. La plus restrictive est mise en évidence.</p>
-      <p><strong>Ce qui est retenu :</strong> FROM, BECMG, TEMPO avec phénomène durable (brouillard, pluie, neige, brume), PROB40.</p>
-      <p><strong>Ce qui est ignoré :</strong> PROB30 (probabilité trop faible), PROB TEMPO, TEMPO avec phénomène passager (orage, averse).</p>
-      <p><strong>BECMG dégradation</strong> (vent qui empire) → appliqué dès le début de la transition.<br>
-         <strong>BECMG amélioration</strong> (vent qui s'améliore) → appliqué seulement à la fin de la transition.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Historique des calculs</h3>
-      <p>Chaque calcul effectué est <strong>automatiquement sauvegardé</strong> en local (jusqu'à 20 entrées). Accessible via le bouton <strong>⏱</strong> en haut à droite.</p>
-      <p>Chaque fiche affiche : avion, aéroport, QFU, masse, vent, OAT/altitude, résultat requis avec marge, METAR ou TAF utilisé.</p>
-      <p><strong>Rappel d'un calcul :</strong> cliquer sur une fiche restaure tous les paramètres dans les champs (avion, piste, masse, vent) et réaffiche le METAR correspondant. Pratique pour comparer deux configurations ou reprendre un calcul interrompu.</p>
-      <p>L'historique est stocké dans le navigateur (<em>localStorage</em>) — il persiste entre les sessions mais reste sur l'appareil.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Saisie manuelle de la rafale</h3>
-      <p>Le champ <strong>Rafale (kt)</strong> est toujours visible en 3e colonne de la section Météo. Il peut être renseigné :</p>
-      <ul>
-        <li><strong>Automatiquement</strong> via le METAR (si une rafale est détectée, ex. <em>24015G28KT</em>)</li>
-        <li><strong>Manuellement</strong> en saisissant directement la valeur (ex. TEMPO VRB15G25KT d'un METAR)</li>
-      </ul>
-      <p>Le calculateur retient toujours le <strong>maximum entre vent moyen et rafale</strong> pour calculer les composantes face/arrière/travers.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Carburant réglementaire (onglet Carburant)</h3>
-      <p>L'onglet <strong>Carburant</strong> établit le bilan minimum réglementaire et les horaires limites du vol. Réglages préréglés pour <strong>DR400-120 / DR300</strong> : 25 L/h, 110 L, dont 10 L inutilisables.</p>
-      <ul>
-        <li><strong>Emport</strong> : carburant réellement à bord (110 L par défaut = plein). L'<strong>utilisable</strong> = emport − inutilisable.</li>
-        <li><strong>Mise en route + roulage</strong> : forfait (15 min).</li>
-        <li><strong>Trip fuel — croisière aller</strong> : temps de vol jusqu'à destination, intégration comprise.</li>
-        <li><strong>Retour sans ravitaillement</strong> : si le terrain d'arrivée n'a pas d'avitaillement, activez le bouton pour compter la <strong>croisière retour</strong>.</li>
-        <li><strong>Dégagement</strong>, <strong>Extra</strong>, <strong>Réserve finale</strong> : en minutes (réserve club = 45 min).</li>
-      </ul>
-      <p>Chaque poste est converti en litres à la consommation indiquée. Le <strong>bilan</strong> compare le carburant mini requis à l'utilisable et affiche un verdict (suffisant / insuffisant) avec la marge restante.</p>
-      <p><strong>Horaires limites</strong> (à partir de l'heure de départ, bouton <strong>NOW</strong>, en heure locale) : l'<strong>atterrissage max</strong> (réserve finale conservée) et l'<strong>arrêt moteur</strong> (panne sèche), calculés sur l'emport utilisable. Le bilan est aussi ajouté au <strong>PDF</strong> si l'onglet a été ouvert.</p>
-    </div>
-
-    <div class="readme-section">
-      <h3>Coucher du soleil &amp; nuit aéronautique</h3>
-      <p>Dans la colonne <strong>Atterrissage</strong>, sous la carte Aéroport, l'app affiche le <strong>coucher du soleil</strong> du terrain d'arrivée et la <strong>nuit aéronautique</strong> (= coucher + 30 min), en heure locale.</p>
-      <p>Le calcul se déclenche <strong>automatiquement</strong> dès que le <strong>METAR</strong> ou le <strong>TAF</strong> de l'arrivée est chargé : la position exacte du terrain (fournie par AVWX) sert à interroger l'API <strong>sunrise-sunset.org</strong> pour une heure <strong>exacte</strong>. En cas d'indisponibilité de l'API, un calcul astronomique local prend le relais (indiqué comme approximatif).</p>
-      <p>Le coucher est donné pour la <strong>date du jour</strong>.</p>
-    </div>
-
-  </div>
-</div>
-
 </div><!-- /viewPerf -->
 
 <!-- ▸ CARBURANT ────────────────────────── -->
@@ -1512,6 +1430,110 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div class="fuel-note" id="fuelClockNote">Renseignez l'heure de départ pour obtenir les horaires.</div>
       </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="readme-wrap">
+  <div class="readme-toggle" onclick="toggleReadme()">
+    <span class="readme-toggle-lbl">📖 Documentation</span>
+    <span id="readmeArrow" class="readme-arrow">▼</span>
+  </div>
+  <div id="readmeBody" class="readme-body">
+
+    <div class="readme-section">
+      <h3>Ce que fait l'application</h3>
+      <p>Trois fonctions : <strong>① performances décollage/atterrissage</strong> (distances requises vs disponibles), <strong>② bilan carburant réglementaire</strong> avec horaires limites, <strong>③ coucher du soleil et nuit aéronautique</strong> au terrain d'arrivée. Flotte couverte : DR400 120cv (F-GCAL, F-BXEK, F-GOVB), DR300 120cv (F-BTBS, F-BTXS), DR400 160cv (F-GTPE), Aquila AT01 (F-HATX). Les distances viennent des <strong>tables des manuels de vol</strong>, interpolées pour vos conditions exactes.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Déroulé type d'un calcul (2 min)</h3>
+      <ol>
+        <li><strong>Avion</strong> : sélectionnez l'immatriculation en haut de la colonne. La masse max et les limites se chargent automatiquement.</li>
+        <li><strong>ICAO</strong> : tapez le code du terrain (ex. LFOB) puis <strong>METAR</strong> (météo du moment) ou <strong>TAF</strong> à l'arrivée (prévision). Vent, température et altitude terrain se remplissent seuls, et les <strong>pistes</strong> du terrain s'affichent : touchez-en une pour charger QFU + distance + élévation.</li>
+        <li><strong>Masse</strong> : entrez la masse réelle au décollage / à l'atterrissage (kg). Un ⚠ apparaît si elle sort de la plage du manuel.</li>
+        <li><strong>Vérifiez</strong> surface (dur/herbe), état de piste et freinage à l'atterrissage.</li>
+        <li><strong>Calculer</strong> : le verdict s'affiche — distance requise (marge incluse) vs distance disponible, composantes de vent, facteurs appliqués.</li>
+      </ol>
+      <p>Tout champ auto-rempli reste <strong>modifiable à la main</strong> (vent, OAT, altitude, QFU, distances).</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Lecture du résultat</h3>
+      <p><strong>Requis = distance du manuel × (1 + marge)</strong>. Marge par défaut : 30 % (réglable dans Paramètres). La distance du manuel est le <strong>passage des 15 m</strong>, pas le roulement seul. Verdict <strong>vert</strong> : requis ≤ disponible (TODA au décollage, LDA à l'atterrissage). <strong>Rouge</strong> : piste trop courte dans ces conditions.</p>
+      <p>Après un calcul de décollage, le bouton <strong>« Calculer l'atterrissage → »</strong> enchaîne sur l'autre colonne. <strong>📄 Exporter le PDF</strong> génère la fiche complète (les deux faces + carburant si renseigné) à archiver ou imprimer.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Vent — ce que fait le calculateur</h3>
+      <ul>
+        <li><strong>Composantes</strong> face/arrière/travers calculées depuis QFU et direction vent. Alerte à ~82 % de la limite travers ; calcul <strong>bloqué</strong> au-delà (22 kt DR400/DR300, 15 kt AT01).</li>
+        <li><strong>Rafale</strong> : détectée dans le METAR (ex. 24015G28KT) ou saisissable à la main. C'est toujours le <strong>max entre vent moyen et rafale</strong> qui est retenu.</li>
+        <li><strong>Effet sur la distance</strong> : vent de face la réduit (×0,78 à 10 kt, ×0,52 à 30 kt) ; vent arrière l'augmente (+10 % par tranche de 2 kt).</li>
+        <li><strong>VRB avec secteur</strong> (ex. 350V060) : la composante la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : traité en vent arrière pur (hypothèse conservative).</li>
+        <li><strong>Option 50/150 %</strong> (Paramètres) : face créditée à 50 %, arrière majoré à 150 % — norme des opérations commerciales.</li>
+      </ul>
+    </div>
+
+    <div class="readme-section">
+      <h3>Surface et état de piste</h3>
+      <p>Au décollage, les tables DR400 distinguent <strong>dur</strong> et <strong>herbe</strong>. À l'atterrissage, facteurs selon l'état :</p>
+      <ul>
+        <li>Herbe sèche → ×1,00 · Herbe mouillée → ×1,15 · Herbe courte mouillée → ×1,60 <em>(sans freins uniquement)</em></li>
+        <li>Mode <strong>« Sans freins (herbe) »</strong> : utilise la colonne dédiée du manuel.</li>
+        <li>Avion <strong>sans carénages de roues</strong> : +3 % (réglable dans Paramètres).</li>
+      </ul>
+      <p><em>Particularité DR300 :</em> le manuel ne donne qu'un roulement à l'atterrissage (280 m à 865 kg, freinage moyen) — pas de correction altitude/température. La valeur affichée est donc constante.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>TAF arrivée — quelle période est utilisée ?</h3>
+      <p>Après chargement du TAF, choisissez votre heure d'arrivée dans le sélecteur <strong>« Choisir une heure »</strong>. Seules les périodes actives à cet horaire sont comparées ; la plus restrictive est appliquée et mise en évidence.</p>
+      <ul>
+        <li><strong>Retenu</strong> : FROM, BECMG, TEMPO à phénomène durable (brouillard, pluie, neige, brume), PROB40.</li>
+        <li><strong>Ignoré</strong> : PROB30, PROB TEMPO, TEMPO à phénomène passager (orage, averse).</li>
+        <li><strong>BECMG</strong> : une dégradation s'applique dès le <em>début</em> de la transition ; une amélioration seulement à la <em>fin</em>.</li>
+      </ul>
+    </div>
+
+    <div class="readme-section">
+      <h3>Onglet Carburant — bilan réglementaire</h3>
+      <p>Préréglé <strong>DR400-120 / DR300</strong> : 25 L/h · 110 L · 10 L inutilisables (⚠ vérifiez pour F-GTPE et F-HATX). <strong>Emport</strong> = carburant réellement à bord ; <strong>utilisable = emport − inutilisable</strong>.</p>
+      <p>Postes du bilan, chacun converti en litres à la conso indiquée :</p>
+      <ul>
+        <li><strong>Mise en route</strong> (forfait 15 min) : démarrage, essai moteur, roulage.</li>
+        <li><strong>Trip fuel aller</strong> : temps de croisière jusqu'à destination, intégration comprise.</li>
+        <li><strong>Retour sans avitaillement</strong> : à activer si pas d'essence à destination — ajoute le trip fuel retour.</li>
+        <li><strong>Dégagement</strong> : minutes vers votre terrain de déroutement.</li>
+        <li><strong>Extra</strong> (défaut 0) : marge pilote optionnelle.</li>
+        <li><strong>Réserve finale</strong> : 45 min imposées par le club.</li>
+      </ul>
+      <p>Le <strong>verdict</strong> compare le total requis à l'utilisable : vert = vol réalisable avec la marge restante affichée (litres et minutes) ; rouge = il manque X litres.</p>
+      <p><strong>Horaires limites</strong> (heure locale) : saisissez l'heure de mise en route ou touchez <strong>NOW</strong>. L'app affiche l'<strong>atterrissage max</strong> (réserve finale intacte) et l'<strong>arrêt moteur</strong> (panne sèche) — calculés sur l'emport utilisable. À poser impérativement avant l'heure rouge.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Coucher du soleil &amp; nuit aéronautique</h3>
+      <p>Colonne Atterrissage, sous la carte Aéroport : dès que le METAR ou le TAF d'arrivée est chargé, l'app affiche le <strong>coucher du soleil du terrain</strong> et la <strong>nuit aéro = coucher + 30 min</strong>, en <strong>heure locale</strong>, pour la date du jour.</p>
+      <p>L'heure est <strong>exacte</strong> (position précise du terrain + API sunrise-sunset.org). Si l'API est injoignable, un calcul local prend le relais et l'affiche comme approximatif. En VFR de jour, la nuit aéro est votre <strong>heure limite d'atterrissage</strong>.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Historique &amp; PDF</h3>
+      <p>Chaque calcul est <strong>sauvegardé automatiquement</strong> (20 dernières entrées, bouton <strong>⏱</strong> en haut à droite). Une fiche = avion, terrain, QFU, masse, vent, OAT/altitude, résultat, METAR/TAF utilisé. <strong>Toucher une fiche restaure tous les paramètres</strong> — pratique pour comparer deux configurations.</p>
+      <p>Stockage local au navigateur : l'historique persiste entre les sessions mais reste sur <em>cet</em> appareil.</p>
+      <p>Le <strong>PDF</strong> reprend décollage + atterrissage, les paramètres, le METAR/TAF, et le <strong>bilan carburant</strong> si l'onglet Carburant a été ouvert.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Limites à connaître</h3>
+      <ul>
+        <li>Outil d'<strong>aide à la préparation</strong> : le manuel de vol et le jugement du CDB restent la référence.</li>
+        <li>METAR/TAF et coucher du soleil nécessitent une <strong>connexion internet</strong> ; tout le reste fonctionne hors ligne.</li>
+        <li>Le préréglage carburant ne vaut que pour <strong>DR400-120 / DR300</strong> — adaptez conso et réservoir pour les autres machines.</li>
+        <li>Coucher du soleil calculé pour la <strong>date du jour</strong> uniquement.</li>
+      </ul>
     </div>
 
   </div>
