@@ -210,7 +210,7 @@ input[type=number]{-moz-appearance:textfield}
 ═══════════════════════════════════ */
 .mainnav{
   max-width:1100px;margin:0 auto;
-  padding:12px 12px 0;
+  padding:12px 12px 12px;
   display:flex;gap:8px;
 }
 @media(min-width:900px){.mainnav{padding:16px 20px 0}}
@@ -337,6 +337,8 @@ input[type=number]{-moz-appearance:textfield}
 .fuel-collapse{display:none}
 .fuel-collapse.open{display:block}
 .fuel-note{font:500 11px 'Inter';color:var(--text-3);padding-top:3px}
+/* libellés abrégés : bascule pilotée par JS au débordement réel */
+.lbl-sm{display:none}
 /* clock result cards */
 .fuel-clocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fuel-clock{
@@ -1374,7 +1376,7 @@ input[type=number]{-moz-appearance:textfield}
 
         <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
           <div class="field">
-            <label class="field-label">Mise en route (min)</label>
+            <label class="field-label"><span class="lbl-lg">Mise en route (min)</span><span class="lbl-sm">Mise en r. (min)</span></label>
             <input id="fuelStartup" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
@@ -1413,7 +1415,7 @@ input[type=number]{-moz-appearance:textfield}
         <!-- Forfaits (minutes) -->
         <div class="row-3">
           <div class="field">
-            <label class="field-label">Dégagement (min)</label>
+            <label class="field-label"><span class="lbl-lg">Dégagement (min)</span><span class="lbl-sm">Dégagem. (min)</span></label>
             <input id="fuelAlt" class="field-input" type="number" value="30" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
@@ -1509,6 +1511,8 @@ function switchView(view) {
     fuelTouched = true;
     syncFuelPreset();
     computeFuel();
+    requestAnimationFrame(fuelFitLabels);
+    setTimeout(fuelFitLabels, 90);
   } else {
     vFuel.style.display = 'none';
     vPerf.style.display = '';
@@ -1573,7 +1577,30 @@ function fuelToggleRoundtrip() {
   computeFuel();
 }
 
-/* Heure horloge : "HH:MM" -> minutes ; minutes -> "HH:MM" avec repère jour */
+/* Libellés : afficher la version courte seulement si le texte long passe sur 2 lignes */
+function fuelFitLabels() {
+  const view = document.getElementById('viewFuel');
+  if (!view || view.style.display === 'none') return;
+  view.querySelectorAll('.field-label').forEach(lab => {
+    const lg = lab.querySelector('.lbl-lg');
+    const sm = lab.querySelector('.lbl-sm');
+    if (!lg || !sm) return;
+    // repartir du texte long, retour à la ligne autorisé
+    lg.style.display = 'inline';
+    sm.style.display = 'none';
+    lab.style.whiteSpace = 'normal';
+    // hauteur d'une ligne
+    const cs = getComputedStyle(lab);
+    let lh = parseFloat(cs.lineHeight);
+    if (isNaN(lh)) lh = parseFloat(cs.fontSize) * 1.25;
+    // si le libellé long occupe plus d'une ligne -> version courte
+    if (lab.scrollHeight > lh * 1.6) {
+      lg.style.display = 'none';
+      sm.style.display = 'inline';
+    }
+  });
+}
+window.addEventListener('resize', () => fuelFitLabels());
 function clockAdd(depStr, addMin) {
   if (!depStr || !/^\d{1,2}:\d{2}$/.test(depStr)) return null;
   const [h, m] = depStr.split(':').map(Number);
