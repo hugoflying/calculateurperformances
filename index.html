@@ -321,6 +321,11 @@ input[type=number]{-moz-appearance:textfield}
   padding:4px 0 2px;
 }
 .fuel-switch-lbl{font:600 13px 'Inter';color:var(--text)}
+/* Retour sans avitaillement : ligne entière si décoché, grille 1fr/2fr si coché */
+.fuel-retour{display:flex;align-items:center;gap:10px}
+.fuel-retour-switch{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.fuel-retour.is-on{display:grid;grid-template-columns:1fr 2fr;align-items:end}
+.fuel-retour.is-on .fuel-retour-switch{flex-direction:column;align-items:flex-start;gap:5px}
 .fuel-switch-lbl .sub{display:block;font:500 11px 'Inter';color:var(--text-3);margin-top:1px}
 .fuel-switch{position:relative;width:46px;height:26px;flex-shrink:0}
 .fuel-switch input{opacity:0;width:0;height:0;position:absolute;margin:0}
@@ -870,7 +875,7 @@ input[type=number]{-moz-appearance:textfield}
 <!-- TOP BAR -->
 <header class="topbar">
   <div class="topbar-brand">
-    <span class="topbar-title">ACBT — Calculateur de performances</span>
+    <span class="topbar-title">Calculateur de performances</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <button id="btnHistory" onclick="openHistory()" title="Historique des calculs" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);cursor:pointer"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
@@ -1106,7 +1111,7 @@ input[type=number]{-moz-appearance:textfield}
           <div class="taf-header">
             <span class="taf-header-label">Prévision TAF</span>
             <div class="taf-eta-row">
-              <span class="taf-eta-label">ETA UTC</span>
+              <span class="taf-eta-label">Choisir une heure</span>
               <select id="arrEta" class="taf-eta-select">
                 <option value="">—</option>
               </select>
@@ -1430,11 +1435,11 @@ input[type=number]{-moz-appearance:textfield}
           </div>
         </div>
 
-        <!-- Retour sans ravitaillement : bouton col 1, croisière retour col 2-3 -->
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;align-items:end">
-          <div class="field">
-            <label class="field-label">Retour sans ravito</label>
-            <label class="fuel-switch" style="margin-top:2px">
+        <!-- Retour sans avitaillement -->
+        <div id="fuelRetourRow" class="fuel-retour">
+          <div class="fuel-retour-switch">
+            <span class="fuel-switch-lbl">Retour sans avitaillement</span>
+            <label class="fuel-switch">
               <input id="fuelRoundtrip" type="checkbox" onchange="fuelToggleRoundtrip()"/>
               <span class="fuel-switch-track"></span>
             </label>
@@ -1605,6 +1610,7 @@ function fuelToggleRoundtrip() {
   const on = document.getElementById('fuelRoundtrip').checked;
   const wrap = document.getElementById('fuelBackWrap');
   wrap.classList.toggle('open', on);
+  document.getElementById('fuelRetourRow').classList.toggle('is-on', on);
   if (on) {
     // préremplir le retour avec l'aller si vide/nul
     const bH = document.getElementById('fuelBackH');
@@ -4086,7 +4092,7 @@ function renderTafPicker(tafData) {
 
   // Générer les options ETA limitées à la plage de validité du TAF
   {
-    etaSelect.innerHTML = '<option value="">ETA UTC…</option>';
+    etaSelect.innerHTML = '<option value="">—</option>';
 
     // Détecter la plage de validité du TAF depuis les périodes
     const allPeriods = buildTafPeriodsFromRaw(tafData.raw || '');
@@ -4733,13 +4739,13 @@ async function updateArrSunset() {
     const night = new Date(set.getTime() + 30 * 60000);
     elCS.textContent = p(set.getHours()) + ':' + p(set.getMinutes());
     elN.textContent  = p(night.getHours()) + ':' + p(night.getMinutes());
-    note.textContent = 'Coucher exact (sunrise-sunset.org) · heure locale · nuit aéro = CS + 30 min.';
+    note.textContent = 'Coucher du soleil et nuit aéro en HEURE LOCALE.';
   } catch (e) {
     const su = sunsetUtc(lat, lon);                  // repli formule locale
     if (su) {
       elCS.textContent = fmtLocalFromUtc(su.h, su.m, 0);
       elN.textContent  = fmtLocalFromUtc(su.h, su.m, 30);
-      note.textContent = 'Coucher approximatif (calcul local, API indisponible) · heure locale.';
+      note.textContent = 'Coucher du soleil et nuit aéro en HEURE LOCALE (calcul local approximatif).';
     } else {
       elCS.textContent = '—:—'; elN.textContent = '—:—';
       note.textContent = 'Coucher du soleil indisponible pour ce terrain.';
