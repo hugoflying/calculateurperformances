@@ -1336,7 +1336,7 @@ input[type=number]{-moz-appearance:textfield}
             <input id="fuelConso" class="field-input" type="number" value="25" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
           <div class="field">
-            <label class="field-label">Capacité (L)</label>
+            <label class="field-label">Emport (L)</label>
             <input id="fuelCap" class="field-input" type="number" value="110" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
           <div class="field">
@@ -1372,23 +1372,28 @@ input[type=number]{-moz-appearance:textfield}
       <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span><span class="card-head-title">Étapes du vol</span></div>
       <div class="card-body">
 
+        <div class="row-3">
+          <div class="field">
+            <label class="field-label">Mise en route (min)</label>
+            <input id="fuelStartup" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+          </div>
+          <div></div>
+          <div></div>
+        </div>
+
         <div class="field">
-          <label class="field-label">Trip fuel — croisière aller <span class="fuel-forfait-tag">TSV</span></label>
+          <label class="field-label">Trip fuel — croisière aller</label>
           <div class="fuel-time">
             <input id="fuelCruiseH" class="field-input" type="number" value="1" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
             <span class="fuel-suffix">h</span>
-            <span class="fuel-time-sep">·</span>
             <input id="fuelCruiseM" class="field-input" type="number" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
             <span class="fuel-suffix">min</span>
           </div>
-          <div class="fuel-note">Temps sans vent, intégration à destination incluse.</div>
         </div>
 
         <!-- Retour sans ravitaillement -->
         <div class="fuel-switch-row">
-          <span class="fuel-switch-lbl">Retour sans ravitaillement
-            <span class="sub">Pas d'avitaillement à destination → compte le retour</span>
-          </span>
+          <span class="fuel-switch-lbl">Retour sans ravitaillement</span>
           <label class="fuel-switch">
             <input id="fuelRoundtrip" type="checkbox" onchange="fuelToggleRoundtrip()"/>
             <span class="fuel-switch-track"></span>
@@ -1396,33 +1401,21 @@ input[type=number]{-moz-appearance:textfield}
         </div>
         <div id="fuelBackWrap" class="fuel-collapse">
           <div class="field">
-            <label class="field-label">Trip fuel retour <span class="fuel-forfait-tag">TSV</span></label>
+            <label class="field-label">Trip fuel — croisière retour</label>
             <div class="fuel-time">
               <input id="fuelBackH" class="field-input" type="number" value="1" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
               <span class="fuel-suffix">h</span>
-              <span class="fuel-time-sep">·</span>
               <input id="fuelBackM" class="field-input" type="number" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
               <span class="fuel-suffix">min</span>
             </div>
           </div>
         </div>
 
-        <div class="field">
-          <label class="field-label">Déroutement / alternate <span class="fuel-forfait-tag">TSV</span></label>
-          <div class="fuel-time">
-            <input id="fuelAltH" class="field-input" type="number" value="0" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
-            <span class="fuel-suffix">h</span>
-            <span class="fuel-time-sep">·</span>
-            <input id="fuelAltM" class="field-input" type="number" value="30" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
-            <span class="fuel-suffix">min</span>
-          </div>
-        </div>
-
         <!-- Forfaits (minutes) -->
         <div class="row-3">
           <div class="field">
-            <label class="field-label">M.E.R (min)</label>
-            <input id="fuelStartup" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <label class="field-label">Dégagement (min)</label>
+            <input id="fuelAlt" class="field-input" type="number" value="30" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Extra (min)</label>
@@ -1433,7 +1426,6 @@ input[type=number]{-moz-appearance:textfield}
             <input id="fuelReserve" class="field-input" type="number" value="45" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
         </div>
-        <div class="fuel-note">M.E.R : mise en route + essai + roulage (forfait). Réserve finale imposée par le club.</div>
 
       </div>
     </div>
@@ -1515,6 +1507,7 @@ function switchView(view) {
     vFuel.style.display = '';
     nFuel.classList.add('is-active');
     nPerf.classList.remove('is-active');
+    fuelTouched = true;
     syncFuelPreset();
     computeFuel();
   } else {
@@ -1595,6 +1588,64 @@ function clockAdd(depStr, addMin) {
   return { txt: hh + ':' + mm, dayShift };
 }
 
+/* ─── Fuel : calcul réutilisable (sans toucher au DOM) ─── */
+let fuelTouched = false;
+function fuelCompute() {
+  const num = id => { const el = document.getElementById(id); if (!el) return 0; const v = parseFloat(el.value); return isNaN(v) ? 0 : v; };
+  const conso = num('fuelConso'), cap = num('fuelCap'), unusable = num('fuelUnusable');
+  const usable = Math.max(0, cap - unusable);
+  const startup = num('fuelStartup');
+  const cruiseOut = num('fuelCruiseH') * 60 + num('fuelCruiseM');
+  const roundtrip = document.getElementById('fuelRoundtrip')?.checked;
+  const cruiseBack = num('fuelBackH') * 60 + num('fuelBackM');
+  const altTrans = num('fuelAlt');
+  const extra = num('fuelExtra'), reserve = num('fuelReserve');
+  const litres = min => conso * min / 60;
+  const phases = [];
+  phases.push({ ph:'Mise en route', min:startup });
+  phases.push({ ph:'Trip fuel', min:cruiseOut });
+  if (roundtrip) phases.push({ ph:'Trip fuel retour', min:cruiseBack });
+  if (altTrans > 0) phases.push({ ph:'Dégagement', min:altTrans });
+  if (extra > 0) phases.push({ ph:'Extra fuel', min:extra });
+  phases.push({ ph:'Réserve finale', min:reserve });
+  let totMin = 0, totL = 0;
+  phases.forEach(p => { p.L = litres(p.min); totMin += p.min; totL += p.L; });
+  const remaining = usable - totL;
+  const enduranceMin = conso > 0 ? usable / conso * 60 : 0;
+  const maxLdgMin = enduranceMin - reserve;
+  const dep = document.getElementById('fuelDepTime').value;
+  const tag = c => c ? (c.txt + (c.dayShift > 0 ? ' (J+' + c.dayShift + ')' : '')) : '—:—';
+  const engineStop = (dep && conso > 0) ? tag(clockAdd(dep, enduranceMin)) : '—:—';
+  const maxLdg = (dep && conso > 0) ? tag(clockAdd(dep, Math.max(0, maxLdgMin))) : '—:—';
+  return { conso, usable, reserve, phases, totMin, totL, remaining,
+           ok:(conso > 0 && totL > 0 && remaining >= 0), dep, engineStop, maxLdg };
+}
+
+/* ─── Fuel : section pour le PDF ─── */
+function fuelPvHtml() {
+  if (!fuelTouched) return '';
+  const f = fuelCompute();
+  if (!(f.totL > 0)) return '';
+  const vclass = f.ok ? 'ok' : 'bad';
+  const vtxt   = f.ok ? 'CARBURANT SUFFISANT' : 'CARBURANT INSUFFISANT';
+  const rows = f.phases.map(p =>
+    `<div class="pv-row"><span>${p.ph}</span><span class="pv-row-val">${fmtHM(p.min)} · ${p.L.toFixed(1)} L</span></div>`
+  ).join('');
+  return `
+    <div class="pv-section-head" style="margin:6mm 14mm 0">Bilan carburant réglementaire</div>
+    <div style="padding:0 14mm">
+      <div class="pv-verdict ${vclass}" style="margin-top:3mm">
+        <div style="font:800 14pt Arial,sans-serif;color:${f.ok ? '#059669' : '#dc2626'}">${vtxt}</div>
+        <div class="pv-verdict-dist">Requis <strong>${f.totL.toFixed(1)} L</strong> / ${f.usable} L utilisables · ${f.ok ? 'reste' : 'manque'} ${Math.abs(f.remaining).toFixed(1)} L</div>
+      </div>
+      ${rows}
+      <div class="pv-row" style="border-top:1.5pt solid #1e3a5f;font-weight:800"><span>Carburant mini requis</span><span class="pv-row-val">${fmtHM(f.totMin)} · ${f.totL.toFixed(1)} L</span></div>
+      <div class="pv-row"><span>Atterrissage max (réserve ${Math.round(f.reserve)} min) — heure locale</span><span class="pv-row-val">${f.maxLdg}</span></div>
+      <div class="pv-row"><span>Arrêt moteur (panne sèche) — heure locale</span><span class="pv-row-val">${f.engineStop}</span></div>
+      <div class="pv-row"><span>Emport utilisable · consommation</span><span class="pv-row-val">${f.usable} L · ${f.conso} L/h</span></div>
+    </div>`;
+}
+
 function computeFuel() {
   const num = id => {
     const el = document.getElementById(id);
@@ -1611,7 +1662,7 @@ function computeFuel() {
   const cruiseOut = num('fuelCruiseH') * 60 + num('fuelCruiseM');
   const roundtrip = document.getElementById('fuelRoundtrip')?.checked;
   const cruiseBack= num('fuelBackH') * 60 + num('fuelBackM');
-  const altTrans  = num('fuelAltH') * 60 + num('fuelAltM');
+  const altTrans  = num('fuelAlt');
   const extra     = num('fuelExtra');                          // min
   const reserve   = num('fuelReserve');                        // min
 
@@ -1624,15 +1675,15 @@ function computeFuel() {
 
   // Décomposition
   const phases = [];
-  phases.push({ ph:'Mise en route', sub:'M.E.R (forfait)', min:startup });
-  phases.push({ ph:'Trip fuel', sub:'croisière aller (TSV)', min:cruiseOut });
+  phases.push({ ph:'Mise en route', min:startup });
+  phases.push({ ph:'Trip fuel', min:cruiseOut });
   if (roundtrip)
-    phases.push({ ph:'Trip fuel retour', sub:'croisière retour (TSV)', min:cruiseBack });
+    phases.push({ ph:'Trip fuel retour', min:cruiseBack });
   if (altTrans > 0)
-    phases.push({ ph:'Déroutement / alternate', sub:'TSV vers alternate', min:altTrans });
+    phases.push({ ph:'Dégagement', min:altTrans });
   if (extra > 0)
-    phases.push({ ph:'Extra fuel', sub:'marge pilote', min:extra });
-  phases.push({ ph:'Réserve finale', sub:'imposée club', min:reserve });
+    phases.push({ ph:'Extra fuel', min:extra });
+  phases.push({ ph:'Réserve finale', min:reserve });
 
   let totMin = 0, totL = 0, rows = '';
   phases.forEach(p => {
@@ -4691,6 +4742,7 @@ function generatePDF() {
     <div class="pv-cols">
       ${cols.map(s=>colHtml(s)).join('')}
     </div>
+    ${fuelPvHtml()}
     <div class="pv-footer">
       <span>Généré le ${stamp} · ACBT Performances</span>
       <span>Document réservé à la préparation du vol</span>
