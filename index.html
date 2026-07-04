@@ -339,6 +339,14 @@ input[type=number]{-moz-appearance:textfield}
 .fuel-note{font:500 11px 'Inter';color:var(--text-3);padding-top:3px}
 /* libellés abrégés : bascule pilotée par JS au débordement réel */
 .lbl-sm{display:none}
+/* Coucher du soleil / nuit aéro (colonne Atterrissage) */
+.sun-box{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.sun-item{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 10px;text-align:center}
+.sun-item.is-night{background:rgba(245,158,11,.12);border-color:var(--amber)}
+.sun-lbl{display:block;font:600 9px 'Inter';text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:3px}
+.sun-val{font:800 18px 'JetBrains Mono',monospace;color:var(--text)}
+.sun-item.is-night .sun-val{color:var(--amber)}
+.sun-note{font:500 10px 'Inter';color:var(--text-3);margin-top:6px}
 /* clock result cards */
 .fuel-clocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fuel-clock{
@@ -1108,6 +1116,17 @@ input[type=number]{-moz-appearance:textfield}
           <div id="arrTafRaw" class="metar-box visible" style="margin-bottom:10px">—</div>
           <div id="arrTafPeriods" class="taf-periods"></div>
         </div>
+        <div class="sun-box">
+          <div class="sun-item">
+            <span class="sun-lbl">Coucher du soleil</span>
+            <span class="sun-val" id="arrSunset">—:—</span>
+          </div>
+          <div class="sun-item is-night">
+            <span class="sun-lbl">Nuit aéro (CS +30)</span>
+            <span class="sun-val" id="arrAeroNight">—:—</span>
+          </div>
+        </div>
+        <div class="sun-note" id="arrSunNote">Chargez le METAR ou le TAF pour obtenir le coucher du soleil du terrain.</div>
       </div>
     </div>
 
@@ -1309,6 +1328,27 @@ input[type=number]{-moz-appearance:textfield}
         <li><strong>Manuellement</strong> en saisissant directement la valeur (ex. TEMPO VRB15G25KT d'un METAR)</li>
       </ul>
       <p>Le calculateur retient toujours le <strong>maximum entre vent moyen et rafale</strong> pour calculer les composantes face/arrière/travers.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Carburant réglementaire (onglet Carburant)</h3>
+      <p>L'onglet <strong>Carburant</strong> établit le bilan minimum réglementaire et les horaires limites du vol. Réglages préréglés pour <strong>DR400-120 / DR300</strong> : 25 L/h, 110 L, dont 10 L inutilisables.</p>
+      <ul>
+        <li><strong>Emport</strong> : carburant réellement à bord (110 L par défaut = plein). L'<strong>utilisable</strong> = emport − inutilisable.</li>
+        <li><strong>Mise en route + roulage</strong> : forfait (15 min).</li>
+        <li><strong>Trip fuel — croisière aller</strong> : temps de vol jusqu'à destination, intégration comprise.</li>
+        <li><strong>Retour sans ravitaillement</strong> : si le terrain d'arrivée n'a pas d'avitaillement, activez le bouton pour compter la <strong>croisière retour</strong>.</li>
+        <li><strong>Dégagement</strong>, <strong>Extra</strong>, <strong>Réserve finale</strong> : en minutes (réserve club = 45 min).</li>
+      </ul>
+      <p>Chaque poste est converti en litres à la consommation indiquée. Le <strong>bilan</strong> compare le carburant mini requis à l'utilisable et affiche un verdict (suffisant / insuffisant) avec la marge restante.</p>
+      <p><strong>Horaires limites</strong> (à partir de l'heure de départ, bouton <strong>NOW</strong>, en heure locale) : l'<strong>atterrissage max</strong> (réserve finale conservée) et l'<strong>arrêt moteur</strong> (panne sèche), calculés sur l'emport utilisable. Le bilan est aussi ajouté au <strong>PDF</strong> si l'onglet a été ouvert.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Coucher du soleil &amp; nuit aéronautique</h3>
+      <p>Dans la colonne <strong>Atterrissage</strong>, sous la carte Aéroport, l'app affiche le <strong>coucher du soleil</strong> du terrain d'arrivée et la <strong>nuit aéronautique</strong> (= coucher + 30 min), en heure locale.</p>
+      <p>Le calcul se déclenche <strong>automatiquement</strong> dès que le <strong>METAR</strong> ou le <strong>TAF</strong> de l'arrivée est chargé : la position exacte du terrain (fournie par AVWX) sert à interroger l'API <strong>sunrise-sunset.org</strong> pour une heure <strong>exacte</strong>. En cas d'indisponibilité de l'API, un calcul astronomique local prend le relais (indiqué comme approximatif).</p>
+      <p>Le coucher est donné pour la <strong>date du jour</strong>.</p>
     </div>
 
   </div>
@@ -3608,7 +3648,7 @@ async function loadMetarFor(side) {
     const lat = station?.latitude, lon = station?.longitude;
     if (typeof lat === 'number' && typeof lon === 'number') {
       if (side === 'dep') { lastDepStationLat = lat; lastDepStationLon = lon; }
-      else                { lastArrStationLat = lat; lastArrStationLon = lon; }
+      else                { lastArrStationLat = lat; lastArrStationLon = lon; updateArrSunset(); }
     }
     // Pistes OpenAIP via proxy Cloudflare (pas besoin de coords)
     fetchRunways(icao)
@@ -4511,7 +4551,7 @@ async function loadTafFor(side) {
         if (elevFt > 0) document.getElementById(side + 'Alt').value = String(Math.round(elevFt));
         if (typeof station?.latitude === 'number') {
           if (side === 'dep') { lastDepStationLat = station.latitude; lastDepStationLon = station.longitude; }
-          else                { lastArrStationLat = station.latitude; lastArrStationLon = station.longitude; }
+          else                { lastArrStationLat = station.latitude; lastArrStationLon = station.longitude; updateArrSunset(); }
         }
       }).catch(() => {}),
       fetchRunways(icao)
@@ -4659,6 +4699,52 @@ function sunsetUtc(lat, lon, date = new Date()) {
   const m = Math.round((sunsetUTCdec - Math.floor(sunsetUTCdec)) * 60);
   const pad = n => String(n).padStart(2,'0');
   return { h, m, str: pad(h) + ':' + pad(m) };
+}
+
+// ── Nuit aéronautique (coucher du soleil + 30 min) au terrain d'arrivée ──
+function fmtLocalFromUtc(hUTC, mUTC, addMin) {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hUTC, mUTC));
+  if (addMin) d.setMinutes(d.getMinutes() + addMin);
+  const p = n => String(n).padStart(2, '0');
+  return p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+// Coucher du soleil EXACT via l'API sunrise-sunset.org, repli sur la formule locale
+async function updateArrSunset() {
+  const elCS = document.getElementById('arrSunset');
+  const elN  = document.getElementById('arrAeroNight');
+  const note = document.getElementById('arrSunNote');
+  if (!elCS) return;
+  const lat = lastArrStationLat, lon = lastArrStationLon;
+  if (typeof lat !== 'number' || typeof lon !== 'number') {
+    elCS.textContent = '—:—'; elN.textContent = '—:—';
+    note.textContent = 'Chargez le METAR ou le TAF pour obtenir le coucher du soleil du terrain.';
+    return;
+  }
+  const p = n => String(n).padStart(2, '0');
+  note.textContent = 'Calcul du coucher du soleil…';
+  try {
+    const url = 'https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lon + '&formatted=0';
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.status !== 'OK' || !d.results || !d.results.sunset) throw new Error('no data');
+    const set = new Date(d.results.sunset);          // ISO 8601 UTC → heure locale via getHours()
+    const night = new Date(set.getTime() + 30 * 60000);
+    elCS.textContent = p(set.getHours()) + ':' + p(set.getMinutes());
+    elN.textContent  = p(night.getHours()) + ':' + p(night.getMinutes());
+    note.textContent = 'Coucher exact (sunrise-sunset.org) · heure locale · nuit aéro = CS + 30 min.';
+  } catch (e) {
+    const su = sunsetUtc(lat, lon);                  // repli formule locale
+    if (su) {
+      elCS.textContent = fmtLocalFromUtc(su.h, su.m, 0);
+      elN.textContent  = fmtLocalFromUtc(su.h, su.m, 30);
+      note.textContent = 'Coucher approximatif (calcul local, API indisponible) · heure locale.';
+    } else {
+      elCS.textContent = '—:—'; elN.textContent = '—:—';
+      note.textContent = 'Coucher du soleil indisponible pour ce terrain.';
+    }
+  }
 }
 
 function generatePDF() {
