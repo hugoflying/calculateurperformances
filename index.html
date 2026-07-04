@@ -352,6 +352,12 @@ input[type=number]{-moz-appearance:textfield}
 .sun-val{font:800 18px 'JetBrains Mono',monospace;color:var(--text)}
 .sun-item.is-night .sun-val{color:var(--amber)}
 .sun-note{font:500 10px 'Inter';color:var(--text-3);margin-top:6px}
+.wx-alt-btn{
+  display:none;width:100%;margin-top:8px;padding:9px 10px;border-radius:var(--radius-sm);
+  background:var(--amber);color:#1a2332;border:1px solid var(--amber);
+  font:700 12px 'Inter';letter-spacing:.01em;
+}
+.wx-alt-btn:active{transform:scale(.98)}
 /* clock result cards */
 .fuel-clocks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fuel-clock{
@@ -934,6 +940,7 @@ input[type=number]{-moz-appearance:textfield}
           <button id="btnDepMetar" class="load-btn dep">METAR</button>
         </div>
         <div id="depMetarMsg" class="metar-box"></div>
+        <button id="depMetarAlt" class="wx-alt-btn" onclick="useNearestValidMetar('dep')">Utiliser le METAR valide le plus proche →</button>
         <div class="sun-box">
           <div class="sun-item">
             <span class="sun-lbl">Coucher du soleil</span>
@@ -1118,6 +1125,8 @@ input[type=number]{-moz-appearance:textfield}
           <button id="btnArrTaf"   class="load-btn neutral">TAF</button>
         </div>
         <div id="arrMetarMsg" class="metar-box"></div>
+        <button id="arrMetarAlt" class="wx-alt-btn" onclick="useNearestValidMetar('arr')">Utiliser le METAR valide le plus proche →</button>
+        <button id="arrTafAlt" class="wx-alt-btn" onclick="useNearestValidTaf()">Utiliser le TAF valide le plus proche →</button>
         <div id="arrTafWrap" class="taf-wrap">
           <div class="taf-header">
             <span class="taf-header-label">Prévision TAF</span>
@@ -3409,6 +3418,83 @@ const fetchNearestMetar = (lat, lon) =>
 const fetchNearestTaf = (lat, lon) =>
   fetchJson('https://avwx.rest/api/taf/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&options=summary');
 
+// ── Recherche du report VALIDE le plus proche (parmi plusieurs stations voisines) ──
+const fetchNearestMetarList = (lat, lon, n = 6) =>
+  fetchJson('https://avwx.rest/api/metar/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&n=' + n);
+const fetchNearestTafList = (lat, lon, n = 6) =>
+  fetchJson('https://avwx.rest/api/taf/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&n=' + n + '&options=summary');
+
+function wxItemReport(item){ return item && item.data && item.data.raw ? item.data : item; }
+function reportAgeMs(rep){ const dt = rep && rep.time && rep.time.dt ? new Date(rep.time.dt) : null; return dt ? Date.now() - dt.getTime() : null; }
+
+async function fetchNearestValidMetar(lat, lon, excludeIcao){
+  let list = [];
+  try { const r = await fetchNearestMetarList(lat, lon); list = Array.isArray(r) ? r : [r]; }
+  catch { try { const r = await fetchNearestMetar(lat, lon); list = [r]; } catch { list = []; } }
+  for (const item of list){
+    const rep = wxItemReport(item);
+    const st  = (rep && rep.station || item && item.station || '').toUpperCase();
+    if (excludeIcao && st === excludeIcao.toUpperCase()) continue;
+    const age = reportAgeMs(rep);
+    if (age !== null && age <= 2*3600*1000){
+      return { data: rep, station: st, distance: (item && item.meta && item.meta.distance), units: (item && item.meta && item.meta.units) };
+    }
+  }
+  return null;
+}
+
+async function fetchNearestValidTaf(lat, lon, excludeIcao){
+  let list = [];
+  try { const r = await fetchNearestTafList(lat, lon); list = Array.isArray(r) ? r : [r]; }
+  catch { try { const r = await fetchNearestTaf(lat, lon); list = [r]; } catch { list = []; } }
+  const now = new Date();
+  for (const item of list){
+    const rep = wxItemReport(item);
+    const st  = (rep && rep.station || item && item.station || '').toUpperCase();
+    if (excludeIcao && st === excludeIcao.toUpperCase()) continue;
+    const v   = rep && rep.raw ? parseTafValidity(rep.raw) : null;
+    const end = v && v.end && v.end.dt ? new Date(v.end.dt) : null;
+    if (rep && rep.raw && (!end || now <= end)){
+      return { data: rep, station: st, distance: (item && item.meta && item.meta.distance), units: (item && item.meta && item.meta.units) };
+    }
+  }
+  return null;
+}
+
+async function useNearestValidMetar(side){
+  const msgEl = document.getElementById(side+'MetarMsg');
+  const btn   = document.getElementById(side+'MetarAlt');
+  const lat = side==='dep'?lastDepStationLat:lastArrStationLat;
+  const lon = side==='dep'?lastDepStationLon:lastArrStationLon;
+  const excl = (document.getElementById(side+'Icao').value||'').toUpperCase();
+  if (typeof lat!=='number' || typeof lon!=='number'){ setMetarMsg(msgEl,'Position du terrain inconnue — recherche impossible.'); return; }
+  setMetarMsg(msgEl,'Recherche du METAR valide le plus proche…');
+  const alt = await fetchNearestValidMetar(lat, lon, excl).catch(()=>null);
+  if (!alt){ setMetarMsg(msgEl,'⛔ Aucun METAR valide à proximité — saisie manuelle du vent et de l\'OAT.'); return; }
+  applyMetar(side, alt.data);
+  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+alt.distance+' '+alt.units+')':'';
+  const ageMin = Math.round(reportAgeMs(alt.data)/60000);
+  setMetarMsg(msgEl,'⚠ METAR le plus proche VALIDE : '+alt.station+distTxt+' — émis il y a '+ageMin+'min\n'+(alt.data.raw||'—'));
+  updateWindDisplay(side);
+  if (btn) btn.style.display='none';
+}
+
+async function useNearestValidTaf(){
+  const msgEl = document.getElementById('arrMetarMsg');
+  const btn   = document.getElementById('arrTafAlt');
+  const lat = lastArrStationLat, lon = lastArrStationLon;
+  const excl = (document.getElementById('arrIcao').value||'').toUpperCase();
+  if (typeof lat!=='number' || typeof lon!=='number'){ setMetarMsg(msgEl,'Position du terrain inconnue — recherche impossible.'); return; }
+  setMetarMsg(msgEl,'Recherche du TAF valide le plus proche…');
+  const alt = await fetchNearestValidTaf(lat, lon, excl).catch(()=>null);
+  if (!alt){ setMetarMsg(msgEl,'⛔ Aucun TAF valide à proximité — saisie manuelle.'); return; }
+  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+alt.distance+' '+alt.units+')':'';
+  lastArrTafRaw = alt.data.raw || '—';
+  setMetarMsg(msgEl,'⚠ TAF le plus proche VALIDE : '+alt.station+distTxt+'\n'+(alt.data.raw||'—'));
+  try { renderTafPicker(alt.data); } catch(e){ console.error('[TAF proche]', e); }
+  if (btn) btn.style.display='none';
+}
+
 function parseSectorFromRaw(raw) {
   const m = raw && raw.match(/(\d{3})V(\d{3})/);
   return m ? { from: parseInt(m[1],10), to: parseInt(m[2],10) } : null;
@@ -3732,6 +3818,7 @@ async function loadMetarFor(side) {
 
   // Tout effacer avant de charger
   resetSideFields(side);
+  { const b = document.getElementById(side+'MetarAlt'); if (b) b.style.display = 'none'; }
   setMetarMsg(msgEl, 'Chargement…');
   rwWrap.style.display = 'none';
   try {
@@ -3779,11 +3866,15 @@ async function loadMetarFor(side) {
       setMetarMsg(msgEl,
         `⛔ METAR PÉRIMÉ — émis il y a ${ageTxt} (validité max : 2h). Non utilisé, saisissez le vent et l'OAT à la main.\n`
         + (metar?.raw || '—'));
+      const altBtn = document.getElementById(side + 'MetarAlt');
+      if (altBtn) altBtn.style.display = 'block';
     } else {
       applyMetar(side, metar);
       setMetarMsg(msgEl, isNearest
         ? '⚠ Station la plus proche (' + usedIcao + distTxt + ') — ' + (metar?.raw || '—')
         : (metar?.raw || '—'));
+      const altBtn = document.getElementById(side + 'MetarAlt');
+      if (altBtn) altBtn.style.display = 'none';
     }
     updateWindDisplay(side);
   } catch (e) {
@@ -4633,6 +4724,7 @@ async function loadTafFor(side) {
 
   // Tout effacer avant de charger
   resetSideFields(side);
+  { const b = document.getElementById('arrTafAlt'); if (b) b.style.display = 'none'; }
   setMetarMsg(msgEl, 'Chargement TAF…');
   rwWrap.style.display = 'none';
 
@@ -4721,7 +4813,11 @@ async function loadTafFor(side) {
       if (wrap) wrap.classList.add('visible');
       const periods = document.getElementById('arrTafPeriods');
       if (periods) periods.innerHTML = '';
+      const altBtn = document.getElementById('arrTafAlt');
+      if (altBtn) altBtn.style.display = 'block';
     } else {
+      const altBtn = document.getElementById('arrTafAlt');
+      if (altBtn) altBtn.style.display = 'none';
       try { renderTafPicker(taf); } catch(renderErr) {
         console.error('[TAF] Erreur rendu:', renderErr);
         // Afficher quand même le TAF brut
