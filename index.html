@@ -934,6 +934,17 @@ input[type=number]{-moz-appearance:textfield}
           <button id="btnDepMetar" class="load-btn dep">METAR</button>
         </div>
         <div id="depMetarMsg" class="metar-box"></div>
+        <div class="sun-box">
+          <div class="sun-item">
+            <span class="sun-lbl">Coucher du soleil</span>
+            <span class="sun-val" id="depSunset">—:—</span>
+          </div>
+          <div class="sun-item is-night">
+            <span class="sun-lbl">Nuit aéro (CS +30)</span>
+            <span class="sun-val" id="depAeroNight">—:—</span>
+          </div>
+        </div>
+        <div class="sun-note" id="depSunNote">Chargez le METAR pour obtenir le coucher du soleil du terrain.</div>
       </div>
     </div>
 
@@ -1291,6 +1302,26 @@ input[type=number]{-moz-appearance:textfield}
       <span id="fuelAcChip" class="fuel-hd-chip">—</span>
     </div>
 
+    <!-- Avion -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span><span class="card-head-title">Avion</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label class="field-label">Immatriculation</label>
+          <select id="fuelAircraftSel" class="field-input" style="font-family:'JetBrains Mono',monospace;font-weight:600" onchange="fuelAircraftChange()">
+            <option value="" selected style="color:var(--text-3)">Choisir un avion</option>
+            <option value="F-GCAL" style="color:#1a2332;background:#fff">F-GCAL — DR400 120cv</option>
+            <option value="F-BXEK" style="color:#1a2332;background:#fff">F-BXEK — DR400 120cv</option>
+            <option value="F-BTBS" style="color:#1a2332;background:#fff">F-BTBS — DR300 120cv</option>
+            <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
+            <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
+            <option value="F-GTPE" style="color:#1a2332;background:#fff">F-GTPE — DR400 160cv</option>
+            <option value="F-HATX" style="color:#1a2332;background:#fff">F-HATX — Aquila AT01</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <!-- Avion & réservoir -->
     <div class="card">
       <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 9h2a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0V8.5L18 5"/><path d="M4 13h10"/></svg></span><span class="card-head-title">Avion &amp; réservoir</span></div>
@@ -1309,7 +1340,7 @@ input[type=number]{-moz-appearance:textfield}
             <input id="fuelUnusable" class="field-input" type="number" value="10" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
         </div>
-        <div id="fuelHint" class="fuel-hint">⚠ Préréglage DR400-120 / DR300 (25 L/h · 110 L · 10 L inutil.). Vérifiez les valeurs pour cet avion.</div>
+        <div id="fuelHint" class="fuel-hint">⚠ Valeurs approximatives pour cet avion — vérifiez conso, emport et inutilisable.</div>
         <div class="fuel-kpis">
           <div class="fuel-kpi"><div class="fuel-kpi-lbl">Utilisable</div><div class="fuel-kpi-val"><span id="fuelUsable">100</span><span class="fuel-kpi-unit">L</span></div></div>
           <div class="fuel-kpi"><div class="fuel-kpi-lbl">Autonomie</div><div class="fuel-kpi-val" id="fuelEndurance">4h00</div></div>
@@ -1444,7 +1475,13 @@ input[type=number]{-moz-appearance:textfield}
 
     <div class="readme-section">
       <h3>Ce que fait l'application</h3>
-      <p>Trois fonctions : <strong>① performances décollage/atterrissage</strong> (distances requises vs disponibles), <strong>② bilan carburant réglementaire</strong> avec horaires limites, <strong>③ coucher du soleil et nuit aéronautique</strong> au terrain d'arrivée. Flotte couverte : DR400 120cv (F-GCAL, F-BXEK, F-GOVB), DR300 120cv (F-BTBS, F-BTXS), DR400 160cv (F-GTPE), Aquila AT01 (F-HATX). Les distances viennent des <strong>tables des manuels de vol</strong>, interpolées pour vos conditions exactes.</p>
+      <p>Trois outils pour préparer un vol :</p>
+      <ul>
+        <li><strong>Performances décollage / atterrissage</strong> — distances requises comparées aux distances disponibles.</li>
+        <li><strong>Bilan carburant réglementaire</strong> — carburant minimum requis et horaires limites.</li>
+        <li><strong>Coucher du soleil &amp; nuit aéronautique</strong> — au terrain d'arrivée.</li>
+      </ul>
+      <p>Les distances viennent des tables des manuels de vol, interpolées pour vos conditions exactes.</p>
     </div>
 
     <div class="readme-section">
@@ -1539,7 +1576,7 @@ input[type=number]{-moz-appearance:textfield}
   </div>
 </div>
 
-<footer class="app-footer">Manuels DR400 et DR300 — Aéroclub de Beauvais-Tillé · LFOB</footer>
+<footer class="app-footer">© 2026 · Hugo DERUELLE</footer>
 <div id="printView"></div>
 
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
@@ -1591,6 +1628,7 @@ function switchView(view) {
 /* ─── Fuel : préréglage selon avion sélectionné ─── */
 function syncFuelPreset() {
   const sel  = document.getElementById('aircraftSel');
+  const fSel = document.getElementById('fuelAircraftSel');
   const chip = document.getElementById('fuelAcChip');
   const hint = document.getElementById('fuelHint');
   if (!chip) return;
@@ -1600,14 +1638,41 @@ function syncFuelPreset() {
     : 'Aucun avion sélectionné';
   chip.textContent = immat || '—';
   chip.title = label;
+  if (fSel && sel) fSel.value = sel.value;   // sélecteur carburant ↔ perfs
 
-  // profile est la variable globale mise à jour au chargement de l'avion.
   const isPreset = (profile === 'DR400' || profile === 'DR300');
-  if (immat && !isPreset) {
-    hint.classList.add('visible');
-  } else {
-    hint.classList.remove('visible');
+  if (immat && !isPreset) hint.classList.add('visible');
+  else                    hint.classList.remove('visible');
+}
+
+/* Préréglages carburant par profil avion (L/h, réservoir L, inutilisable L) */
+const FUEL_PRESETS = {
+  'DR400':     { conso:25, cap:110, unusable:10 },   // DR400-120
+  'DR300':     { conso:25, cap:110, unusable:10 },
+  'DR400_160': { conso:34, cap:110, unusable:10 },   // approximatif
+  'AT01':      { conso:18, cap:120, unusable:3  },    // Aquila AT01, approximatif
+};
+
+/* Applique les valeurs réservoir de l'avion sélectionné (sur changement d'avion) */
+function applyFuelPreset() {
+  const sel = document.getElementById('aircraftSel');
+  const p = sel && sel.value ? FUEL_PRESETS[profile] : null;
+  if (p) {
+    document.getElementById('fuelConso').value = p.conso;
+    document.getElementById('fuelCap').value = p.cap;
+    document.getElementById('fuelUnusable').value = p.unusable;
   }
+  syncFuelPreset();
+  computeFuel();
+}
+
+/* Choix depuis l'onglet Carburant → répercute sur le sélecteur des perfs */
+function fuelAircraftChange() {
+  const sel  = document.getElementById('aircraftSel');
+  const fSel = document.getElementById('fuelAircraftSel');
+  if (!sel || !fSel) return;
+  sel.value = fSel.value;
+  sel.dispatchEvent(new Event('change'));   // déclenche le chargement avion + applyFuelPreset
 }
 
 /* ─── Fuel : calcul du bilan ─── */
@@ -2196,7 +2261,7 @@ $('#aircraftSel').addEventListener('change', () => {
   updateWindDisplay('arr');
   resetComputedState('dep');
   resetComputedState('arr');
-  if (typeof syncFuelPreset === 'function') { syncFuelPreset(); computeFuel(); }
+  if (typeof applyFuelPreset === 'function') applyFuelPreset();
 
 });
 
@@ -3675,7 +3740,7 @@ async function loadMetarFor(side) {
     if (elevFt > 0) document.getElementById(side+'Alt').value = String(Math.round(elevFt));
     const lat = station?.latitude, lon = station?.longitude;
     if (typeof lat === 'number' && typeof lon === 'number') {
-      if (side === 'dep') { lastDepStationLat = lat; lastDepStationLon = lon; }
+      if (side === 'dep') { lastDepStationLat = lat; lastDepStationLon = lon; updateDepSunset(); }
       else                { lastArrStationLat = lat; lastArrStationLon = lon; updateArrSunset(); }
     }
     // Pistes OpenAIP via proxy Cloudflare (pas besoin de coords)
@@ -4578,7 +4643,7 @@ async function loadTafFor(side) {
         const elevFt = typeof station?.elevation_ft === 'number' ? station.elevation_ft : null;
         if (elevFt > 0) document.getElementById(side + 'Alt').value = String(Math.round(elevFt));
         if (typeof station?.latitude === 'number') {
-          if (side === 'dep') { lastDepStationLat = station.latitude; lastDepStationLon = station.longitude; }
+          if (side === 'dep') { lastDepStationLat = station.latitude; lastDepStationLon = station.longitude; updateDepSunset(); }
           else                { lastArrStationLat = station.latitude; lastArrStationLon = station.longitude; updateArrSunset(); }
         }
       }).catch(() => {}),
@@ -4739,15 +4804,16 @@ function fmtLocalFromUtc(hUTC, mUTC, addMin) {
 }
 
 // Coucher du soleil EXACT via l'API sunrise-sunset.org, repli sur la formule locale
-async function updateArrSunset() {
-  const elCS = document.getElementById('arrSunset');
-  const elN  = document.getElementById('arrAeroNight');
-  const note = document.getElementById('arrSunNote');
+async function updateSunset(side) {
+  const elCS = document.getElementById(side + 'Sunset');
+  const elN  = document.getElementById(side + 'AeroNight');
+  const note = document.getElementById(side + 'SunNote');
   if (!elCS) return;
-  const lat = lastArrStationLat, lon = lastArrStationLon;
+  const lat = side === 'dep' ? lastDepStationLat : lastArrStationLat;
+  const lon = side === 'dep' ? lastDepStationLon : lastArrStationLon;
   if (typeof lat !== 'number' || typeof lon !== 'number') {
     elCS.textContent = '—:—'; elN.textContent = '—:—';
-    note.textContent = 'Chargez le METAR ou le TAF pour obtenir le coucher du soleil du terrain.';
+    note.textContent = 'Chargez le METAR' + (side === 'arr' ? ' ou le TAF' : '') + ' pour obtenir le coucher du soleil du terrain.';
     return;
   }
   const p = n => String(n).padStart(2, '0');
@@ -4774,6 +4840,8 @@ async function updateArrSunset() {
     }
   }
 }
+function updateArrSunset() { updateSunset('arr'); }
+function updateDepSunset() { updateSunset('dep'); }
 
 function generatePDF() {
   const aircraft = document.getElementById('aircraftSel').value || '—';
