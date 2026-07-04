@@ -206,6 +206,105 @@ input[type=number]{-moz-appearance:textfield}
 @media(min-width:900px){.tabbar{display:none}}
 
 /* ═══════════════════════════════════
+   MAIN NAV (Performances / Carburant)
+═══════════════════════════════════ */
+.mainnav{
+  max-width:1100px;margin:0 auto;
+  padding:12px 12px 0;
+  display:flex;gap:8px;
+}
+@media(min-width:900px){.mainnav{padding:16px 20px 0}}
+.mainnav-btn{
+  flex:1;padding:11px 8px;border-radius:10px;
+  font:700 12px 'Inter';text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-3);background:var(--surface-2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:all .18s;
+}
+.mainnav-btn svg{width:15px;height:15px}
+.mainnav-btn.is-active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:var(--shadow-sm)}
+[data-theme="dark"] .mainnav-btn{background:var(--surface);color:var(--text-2)}
+[data-theme="dark"] .mainnav-btn.is-active{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+
+/* ═══════════════════════════════════
+   FUEL VIEW
+═══════════════════════════════════ */
+.fuel-wrap{
+  max-width:640px;margin:0 auto;
+  padding:16px 12px 32px;
+  display:flex;flex-direction:column;gap:14px;
+}
+@media(min-width:900px){.fuel-wrap{padding:20px 20px 40px}}
+.fuel-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-radius:var(--radius);
+  background:linear-gradient(135deg,#7c2d12 0%,var(--amber) 100%);
+}
+.fuel-hd-left{display:flex;align-items:center;gap:10px}
+.fuel-hd-badge{
+  font:800 10px 'Inter';letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.2);color:#fff;
+}
+.fuel-hd-title{font:800 18px 'Inter';color:#fff;letter-spacing:-.01em}
+.fuel-hd-chip{
+  font:700 12px 'JetBrains Mono',monospace;padding:4px 12px;border-radius:20px;
+  background:rgba(255,255,255,.15);color:#fff;
+}
+/* time h:min pair */
+.fuel-time{display:flex;gap:6px;align-items:center}
+.fuel-time .field-input{text-align:center}
+.fuel-time-sep{font:700 15px 'JetBrains Mono',monospace;color:var(--text-3)}
+.fuel-suffix{font:600 11px 'Inter';color:var(--text-3);text-transform:uppercase;letter-spacing:.05em}
+.fuel-forfait-tag{
+  font:700 9px 'Inter';text-transform:uppercase;letter-spacing:.06em;
+  padding:2px 6px;border-radius:4px;background:var(--surface-2);
+  border:1px solid var(--border);color:var(--text-3);
+}
+/* breakdown table */
+.fuel-brk{display:flex;flex-direction:column}
+.fuel-brk-row{
+  display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.fuel-brk-row:last-of-type{border-bottom:none}
+.fuel-brk-ph{font:600 13px 'Inter';color:var(--text)}
+.fuel-brk-ph .sub{display:block;font:500 10px 'Inter';color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+.fuel-brk-tm{font:600 12px 'JetBrains Mono',monospace;color:var(--text-2);text-align:right;min-width:52px}
+.fuel-brk-lt{font:700 14px 'JetBrains Mono',monospace;color:var(--text);text-align:right;min-width:58px}
+.fuel-brk-total{
+  display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+  margin-top:6px;padding:12px 12px;border-radius:var(--radius-sm);
+  background:var(--surface-2);border:1px solid var(--border-strong);
+}
+.fuel-brk-total .fuel-brk-ph{font:800 13px 'Inter';text-transform:uppercase;letter-spacing:.04em}
+.fuel-brk-total .fuel-brk-lt{font:800 17px 'JetBrains Mono',monospace}
+/* verdict banner */
+.fuel-verdict{
+  padding:14px 16px;border-radius:var(--radius);
+  display:flex;flex-direction:column;gap:4px;
+}
+.fuel-verdict.is-ok{background:var(--green-light);border:1px solid var(--green-border)}
+.fuel-verdict.is-bad{background:var(--red-light);border:1px solid var(--red)}
+.fuel-verdict.is-neutral{background:var(--surface-2);border:1px solid var(--border)}
+.fuel-verdict-title{font:800 15px 'Inter';display:flex;align-items:center;gap:8px}
+.fuel-verdict.is-ok .fuel-verdict-title{color:var(--green)}
+.fuel-verdict.is-bad .fuel-verdict-title{color:var(--red)}
+.fuel-verdict.is-neutral .fuel-verdict-title{color:var(--text-3)}
+.fuel-verdict-sub{font:500 13px 'Inter';color:var(--text-2)}
+.fuel-verdict-sub strong{color:var(--text);font-weight:700}
+/* mini kpi row */
+.fuel-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fuel-kpi{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 8px;text-align:center;
+}
+.fuel-kpi-lbl{font:600 9px 'Inter';text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:3px}
+.fuel-kpi-val{font:800 16px 'JetBrains Mono',monospace;color:var(--text)}
+.fuel-kpi-unit{font:600 10px 'Inter';color:var(--text-3);margin-left:2px}
+.fuel-hint{font:500 11px 'Inter';color:var(--amber);display:none;padding-top:2px}
+.fuel-hint.visible{display:block}
+
+/* ═══════════════════════════════════
    LAYOUT
 ═══════════════════════════════════ */
 .layout{
@@ -722,6 +821,20 @@ input[type=number]{-moz-appearance:textfield}
 
 <!-- Settings bar supprimée - marge dans Paramètres avion -->
 
+<!-- MAIN NAV (Performances / Carburant) -->
+<div class="mainnav">
+  <button id="navPerf" class="mainnav-btn is-active" onclick="switchView('perf')">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+    Performances
+  </button>
+  <button id="navFuel" class="mainnav-btn" onclick="switchView('fuel')">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 9h2a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0V8.5L18 5"/><path d="M4 13h10"/></svg>
+    Carburant
+  </button>
+</div>
+
+<div id="viewPerf">
+
 <!-- TAB BAR (mobile) -->
 <div class="tabbar">
   <button id="tabDep" class="tab-btn is-active dep" onclick="switchTab('dep')">Décollage</button>
@@ -1150,6 +1263,122 @@ input[type=number]{-moz-appearance:textfield}
   </div>
 </div>
 
+</div><!-- /viewPerf -->
+
+<!-- ▸ CARBURANT ────────────────────────── -->
+<div id="viewFuel" style="display:none">
+  <div class="fuel-wrap">
+
+    <div class="fuel-hd">
+      <div class="fuel-hd-left">
+        <span class="fuel-hd-badge">Bilan</span>
+        <span class="fuel-hd-title">Carburant réglementaire</span>
+      </div>
+      <span id="fuelAcChip" class="fuel-hd-chip">—</span>
+    </div>
+
+    <!-- Avion & réservoir -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 9h2a2 2 0 0 1 2 2v3a1.5 1.5 0 0 0 3 0V8.5L18 5"/><path d="M4 13h10"/></svg></span><span class="card-head-title">Avion &amp; réservoir</span></div>
+      <div class="card-body">
+        <div class="row-3">
+          <div class="field">
+            <label class="field-label">Conso (L/h)</label>
+            <input id="fuelConso" class="field-input" type="number" value="25" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Capacité (L)</label>
+            <input id="fuelCap" class="field-input" type="number" value="110" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Inutilisable (L)</label>
+            <input id="fuelUnusable" class="field-input" type="number" value="10" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/>
+          </div>
+        </div>
+        <div id="fuelHint" class="fuel-hint">⚠ Préréglage DR400-120 / DR300 (25 L/h · 110 L · 10 L inutil.). Vérifiez les valeurs pour cet avion.</div>
+        <div class="fuel-kpis">
+          <div class="fuel-kpi"><div class="fuel-kpi-lbl">Utilisable</div><div class="fuel-kpi-val"><span id="fuelUsable">100</span><span class="fuel-kpi-unit">L</span></div></div>
+          <div class="fuel-kpi"><div class="fuel-kpi-lbl">Autonomie</div><div class="fuel-kpi-val" id="fuelEndurance">4h00</div></div>
+          <div class="fuel-kpi"><div class="fuel-kpi-lbl">Plein utile</div><div class="fuel-kpi-val"><span id="fuelUsable2">100</span><span class="fuel-kpi-unit">L</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étapes du vol -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="card-head-title">Étapes du vol</span></div>
+      <div class="card-body">
+
+        <div class="field">
+          <label class="field-label">Mise en route + essai + roulage <span class="fuel-forfait-tag">forfait</span></label>
+          <div class="fuel-time">
+            <input id="fuelStartup" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()" style="max-width:90px"/>
+            <span class="fuel-suffix">min</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Croisière (départ → destination)</label>
+          <div class="fuel-time">
+            <input id="fuelCruiseH" class="field-input" type="number" value="1" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <span class="fuel-suffix">h</span>
+            <span class="fuel-time-sep">·</span>
+            <input id="fuelCruiseM" class="field-input" type="number" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <span class="fuel-suffix">min</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Procédure d'arrivée <span class="fuel-forfait-tag">forfait</span></label>
+          <div class="fuel-time">
+            <input id="fuelArrival" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()" style="max-width:90px"/>
+            <span class="fuel-suffix">min</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Déroutement / alternate</label>
+          <div class="fuel-time">
+            <input id="fuelAltH" class="field-input" type="number" value="0" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <span class="fuel-suffix">h</span>
+            <span class="fuel-time-sep">·</span>
+            <input id="fuelAltM" class="field-input" type="number" value="30" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <span class="fuel-suffix">min</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label">Réserve finale <span class="fuel-forfait-tag">club</span></label>
+          <div class="fuel-time">
+            <input id="fuelReserve" class="field-input" type="number" value="45" min="0" step="1" inputmode="numeric" oninput="computeFuel()" style="max-width:90px"/>
+            <span class="fuel-suffix">min</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bilan -->
+    <div class="card">
+      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span><span class="card-head-title">Bilan carburant</span></div>
+      <div class="card-body">
+        <div id="fuelBreakdown" class="fuel-brk"></div>
+        <div class="fuel-brk-total">
+          <div class="fuel-brk-ph">Carburant mini requis</div>
+          <div class="fuel-brk-tm" id="fuelTotalTime">—</div>
+          <div class="fuel-brk-lt"><span id="fuelTotalL">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="fuelVerdict" class="fuel-verdict is-neutral">
+      <div class="fuel-verdict-title">Renseignez les temps de vol</div>
+      <div class="fuel-verdict-sub">Le bilan se calcule automatiquement.</div>
+    </div>
+
+  </div>
+</div>
+
 <footer class="app-footer">Manuels DR400 et DR300 — Aéroclub de Beauvais-Tillé · LFOB</footer>
 <div id="printView"></div>
 
@@ -1172,6 +1401,133 @@ function switchTab(tab) {
     colDep.classList.add('hidden-mobile');
     btnArr.classList.add('is-active');
     btnDep.classList.remove('is-active');
+  }
+}
+
+/* ─── switchView (Performances / Carburant) ─── */
+function switchView(view) {
+  const vPerf = document.getElementById('viewPerf');
+  const vFuel = document.getElementById('viewFuel');
+  const nPerf = document.getElementById('navPerf');
+  const nFuel = document.getElementById('navFuel');
+  if (view === 'fuel') {
+    vPerf.style.display = 'none';
+    vFuel.style.display = '';
+    nFuel.classList.add('is-active');
+    nPerf.classList.remove('is-active');
+    syncFuelPreset();
+    computeFuel();
+  } else {
+    vFuel.style.display = 'none';
+    vPerf.style.display = '';
+    nPerf.classList.add('is-active');
+    nFuel.classList.remove('is-active');
+  }
+}
+
+/* ─── Fuel : préréglage selon avion sélectionné ─── */
+function syncFuelPreset() {
+  const sel  = document.getElementById('aircraftSel');
+  const chip = document.getElementById('fuelAcChip');
+  const hint = document.getElementById('fuelHint');
+  if (!chip) return;
+  const immat = sel && sel.value ? sel.value : '';
+  const label = immat && sel.selectedOptions[0]
+    ? sel.selectedOptions[0].textContent.trim()
+    : 'Aucun avion sélectionné';
+  chip.textContent = immat || '—';
+  chip.title = label;
+
+  // profile est la variable globale mise à jour au chargement de l'avion.
+  const isPreset = (profile === 'DR400' || profile === 'DR300');
+  if (immat && !isPreset) {
+    hint.classList.add('visible');
+  } else {
+    hint.classList.remove('visible');
+  }
+}
+
+/* ─── Fuel : calcul du bilan ─── */
+function fmtHM(totalMin) {
+  totalMin = Math.round(totalMin);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h + 'h' + String(m).padStart(2, '0');
+}
+
+function computeFuel() {
+  const num = id => {
+    const v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? 0 : v;
+  };
+  const conso    = num('fuelConso');          // L/h
+  const cap      = num('fuelCap');            // L
+  const unusable = num('fuelUnusable');       // L
+  const usable   = Math.max(0, cap - unusable);
+
+  const startup  = num('fuelStartup');                       // min
+  const cruise   = num('fuelCruiseH') * 60 + num('fuelCruiseM');
+  const arrival  = num('fuelArrival');                       // min
+  const alt      = num('fuelAltH') * 60 + num('fuelAltM');
+  const reserve  = num('fuelReserve');                       // min
+
+  const litres = min => conso * min / 60;
+
+  // Cartes KPI réservoir
+  document.getElementById('fuelUsable').textContent  = usable;
+  document.getElementById('fuelUsable2').textContent = usable;
+  document.getElementById('fuelEndurance').textContent =
+    conso > 0 ? fmtHM(usable / conso * 60) : '—';
+
+  // Décomposition
+  const phases = [
+    { ph:'Mise en route + roulage', sub:'forfait',          min:startup },
+    { ph:'Croisière',               sub:'départ → destination', min:cruise },
+    { ph:'Procédure d\'arrivée',     sub:'verticale · intég. · atterro', min:arrival },
+    { ph:'Déroutement / alternate', sub:'',                 min:alt },
+    { ph:'Réserve finale',          sub:'imposée club',     min:reserve },
+  ];
+
+  let totMin = 0, totL = 0;
+  let rows = '';
+  phases.forEach(p => {
+    const L = litres(p.min);
+    totMin += p.min;
+    totL   += L;
+    rows += '<div class="fuel-brk-row">'
+      + '<div class="fuel-brk-ph">' + p.ph
+        + (p.sub ? '<span class="sub">' + p.sub + '</span>' : '')
+      + '</div>'
+      + '<div class="fuel-brk-tm">' + fmtHM(p.min) + '</div>'
+      + '<div class="fuel-brk-lt">' + L.toFixed(1) + ' L</div>'
+      + '</div>';
+  });
+  document.getElementById('fuelBreakdown').innerHTML = rows;
+  document.getElementById('fuelTotalTime').textContent = fmtHM(totMin);
+  document.getElementById('fuelTotalL').textContent = totL.toFixed(1) + ' L';
+
+  // Verdict
+  const box = document.getElementById('fuelVerdict');
+  const remaining = usable - totL;
+  const remainMin = conso > 0 ? remaining / conso * 60 : 0;
+
+  if (conso <= 0 || totL === 0) {
+    box.className = 'fuel-verdict is-neutral';
+    box.innerHTML = '<div class="fuel-verdict-title">Renseignez les temps de vol</div>'
+      + '<div class="fuel-verdict-sub">Le bilan se calcule automatiquement.</div>';
+  } else if (remaining >= 0) {
+    box.className = 'fuel-verdict is-ok';
+    box.innerHTML = '<div class="fuel-verdict-title">✓ Vol réalisable</div>'
+      + '<div class="fuel-verdict-sub">Requis <strong>' + totL.toFixed(1) + ' L</strong> '
+      + 'sur <strong>' + usable + ' L</strong> utilisables — '
+      + 'reste <strong>' + remaining.toFixed(1) + ' L</strong> (' + fmtHM(remainMin) + ').</div>';
+  } else {
+    box.className = 'fuel-verdict is-bad';
+    box.innerHTML = '<div class="fuel-verdict-title">✕ Carburant insuffisant</div>'
+      + '<div class="fuel-verdict-sub">Requis <strong>' + totL.toFixed(1) + ' L</strong> '
+      + 'pour <strong>' + usable + ' L</strong> utilisables — '
+      + 'il manque <strong>' + Math.abs(remaining).toFixed(1) + ' L</strong> ('
+      + fmtHM(Math.abs(remainMin)) + ').</div>';
   }
 }
 
@@ -1526,6 +1882,7 @@ $('#aircraftSel').addEventListener('change', () => {
   updateWindDisplay('arr');
   resetComputedState('dep');
   resetComputedState('arr');
+  if (typeof syncFuelPreset === 'function') { syncFuelPreset(); computeFuel(); }
 
 });
 
