@@ -3435,25 +3435,28 @@ function nearCandidates(near, excludeIcao){
 
 async function fetchNearestValidMetar(lat, lon, excludeIcao){
   let near = [];
-  try { near = await fetchNearStations(lat, lon, 10); } catch { near = []; }
-  const cands = nearCandidates(near, excludeIcao).slice(0, 6);
-  // récupère les METAR en parallèle (ordre = distance croissante)
+  try { near = await fetchNearStations(lat, lon, 10); } catch { return { error: 'api', report: null, count: 0, maxNm: null }; }
+  const cands = nearCandidates(near, excludeIcao);
+  if (!cands.length) return { report: null, count: 0, maxNm: null };
+  const maxNm = cands[cands.length - 1].nm;
   const results = await Promise.all(cands.map(async c => {
     try { return { c, m: await fetchMetar(c.icao) }; } catch { return { c, m: null }; }
   }));
   for (const { c, m } of results){
     const age = reportAgeMs(m);
     if (m && m.raw && age !== null && age <= 2*3600*1000){
-      return { data: m, station: c.icao, distance: c.nm, units: 'NM' };
+      return { report: { data: m, station: c.icao, distance: c.nm, units: 'NM' }, count: cands.length, maxNm };
     }
   }
-  return null;
+  return { report: null, count: cands.length, maxNm };
 }
 
 async function fetchNearestValidTaf(lat, lon, excludeIcao){
   let near = [];
-  try { near = await fetchNearStations(lat, lon, 10); } catch { near = []; }
-  const cands = nearCandidates(near, excludeIcao).slice(0, 6);
+  try { near = await fetchNearStations(lat, lon, 10); } catch { return { error: 'api', report: null, count: 0, maxNm: null }; }
+  const cands = nearCandidates(near, excludeIcao);
+  if (!cands.length) return { report: null, count: 0, maxNm: null };
+  const maxNm = cands[cands.length - 1].nm;
   const now = new Date();
   const results = await Promise.all(cands.map(async c => {
     try { return { c, t: await fetchTaf(c.icao) }; } catch { return { c, t: null }; }
@@ -3463,10 +3466,10 @@ async function fetchNearestValidTaf(lat, lon, excludeIcao){
     const v = parseTafValidity(t.raw);
     const end = v && v.end && v.end.dt ? new Date(v.end.dt) : null;
     if (!end || now <= end){
-      return { data: t, station: c.icao, distance: c.nm, units: 'NM' };
+      return { report: { data: t, station: c.icao, distance: c.nm, units: 'NM' }, count: cands.length, maxNm };
     }
   }
-  return null;
+  return { report: null, count: cands.length, maxNm };
 }
 
 async function useNearestValidMetar(side){
@@ -3477,8 +3480,14 @@ async function useNearestValidMetar(side){
   const excl = (document.getElementById(side+'Icao').value||'').toUpperCase();
   if (typeof lat!=='number' || typeof lon!=='number'){ setMetarMsg(msgEl,'Position du terrain inconnue — recherche impossible.'); return; }
   setMetarMsg(msgEl,'Recherche du METAR valide le plus proche…');
-  const alt = await fetchNearestValidMetar(lat, lon, excl).catch(()=>null);
-  if (!alt){ setMetarMsg(msgEl,'⛔ Aucun METAR valide à proximité — saisie manuelle du vent et de l\'OAT.'); return; }
+  const res = await fetchNearestValidMetar(lat, lon, excl).catch(()=>({error:'api',report:null}));
+  if (res.error){ setMetarMsg(msgEl,'⛔ Recherche impossible (accès aux stations proches). Saisie manuelle.'); return; }
+  if (!res.report){
+    const rad = typeof res.maxNm==='number' ? ' (jusqu\'à ~'+Math.round(res.maxNm)+' NM)' : '';
+    setMetarMsg(msgEl,'⛔ Aucun METAR récent (< 2h) parmi les '+(res.count||0)+' terrains proches'+rad+'. Saisie manuelle du vent et de l\'OAT.');
+    return;
+  }
+  const alt = res.report;
   applyMetar(side, alt.data);
   const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+Math.round(alt.distance)+' '+alt.units+')':'';
   const ageMin = Math.round(reportAgeMs(alt.data)/60000);
@@ -3494,8 +3503,14 @@ async function useNearestValidTaf(){
   const excl = (document.getElementById('arrIcao').value||'').toUpperCase();
   if (typeof lat!=='number' || typeof lon!=='number'){ setMetarMsg(msgEl,'Position du terrain inconnue — recherche impossible.'); return; }
   setMetarMsg(msgEl,'Recherche du TAF valide le plus proche…');
-  const alt = await fetchNearestValidTaf(lat, lon, excl).catch(()=>null);
-  if (!alt){ setMetarMsg(msgEl,'⛔ Aucun TAF valide à proximité — saisie manuelle.'); return; }
+  const res = await fetchNearestValidTaf(lat, lon, excl).catch(()=>({error:'api',report:null}));
+  if (res.error){ setMetarMsg(msgEl,'⛔ Recherche impossible (accès aux stations proches). Saisie manuelle.'); return; }
+  if (!res.report){
+    const rad = typeof res.maxNm==='number' ? ' (jusqu\'à ~'+Math.round(res.maxNm)+' NM)' : '';
+    setMetarMsg(msgEl,'⛔ Aucun TAF valide parmi les '+(res.count||0)+' terrains proches'+rad+'. Saisie manuelle.');
+    return;
+  }
+  const alt = res.report;
   const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+Math.round(alt.distance)+' '+alt.units+')':'';
   lastArrTafRaw = alt.data.raw || '—';
   setMetarMsg(msgEl,'⚠ TAF le plus proche VALIDE : '+alt.station+distTxt+'\n'+(alt.data.raw||'—'));
