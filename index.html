@@ -3764,25 +3764,27 @@ async function loadMetarFor(side) {
     }
     // Nom aéroport depuis AVWX (priorité), fallback OpenAIP
     setAirportName(side, null, icao);
-    applyMetar(side, metar);
 
-    // ── Vérification fraîcheur METAR (valable 2h à partir de l'émission) ──
-    const metarTimeDt    = metar?.time?.dt ? new Date(metar.time.dt) : null;
-    const metarAgeMs     = metarTimeDt ? Date.now() - metarTimeDt.getTime() : null;
-    const METAR_MAX_MS   = 2 * 3600 * 1000;
-    const metarExpired   = metarAgeMs !== null && metarAgeMs > METAR_MAX_MS;
-    let metarStaleWarn   = '';
+    // ── Fraîcheur METAR (valable 2h à partir de l'émission) ──
+    const metarTimeDt  = metar?.time?.dt ? new Date(metar.time.dt) : null;
+    const metarAgeMs   = metarTimeDt ? Date.now() - metarTimeDt.getTime() : null;
+    const METAR_MAX_MS = 2 * 3600 * 1000;
+    const metarExpired = metarAgeMs !== null && metarAgeMs > METAR_MAX_MS;
+
     if (metarExpired) {
+      // Périmé → NE PAS utiliser : on n'écrase pas les champs, saisie manuelle requise
       const totalMin = Math.round(metarAgeMs / 60000);
-      const h = Math.floor(totalMin / 60);
-      const m = totalMin % 60;
-      const ageTxt = h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'min' : m + 'min';
-      metarStaleWarn = `⛔ METAR PÉRIMÉ — émis il y a ${ageTxt} (validité max : 2h). Données météo potentiellement invalides.\n`;
+      const h = Math.floor(totalMin / 60), m = totalMin % 60;
+      const ageTxt = h > 0 ? h + 'h' + String(m).padStart(2, '0') : m + 'min';
+      setMetarMsg(msgEl,
+        `⛔ METAR PÉRIMÉ — émis il y a ${ageTxt} (validité max : 2h). Non utilisé, saisissez le vent et l'OAT à la main.\n`
+        + (metar?.raw || '—'));
+    } else {
+      applyMetar(side, metar);
+      setMetarMsg(msgEl, isNearest
+        ? '⚠ Station la plus proche (' + usedIcao + distTxt + ') — ' + (metar?.raw || '—')
+        : (metar?.raw || '—'));
     }
-
-    setMetarMsg(msgEl, metarStaleWarn + (isNearest
-      ? '⚠ Station la plus proche (' + usedIcao + distTxt + ') — ' + (metar?.raw||'—')
-      : (metar?.raw||'—')));
     updateWindDisplay(side);
   } catch (e) {
     setMetarMsg(msgEl, 'METAR indisponible (' + (e?.message || 'erreur') + ')');
@@ -4696,7 +4698,7 @@ async function loadTafFor(side) {
       const overTxt = h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'min' : m + 'min';
       const endFmt = String(tafEndDt.getUTCDate()).padStart(2,'0') + '/' +
                      String(tafEndDt.getUTCHours()).padStart(2,'0') + 'z';
-      tafStaleWarn = `⛔ TAF EXPIRÉ — fin de validité le ${endFmt}, dépassée de ${overTxt}. Ne plus utiliser ce TAF.\n`;
+      tafStaleWarn = `⛔ TAF EXPIRÉ — fin de validité le ${endFmt}, dépassée de ${overTxt}. Non utilisé, saisissez le vent à la main.\n`;
     } else if (tafStartDt && nowTs < tafStartDt) {
       const waitMs  = tafStartDt.getTime() - nowTs.getTime();
       const waitMin = Math.round(waitMs / 60000);
@@ -4706,17 +4708,28 @@ async function loadTafFor(side) {
                        String(tafStartDt.getUTCHours()).padStart(2,'0') + 'z';
       tafStaleWarn = `⚠ TAF pas encore en vigueur — entrée en vigueur le ${startFmt} (dans ${wh > 0 ? wh + 'h' : ''}${wm}min).\n`;
     }
+    const tafExpired = !!(tafEndDt && nowTs > tafEndDt);
 
     const prefix = isNearest ? '⚠ TAF le plus proche : ' + usedIcao + distTxt + '\n' : '';
     lastArrTafRaw = taf.raw || '—';
     setMetarMsg(msgEl, tafStaleWarn + prefix + (taf.raw || '—'));
-    try { renderTafPicker(taf); } catch(renderErr) {
-      console.error('[TAF] Erreur rendu:', renderErr);
-      // Afficher quand même le TAF brut
+    if (tafExpired) {
+      // Périmé → NE PAS utiliser : afficher le TAF brut sans sélecteur (aucun remplissage auto)
       const wrap = document.getElementById('arrTafWrap');
       const rawEl = document.getElementById('arrTafRaw');
       if (rawEl) { rawEl.textContent = taf.raw || '—'; rawEl.style.display = 'block'; }
       if (wrap) wrap.classList.add('visible');
+      const periods = document.getElementById('arrTafPeriods');
+      if (periods) periods.innerHTML = '';
+    } else {
+      try { renderTafPicker(taf); } catch(renderErr) {
+        console.error('[TAF] Erreur rendu:', renderErr);
+        // Afficher quand même le TAF brut
+        const wrap = document.getElementById('arrTafWrap');
+        const rawEl = document.getElementById('arrTafRaw');
+        if (rawEl) { rawEl.textContent = taf.raw || '—'; rawEl.style.display = 'block'; }
+        if (wrap) wrap.classList.add('visible');
+      }
     }
   } catch(e) {
     setMetarMsg(msgEl, 'TAF indisponible (' + (e?.message || 'erreur') + ')');
