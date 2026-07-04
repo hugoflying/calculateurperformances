@@ -4781,18 +4781,23 @@ async function loadTafFor(side) {
     }
 
     let taf;
-    if (tafResult.status === 'fulfilled') {
+    if (tafResult.status === 'fulfilled' && tafResult.value && tafResult.value.raw) {
       taf = tafResult.value;
     } else {
-      // Pas de TAF pour cet ICAO → chercher le plus proche via coordonnées
+      // Pas de TAF (ou réponse vide) pour cet ICAO → chercher le plus proche VALIDE
       const station = await fetchStation(icao).catch(() => null);
-      const lat = station?.latitude, lon = station?.longitude;
+      const lat = station?.latitude ?? lastArrStationLat;
+      const lon = station?.longitude ?? lastArrStationLon;
       if (typeof lat !== 'number' || typeof lon !== 'number') throw new Error('TAF indisponible et coordonnées introuvables');
-      taf = await fetchNearestTaf(lat, lon);
+      const res = await fetchNearestValidTaf(lat, lon, icao);
+      if (!res.report) {
+        const rad = typeof res.maxNm === 'number' ? ' (jusqu\'à ~' + Math.round(res.maxNm) + ' NM)' : '';
+        throw new Error('aucun TAF valide parmi les ' + (res.count || 0) + ' terrains proches' + rad);
+      }
+      taf = res.report.data;
       isNearest = true;
-      usedIcao  = taf?.station || taf?.icao || icao;
-      const d   = taf?.meta?.distance, u = taf?.meta?.units;
-      if (typeof d === 'number' && u) distTxt = ' (~' + d + ' ' + u + ')';
+      usedIcao  = res.report.station;
+      if (typeof res.report.distance === 'number') distTxt = ' (~' + Math.round(res.report.distance) + ' NM)';
     }
 
     if (!taf || typeof taf !== 'object') throw new Error('Réponse TAF invalide');
