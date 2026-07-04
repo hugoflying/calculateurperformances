@@ -1359,7 +1359,7 @@ input[type=number]{-moz-appearance:textfield}
       <div class="card-body">
         <div class="fuel-dep-row">
           <div class="field">
-            <label class="field-label">Mise en route (démarrage moteur)</label>
+            <label class="field-label">Mise en route — heure locale</label>
             <input id="fuelDepTime" class="field-input" type="time" oninput="computeFuel()"/>
           </div>
           <button class="fuel-now-btn" onclick="fuelSetNow()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>NOW</button>
@@ -1458,7 +1458,7 @@ input[type=number]{-moz-appearance:textfield}
 
     <!-- Horaires -->
     <div class="card">
-      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span><span class="card-head-title">Horaires limites (réservoir plein utile)</span></div>
+      <div class="card-head"><span class="card-head-icon"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg></span><span class="card-head-title">Horaires limites — heure locale</span></div>
       <div class="card-body">
         <div class="fuel-clocks">
           <div class="fuel-clock">
@@ -1696,7 +1696,7 @@ function computeFuel() {
     const tag  = c => c ? (c.txt + (c.dayShift > 0 ? ' (J+' + c.dayShift + ')' : '')) : '—:—';
     elStop.textContent = tag(stop);
     elLdg.textContent  = tag(ldg);
-    note.textContent = 'Calculé sur ' + usable + ' L utilisables à ' + conso + ' L/h. À poser avant l\'heure rouge.';
+    note.textContent = 'Heure locale · sur ' + usable + ' L utilisables à ' + conso + ' L/h. À poser avant l\'heure rouge.';
   }
 }
 
