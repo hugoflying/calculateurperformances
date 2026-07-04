@@ -3418,44 +3418,52 @@ const fetchNearestMetar = (lat, lon) =>
 const fetchNearestTaf = (lat, lon) =>
   fetchJson('https://avwx.rest/api/taf/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&options=summary');
 
-// ── Recherche du report VALIDE le plus proche (parmi plusieurs stations voisines) ──
-const fetchNearestMetarList = (lat, lon, n = 6) =>
-  fetchJson('https://avwx.rest/api/metar/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&n=' + n);
-const fetchNearestTafList = (lat, lon, n = 6) =>
-  fetchJson('https://avwx.rest/api/taf/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?nearest=true&n=' + n + '&options=summary');
+// ── Recherche du report VALIDE le plus proche (via /station/near) ──
+const fetchNearStations = (lat, lon, n = 10) =>
+  fetchJson('https://avwx.rest/api/station/near/' + Number(lat).toFixed(5) + ',' + Number(lon).toFixed(5) + '?n=' + n + '&reporting=true');
 
-function wxItemReport(item){ return item && item.data && item.data.raw ? item.data : item; }
 function reportAgeMs(rep){ const dt = rep && rep.time && rep.time.dt ? new Date(rep.time.dt) : null; return dt ? Date.now() - dt.getTime() : null; }
 
+function nearCandidates(near, excludeIcao){
+  if (!Array.isArray(near)) return [];
+  const excl = (excludeIcao || '').toUpperCase();
+  return near
+    .map(o => ({ icao: ((o.station && (o.station.icao || o.station.gps)) || '').toUpperCase(),
+                 nm: o.nautical_miles }))
+    .filter(c => c.icao && c.icao !== excl);
+}
+
 async function fetchNearestValidMetar(lat, lon, excludeIcao){
-  let list = [];
-  try { const r = await fetchNearestMetarList(lat, lon); list = Array.isArray(r) ? r : [r]; }
-  catch { try { const r = await fetchNearestMetar(lat, lon); list = [r]; } catch { list = []; } }
-  for (const item of list){
-    const rep = wxItemReport(item);
-    const st  = (rep && rep.station || item && item.station || '').toUpperCase();
-    if (excludeIcao && st === excludeIcao.toUpperCase()) continue;
-    const age = reportAgeMs(rep);
-    if (age !== null && age <= 2*3600*1000){
-      return { data: rep, station: st, distance: (item && item.meta && item.meta.distance), units: (item && item.meta && item.meta.units) };
+  let near = [];
+  try { near = await fetchNearStations(lat, lon, 10); } catch { near = []; }
+  const cands = nearCandidates(near, excludeIcao).slice(0, 6);
+  // récupère les METAR en parallèle (ordre = distance croissante)
+  const results = await Promise.all(cands.map(async c => {
+    try { return { c, m: await fetchMetar(c.icao) }; } catch { return { c, m: null }; }
+  }));
+  for (const { c, m } of results){
+    const age = reportAgeMs(m);
+    if (m && m.raw && age !== null && age <= 2*3600*1000){
+      return { data: m, station: c.icao, distance: c.nm, units: 'NM' };
     }
   }
   return null;
 }
 
 async function fetchNearestValidTaf(lat, lon, excludeIcao){
-  let list = [];
-  try { const r = await fetchNearestTafList(lat, lon); list = Array.isArray(r) ? r : [r]; }
-  catch { try { const r = await fetchNearestTaf(lat, lon); list = [r]; } catch { list = []; } }
+  let near = [];
+  try { near = await fetchNearStations(lat, lon, 10); } catch { near = []; }
+  const cands = nearCandidates(near, excludeIcao).slice(0, 6);
   const now = new Date();
-  for (const item of list){
-    const rep = wxItemReport(item);
-    const st  = (rep && rep.station || item && item.station || '').toUpperCase();
-    if (excludeIcao && st === excludeIcao.toUpperCase()) continue;
-    const v   = rep && rep.raw ? parseTafValidity(rep.raw) : null;
+  const results = await Promise.all(cands.map(async c => {
+    try { return { c, t: await fetchTaf(c.icao) }; } catch { return { c, t: null }; }
+  }));
+  for (const { c, t } of results){
+    if (!t || !t.raw) continue;
+    const v = parseTafValidity(t.raw);
     const end = v && v.end && v.end.dt ? new Date(v.end.dt) : null;
-    if (rep && rep.raw && (!end || now <= end)){
-      return { data: rep, station: st, distance: (item && item.meta && item.meta.distance), units: (item && item.meta && item.meta.units) };
+    if (!end || now <= end){
+      return { data: t, station: c.icao, distance: c.nm, units: 'NM' };
     }
   }
   return null;
@@ -3472,7 +3480,7 @@ async function useNearestValidMetar(side){
   const alt = await fetchNearestValidMetar(lat, lon, excl).catch(()=>null);
   if (!alt){ setMetarMsg(msgEl,'⛔ Aucun METAR valide à proximité — saisie manuelle du vent et de l\'OAT.'); return; }
   applyMetar(side, alt.data);
-  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+alt.distance+' '+alt.units+')':'';
+  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+Math.round(alt.distance)+' '+alt.units+')':'';
   const ageMin = Math.round(reportAgeMs(alt.data)/60000);
   setMetarMsg(msgEl,'⚠ METAR le plus proche VALIDE : '+alt.station+distTxt+' — émis il y a '+ageMin+'min\n'+(alt.data.raw||'—'));
   updateWindDisplay(side);
@@ -3488,7 +3496,7 @@ async function useNearestValidTaf(){
   setMetarMsg(msgEl,'Recherche du TAF valide le plus proche…');
   const alt = await fetchNearestValidTaf(lat, lon, excl).catch(()=>null);
   if (!alt){ setMetarMsg(msgEl,'⛔ Aucun TAF valide à proximité — saisie manuelle.'); return; }
-  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+alt.distance+' '+alt.units+')':'';
+  const distTxt = (typeof alt.distance==='number' && alt.units)?' (~'+Math.round(alt.distance)+' '+alt.units+')':'';
   lastArrTafRaw = alt.data.raw || '—';
   setMetarMsg(msgEl,'⚠ TAF le plus proche VALIDE : '+alt.station+distTxt+'\n'+(alt.data.raw||'—'));
   try { renderTafPicker(alt.data); } catch(e){ console.error('[TAF proche]', e); }
