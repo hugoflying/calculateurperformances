@@ -378,6 +378,21 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 .ab-btn:disabled{opacity:.4}
 .ab-btn.primary{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
 .ab-btn:active:not(:disabled){transform:scale(.97)}
+.ab-sm{display:none}
+.ab-ic{margin-right:5px}
+@media(max-width:640px){
+  .action-bar{gap:6px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+  .ab-badges{gap:4px}
+  .ab-badge{font-size:9px;padding:4px 7px;letter-spacing:.02em}
+  .ab-badge .ab-lg{display:none}
+  .ab-badge .ab-sm{display:inline}
+  .ab-btn{padding:9px 11px;font-size:12px}
+}
+@media(max-width:460px){
+  .ab-btn .ab-tx{display:none}
+  .ab-btn .ab-ic{margin-right:0}
+  .ab-btn{padding:9px 12px;font-size:15px}
+}
 .wx-alt-btn{
   display:none;width:100%;margin-top:8px;padding:9px 10px;border-radius:var(--radius-sm);
   background:var(--amber);color:#1a2332;border:1px solid var(--amber);
@@ -753,6 +768,23 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 .rm-row-value{font:700 13px 'JetBrains Mono',monospace;color:var(--text)}
 .rm-foot{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface-2);flex-shrink:0;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 @media(max-width:480px){.rm-foot{padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}}
+/* Desktop : fenêtre centrée compacte au lieu du plein écran */
+@media(min-width:900px){
+  .results-modal{
+    inset:0;background:rgba(15,23,42,.55);
+    flex-direction:column;align-items:center;justify-content:center;
+    transform:none;opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .25s ease, visibility .25s ease;padding:24px;
+  }
+  [data-theme="dark"] .results-modal{background:rgba(0,0,0,.6)}
+  .results-modal.is-open{transform:none;opacity:1;visibility:visible;pointer-events:auto}
+  .rm-loading,.rm-content{
+    flex:0 1 auto;width:100%;max-width:720px;max-height:86vh;
+    background:var(--surface);border-radius:16px;overflow:hidden;
+    box-shadow:0 24px 70px rgba(0,0,0,.45);
+  }
+  [data-theme="dark"] .rm-loading,[data-theme="dark"] .rm-content{background:#161c29}
+}
 .rm-footer-btn{width:100%;padding:14px;border-radius:12px;font:700 13px 'Inter';text-transform:uppercase;letter-spacing:.04em;background:#f8fafc;border:1.5px solid #cbd5e1;color:#1a2332;transition:all .15s;display:block;text-align:center}
 .rm-footer-btn:hover{border-color:#475569;color:#1a2332}
 .rm-footer-btn.is-ok-dep{background:var(--blue-mid)!important;color:#fff!important;border-color:var(--blue-mid)!important}
@@ -1507,12 +1539,12 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 <!-- ═══ Barre d'action globale ═══ -->
 <div class="action-bar" id="actionBar">
   <div class="ab-badges">
-    <span id="abDep"  class="ab-badge">Décollage</span>
-    <span id="abArr"  class="ab-badge">Atterrissage</span>
-    <span id="abFuel" class="ab-badge">Carburant</span>
+    <span id="abDep"  class="ab-badge"><span class="ab-lg">Décollage</span><span class="ab-sm">Déc</span></span>
+    <span id="abArr"  class="ab-badge"><span class="ab-lg">Atterrissage</span><span class="ab-sm">Att</span></span>
+    <span id="abFuel" class="ab-badge"><span class="ab-lg">Carburant</span><span class="ab-sm">Fuel</span></span>
   </div>
-  <button id="abTicket" class="ab-btn" disabled onclick="printTicket()">🧾 Ticket</button>
-  <button id="abPdf" class="ab-btn primary" disabled onclick="generatePDF()">📄 PDF</button>
+  <button id="abTicket" class="ab-btn" disabled onclick="printTicket()"><span class="ab-ic">🧾</span><span class="ab-tx">Ticket</span></button>
+  <button id="abPdf" class="ab-btn primary" disabled onclick="generatePDF()"><span class="ab-ic">📄</span><span class="ab-tx">PDF</span></button>
 </div>
 
 <div class="readme-wrap">
