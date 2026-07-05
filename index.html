@@ -868,7 +868,10 @@ input[type=number]{-moz-appearance:textfield}
     </div>
     <div class="rm-foot">
       <div style="display:flex;flex-direction:column;gap:8px">
-        <button id="btnPrint" class="rm-footer-btn" style="background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);width:100%" disabled>📄 Exporter le PDF</button>
+        <div style="display:flex;gap:8px">
+          <button id="btnPrint" class="rm-footer-btn" style="background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);flex:1" disabled>📄 PDF A4</button>
+          <button id="btnTicket" class="rm-footer-btn" style="background:var(--text);color:var(--surface);border-color:var(--text);flex:1" disabled>🧾 Ticket 80mm</button>
+        </div>
         <div style="display:flex;gap:8px">
           <button id="rmFooterBtn" class="rm-footer-btn" onclick="closeResultsModal()" style="flex:1">← Modifier les paramètres</button>
           <button id="rmSwitchBtn" class="rm-footer-btn" style="flex:1;display:none" onclick="switchToOtherSide()">Calculer l'atterrissage →</button>
@@ -2193,16 +2196,19 @@ let arrComputed = false;
 
 function updatePdfBtn() {
   const btn = document.getElementById('btnPrint');
-  if (depComputed || arrComputed) {
-    btn.textContent = '✅ Exporter PDF';
+  const done = depComputed || arrComputed;
+  if (done) {
+    btn.textContent = '✅ PDF A4';
     btn.style.background = '#065f46';
     btn.style.opacity = '1';
   } else {
-    btn.textContent = '📄 Exporter PDF';
+    btn.textContent = '📄 PDF A4';
     btn.style.background = '';
     btn.style.opacity = '.45';
   }
-  btn.disabled = !(depComputed || arrComputed);
+  btn.disabled = !done;
+  const tbtn = document.getElementById('btnTicket');
+  if (tbtn) { tbtn.disabled = !done; tbtn.style.opacity = done ? '1' : '.45'; }
 }
 let depAssumeTA = false; // assumption 5kt arrière départ
 let arrAssumeTA = false; // assumption 5kt arrière arrivée
@@ -5097,6 +5103,132 @@ function generatePDF() {
   document.getElementById('printView').innerHTML = html;
   window.print();
 }
+
+/* ─── Ticket thermique 80 mm ─── */
+function buildTicketHTML() {
+  const g = id => (document.getElementById(id)?.value?.trim() || '');
+  const t = id => (document.getElementById(id)?.textContent?.trim() || '');
+  const chip = side => {
+    const el = document.getElementById(side === 'dep' ? 'toChip' : 'ldgChip');
+    if (el?.classList.contains('is-ok-chip'))  return 'ok';
+    if (el?.classList.contains('is-bad-chip')) return 'bad';
+    return 'neu';
+  };
+  const now = new Date();
+  const p2 = n => String(n).padStart(2, '0');
+  const dateStr = p2(now.getDate()) + '/' + p2(now.getMonth() + 1) + '/' + now.getFullYear();
+  const timeStr = p2(now.getHours()) + ':' + p2(now.getMinutes());
+  const aircraft = document.getElementById('aircraftSel').value || '—';
+
+  const sideBlock = side => {
+    const done = side === 'dep' ? depComputed : arrComputed;
+    if (!done) return '';
+    const dep = side === 'dep';
+    const v = chip(side);
+    const label = dep ? 'DÉCOLLAGE' : 'ATTERRISSAGE';
+    const req = t(dep ? 'toKpiVal' : 'ldgKpiVal');
+    const avail = t(dep ? 'todaMini' : 'ldaMini');
+    const DIST = dep ? 'TODA' : 'LDA';
+    const icao = g(dep ? 'depIcao' : 'arrIcao').toUpperCase();
+    const qfu = g(dep ? 'depQfu' : 'arrQfu');
+    const mass = g(dep ? 'depTow' : 'arrLdw');
+    const wdir = g(dep ? 'depWindDir' : 'arrWindDir'), wkt = g(dep ? 'depWindKt' : 'arrWindKt'), wg = g(dep ? 'depWindGust' : 'arrWindGust');
+    const wind = wdir + '/' + wkt + 'kt' + (+wg > 0 ? 'G' + wg : '');
+    const vbar = v === 'ok' ? '<div class="vb ok">✓ POSSIBLE</div>'
+               : v === 'bad' ? '<div class="vb bad">✗ INSUFFISANT</div>'
+               : '<div class="vb neu">—</div>';
+    return `
+      <div class="hr"></div>
+      <div class="sec">${label}${icao ? ' · ' + icao : ''}</div>
+      ${vbar}
+      <div class="r"><span>QFU</span><span>${qfu || '—'}°</span></div>
+      <div class="r"><span>Masse</span><span>${mass || '—'} kg</span></div>
+      <div class="r"><span>Vent</span><span>${wind}</span></div>
+      <div class="r big"><span>Requis</span><span>${req}</span></div>
+      <div class="r"><span>${DIST} dispo</span><span>${avail}</span></div>`;
+  };
+
+  let sections = sideBlock('dep') + sideBlock('arr');
+
+  // Carburant
+  let fuelBlock = '';
+  if (typeof fuelTouched !== 'undefined' && fuelTouched && typeof fuelCompute === 'function') {
+    const f = fuelCompute();
+    if (f.totL > 0) {
+      const vbar = f.ok ? '<div class="vb ok">✓ SUFFISANT</div>' : '<div class="vb bad">✗ INSUFFISANT</div>';
+      const dep = document.getElementById('fuelDepTime').value;
+      fuelBlock = `
+      <div class="hr"></div>
+      <div class="sec">CARBURANT</div>
+      ${vbar}
+      <div class="r big"><span>Requis</span><span>${f.totL.toFixed(1)} L</span></div>
+      <div class="r"><span>Utilisable</span><span>${f.usable} L</span></div>
+      <div class="r"><span>${f.ok ? 'Reste' : 'Manque'}</span><span>${Math.abs(f.remaining).toFixed(1)} L</span></div>
+      ${dep ? `<div class="r"><span>Atterro max</span><span>${f.maxLdg}</span></div>
+      <div class="r"><span>Arrêt moteur</span><span>${f.engineStop}</span></div>` : ''}`;
+    }
+  }
+
+  // Coucher du soleil / nuit aéro (arrivée prioritaire, sinon départ)
+  const csArr = t('arrSunset'), csDep = t('depSunset');
+  const nArr  = t('arrAeroNight'), nDep = t('depAeroNight');
+  const cs = (csArr && csArr !== '—:—') ? csArr : (csDep && csDep !== '—:—' ? csDep : '');
+  const nn = (csArr && csArr !== '—:—') ? nArr  : (csDep && csDep !== '—:—' ? nDep : '');
+  let sunBlock = '';
+  if (cs) {
+    sunBlock = `
+      <div class="hr"></div>
+      <div class="sec">NUIT AÉRO (locale)</div>
+      <div class="r"><span>Coucher soleil</span><span>${cs}</span></div>
+      <div class="r big"><span>Nuit CS+30</span><span>${nn}</span></div>`;
+  }
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    @page { size: 80mm auto; margin: 0; }
+    * { box-sizing: border-box; }
+    body { width: 80mm; margin: 0; padding: 3mm 3mm 6mm; font-family:'Courier New',monospace; color:#000; font-size:12px; line-height:1.35; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .h1 { text-align:center; font-weight:bold; font-size:15px; letter-spacing:1px; }
+    .ac { text-align:center; font-weight:bold; font-size:17px; margin-top:2px; }
+    .sub { text-align:center; font-size:11px; }
+    .hr { border-top:1px dashed #000; margin:5px 0; }
+    .sec { font-weight:bold; font-size:12px; }
+    .r { display:flex; justify-content:space-between; gap:8px; }
+    .r.big { font-weight:bold; font-size:13px; }
+    .r span:last-child { text-align:right; white-space:nowrap; }
+    .vb { text-align:center; font-weight:bold; font-size:13px; padding:2px 0; margin:3px 0; }
+    .vb.ok  { border:1.5px solid #000; }
+    .vb.bad { background:#000; color:#fff; }
+    .vb.neu { border:1px dashed #000; }
+    .foot { text-align:center; font-size:10px; margin-top:6px; }
+  </style></head><body>
+    <div class="h1">PERFORMANCES</div>
+    <div class="ac">${aircraft}</div>
+    <div class="sub">${dateStr} ${timeStr}</div>
+    ${sections}${fuelBlock}${sunBlock}
+    <div class="hr"></div>
+    <div class="foot">Préparation vol · ne remplace pas le manuel<br>© Hugo DERUELLE</div>
+  </body></html>`;
+}
+
+function printTicket() {
+  const html = buildTicketHTML();
+  let f = document.getElementById('ticketFrame');
+  if (f) f.remove();
+  f = document.createElement('iframe');
+  f.id = 'ticketFrame';
+  f.setAttribute('aria-hidden', 'true');
+  f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0;';
+  document.body.appendChild(f);
+  const doc = f.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+  const go = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { console.error('[ticket]', e); } };
+  if (doc.readyState === 'complete') setTimeout(go, 200);
+  else f.onload = () => setTimeout(go, 200);
+}
+document.getElementById('btnTicket')?.addEventListener('click', () => {
+  if (!depComputed && !arrComputed) return;
+  printTicket();
+});
 
 document.getElementById('btnPrint').addEventListener('click', () => {
   if (!depComputed && !arrComputed) return;
