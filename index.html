@@ -303,6 +303,21 @@ input[type=number]{-moz-appearance:textfield}
 .fuel-kpi-unit{font:600 10px 'Inter';color:var(--text-3);margin-left:2px}
 .fuel-hint{font:500 11px 'Inter';color:var(--amber);display:none;padding-top:2px}
 .fuel-hint.visible{display:block}
+.fuel-save-btn{
+  width:100%;padding:14px;border-radius:var(--radius);
+  background:var(--green);color:#fff;border:1px solid var(--green);
+  font:800 13px 'Inter';letter-spacing:.02em;
+  transition:transform .12s, opacity .15s;
+}
+.fuel-save-btn:active{transform:scale(.98)}
+.fuel-save-btn.saved{background:var(--surface-2);color:var(--green);border-color:var(--green)}
+.fuel-save-btn{
+  width:100%;padding:11px;border-radius:var(--radius-sm);
+  background:var(--green);color:#fff;border:1px solid var(--green);
+  font:800 13px 'Inter';letter-spacing:.02em;transition:opacity .15s;
+}
+.fuel-save-btn:active{transform:scale(.99)}
+.fuel-save-btn.saved{background:var(--surface-2);color:var(--green);border-color:var(--green)}
 /* departure time + NOW */
 .fuel-dep-row{display:flex;gap:8px;align-items:flex-end}
 .fuel-dep-row .field{flex:1}
@@ -1366,8 +1381,8 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 
     <div class="fuel-hd">
       <div class="fuel-hd-left">
-        <span class="fuel-hd-badge">Bilan</span>
-        <span class="fuel-hd-title">Carburant réglementaire</span>
+        <span class="fuel-hd-badge">FUEL</span>
+        <span class="fuel-hd-title">Bilan carburant</span>
       </div>
       <span id="fuelAcChip" class="fuel-hd-chip">—</span>
     </div>
@@ -1533,15 +1548,17 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
       </div>
     </div>
 
+    <button id="fuelSaveBtn" class="fuel-save-btn" onclick="saveFuelToHistory()">✓ Enregistrer le bilan dans l'historique</button>
+
   </div>
 </div>
 
 <!-- ═══ Barre d'action globale ═══ -->
 <div class="action-bar" id="actionBar">
   <div class="ab-badges">
-    <span id="abDep"  class="ab-badge"><span class="ab-lg">Décollage</span><span class="ab-sm">Déc</span></span>
-    <span id="abArr"  class="ab-badge"><span class="ab-lg">Atterrissage</span><span class="ab-sm">Att</span></span>
-    <span id="abFuel" class="ab-badge"><span class="ab-lg">Carburant</span><span class="ab-sm">Fuel</span></span>
+    <span id="abDep"  class="ab-badge"><span class="ab-lg">Décollage</span><span class="ab-sm">T/O</span></span>
+    <span id="abArr"  class="ab-badge"><span class="ab-lg">Atterrissage</span><span class="ab-sm">LDG</span></span>
+    <span id="abFuel" class="ab-badge"><span class="ab-lg">Carburant</span><span class="ab-sm">FUEL</span></span>
   </div>
   <button id="abTicket" class="ab-btn" disabled onclick="printTicket()"><span class="ab-ic">🧾</span><span class="ab-tx">Ticket</span></button>
   <button id="abPdf" class="ab-btn primary" disabled onclick="generatePDF()"><span class="ab-ic">📄</span><span class="ab-tx">PDF</span></button>
@@ -5461,6 +5478,62 @@ const HIST_KEY = 'acbt-calc-history';
 const HIST_MAX = 20;
 
 let _restoring = false;
+
+// Snapshot COMPLET des deux côtés + carburant (réutilisé par les deux sauvegardes)
+function collectFullSnapshot() {
+  const gv = id => document.getElementById(id)?.value ?? '';
+  const snap = { aircraftSel: gv('aircraftSel') || '—', safety: gv('safety') || '30' };
+  ['depIcao','depQfu','depToda','depAlt','depOat','depTow','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo',
+   'arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrLdw','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo',
+   'fuelConso','fuelCap','fuelUnusable','fuelStartup','fuelCruiseH','fuelCruiseM','fuelBackH','fuelBackM',
+   'fuelAlt','fuelExtra','fuelReserve','fuelDepTime'
+  ].forEach(id => { const v = gv(id); if (v !== '') snap[id] = v; });
+  snap._roundtrip   = !!document.getElementById('fuelRoundtrip')?.checked;
+  snap._depSurface  = (typeof depSurface  !== 'undefined') ? depSurface  : undefined;
+  snap._landingMode = (typeof landingMode !== 'undefined') ? landingMode : undefined;
+  return snap;
+}
+function historyFlags() {
+  return { dep: !!depComputed, arr: !!arrComputed, fuel: (typeof fuelReady === 'function' && fuelReady()) };
+}
+function pushHistory(entry) {
+  try {
+    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    hist.unshift(entry);
+    if (hist.length > HIST_MAX) hist.splice(HIST_MAX);
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+    updateHistoryBadge(hist.length);
+  } catch(e) { console.warn('Historique:', e); }
+}
+
+// Enregistrer le bilan carburant (bouton onglet Carburant)
+function saveFuelToHistory() {
+  if (typeof computeFuel === 'function') { fuelTouched = true; computeFuel(); }
+  const f = (typeof fuelCompute === 'function') ? fuelCompute() : null;
+  const btn = document.getElementById('fuelSaveBtn');
+  if (!f || !(f.totL > 0)) {
+    if (btn) { const o = btn.textContent; btn.textContent = 'Renseignez d\'abord les temps de vol'; setTimeout(() => btn.textContent = o, 1600); }
+    return;
+  }
+  const entry = {
+    id: Date.now(), ts: new Date().toISOString(),
+    kind: 'fuel', side: 'fuel',
+    ac: document.getElementById('aircraftSel')?.value || '—',
+    fuelReqL:    f.totL.toFixed(1),
+    fuelUsable:  f.usable,
+    fuelRemain:  f.remaining.toFixed(1),
+    fuelVerdict: f.ok ? 'ok' : 'bad',
+    fuelMaxLdg:  f.maxLdg,
+    fuelStop:    f.engineStop,
+    flags: historyFlags(),
+    depMetar: document.getElementById('depMetarMsg')?.textContent?.trim() || '',
+    arrMetar: document.getElementById('arrMetarMsg')?.textContent?.trim() || '',
+    snap: collectFullSnapshot()
+  };
+  pushHistory(entry);
+  if (btn) { btn.classList.add('saved'); btn.textContent = '✓ Enregistré dans l\'historique'; setTimeout(() => { btn.classList.remove('saved'); btn.textContent = '✓ Enregistrer le bilan dans l\'historique'; }, 2000); }
+}
+
 function saveToHistory(side) {
   if (_restoring) return;   // pas de doublon pendant une restauration
   const gv = id => document.getElementById(id)?.value ?? '';
@@ -5490,17 +5563,6 @@ function saveToHistory(side) {
   const depMetarTxt = document.getElementById('depMetarMsg')?.textContent?.trim() || '';
   const arrMetarTxt = document.getElementById('arrMetarMsg')?.textContent?.trim() || '';
 
-  // ── Snapshot COMPLET : les deux côtés + carburant ──
-  const snap = { aircraftSel: ac, safety: marge };
-  ['depIcao','depQfu','depToda','depAlt','depOat','depTow','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo',
-   'arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrLdw','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo',
-   'fuelConso','fuelCap','fuelUnusable','fuelStartup','fuelCruiseH','fuelCruiseM','fuelBackH','fuelBackM',
-   'fuelAlt','fuelExtra','fuelReserve','fuelDepTime'
-  ].forEach(id => { const v = gv(id); if (v !== '') snap[id] = v; });
-  snap._roundtrip = !!document.getElementById('fuelRoundtrip')?.checked;
-  snap._depSurface  = depSurface;
-  snap._landingMode = landingMode;
-
   const entry = {
     id: Date.now(),
     ts: new Date().toISOString(),
@@ -5513,18 +5575,10 @@ function saveToHistory(side) {
     avail: availEl?.textContent || '—',
     depMetar: depMetarTxt,
     arrMetar: arrMetarTxt,
-    flags: { dep: !!depComputed, arr: !!arrComputed, fuel: (typeof fuelReady === 'function' && fuelReady()) },
-    snap
+    flags: historyFlags(),
+    snap: collectFullSnapshot()
   };
-
-  try {
-    const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
-    hist.unshift(entry);
-    if (hist.length > HIST_MAX) hist.splice(HIST_MAX);
-    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
-    // Mettre à jour le badge
-    updateHistoryBadge(hist.length);
-  } catch(e) { console.warn('Historique:', e); }
+  pushHistory(entry);
 }
 
 function updateHistoryBadge(n) {
@@ -5559,6 +5613,27 @@ function openHistory() {
       const dt  = new Date(e.ts);
       const pad2= n => String(n).padStart(2,'0');
       const dateStr = pad2(dt.getDate())+'/'+pad2(dt.getMonth()+1)+'/'+dt.getFullYear()+' '+pad2(dt.getHours())+':'+pad2(dt.getMinutes());
+
+      // Entrée carburant
+      if (e.kind === 'fuel') {
+        const vch = e.fuelVerdict === 'ok' ? 'dep' : 'bad';
+        const vtx = e.fuelVerdict === 'ok' ? '✓ Suffisant' : '✗ Insuffisant';
+        return `<div class="hist-card" onclick="restoreFromHistory(${i})" title="Cliquer pour rappeler ce bilan">
+          <div class="hist-card-top">
+            <div class="hist-card-ac">${e.ac} <span style="font-weight:400;color:var(--text-3)">Bilan carburant</span></div>
+            <div class="hist-card-date">${dateStr}</div>
+          </div>
+          <div class="hist-card-rows">
+            <span class="hist-chip" style="background:linear-gradient(135deg,#7c2d12,#d97706);color:#fff">FUEL</span>
+            <span class="hist-chip ${vch}">${vtx}</span>
+            <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.fuelReqL} L requis</span>
+            <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.fuelUsable} L util.</span>
+          </div>
+          <div class="hist-meta">${e.fuelVerdict==='ok'?'Reste':'Manque'} ${Math.abs(e.fuelRemain)} L${e.fuelMaxLdg&&e.fuelMaxLdg!=='—:—'?' · Atterro max '+e.fuelMaxLdg+' · Arrêt moteur '+e.fuelStop:''}</div>
+          ${e.flags ? `<div class="hist-meta" style="margin-top:3px;font-weight:700;letter-spacing:.03em">${[e.flags.dep?'T/O ✓':null,e.flags.arr?'LDG ✓':null,e.flags.fuel?'FUEL ✓':null].filter(Boolean).join(' · ')}</div>` : ''}
+        </div>`;
+      }
+
       const sideLabel = e.side === 'dep' ? 'Décollage' : 'Atterrissage';
       const verdict = e.verdict === 'ok' ? '✓ Possible' : e.verdict === 'bad' ? '✗ Insuffisant' : '—';
       const chipCls = e.verdict === 'ok' ? 'dep' : e.verdict === 'bad' ? 'bad' : '';
@@ -5578,7 +5653,7 @@ function openHistory() {
           <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.oat}°C / ${e.alt}ft</span>
         </div>
         <div class="hist-meta">Requis (marge ${e.marge}%) : ${e.requis} · ${e.side==='dep'?'TODA':'LDA'} dispo : ${e.avail}</div>
-        ${e.flags ? `<div class="hist-meta" style="margin-top:3px;font-weight:700;letter-spacing:.03em">${[e.flags.dep?'DÉC ✓':null,e.flags.arr?'ATT ✓':null,e.flags.fuel?'FUEL ✓':null].filter(Boolean).join(' · ')}</div>` : ''}
+        ${e.flags ? `<div class="hist-meta" style="margin-top:3px;font-weight:700;letter-spacing:.03em">${[e.flags.dep?'T/O ✓':null,e.flags.arr?'LDG ✓':null,e.flags.fuel?'FUEL ✓':null].filter(Boolean).join(' · ')}</div>` : ''}
         ${(e.side==='dep'&&e.depMetar)||(e.side==='arr'&&e.arrMetar) ? `<div class="hist-meta" style="margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7">${e.side==='dep'?e.depMetar:e.arrMetar}</div>` : ''}
       </div>`;
     }).join('');
