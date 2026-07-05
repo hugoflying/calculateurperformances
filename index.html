@@ -352,6 +352,32 @@ input[type=number]{-moz-appearance:textfield}
 .sun-val{font:800 18px 'JetBrains Mono',monospace;color:var(--text)}
 .sun-item.is-night .sun-val{color:var(--amber)}
 .sun-note{font:500 10px 'Inter';color:var(--text-3);margin-top:6px}
+/* ═══ Barre d'action globale (état + impression) ═══ */
+.action-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:90;
+  background:var(--surface);border-top:1px solid var(--border-strong);
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));
+  display:flex;align-items:center;gap:10px;
+}
+/* réserve l'espace de la barre pour que la doc et le footer ne passent pas dessous */
+body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+.ab-badges{display:flex;gap:6px;flex:1;min-width:0}
+.ab-badge{
+  font:700 10px 'Inter';letter-spacing:.04em;text-transform:uppercase;
+  padding:5px 9px;border-radius:14px;white-space:nowrap;
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-3);
+}
+.ab-badge.is-on{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.ab-btn{
+  flex-shrink:0;padding:10px 14px;border-radius:10px;
+  font:800 12px 'Inter';letter-spacing:.02em;
+  border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);
+  transition:opacity .15s;
+}
+.ab-btn:disabled{opacity:.4}
+.ab-btn.primary{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff}
+.ab-btn:active:not(:disabled){transform:scale(.97)}
 .wx-alt-btn{
   display:none;width:100%;margin-top:8px;padding:9px 10px;border-radius:var(--radius-sm);
   background:var(--amber);color:#1a2332;border:1px solid var(--amber);
@@ -1478,6 +1504,17 @@ input[type=number]{-moz-appearance:textfield}
   </div>
 </div>
 
+<!-- ═══ Barre d'action globale ═══ -->
+<div class="action-bar" id="actionBar">
+  <div class="ab-badges">
+    <span id="abDep"  class="ab-badge">Décollage</span>
+    <span id="abArr"  class="ab-badge">Atterrissage</span>
+    <span id="abFuel" class="ab-badge">Carburant</span>
+  </div>
+  <button id="abTicket" class="ab-btn" disabled onclick="printTicket()">🧾 Ticket</button>
+  <button id="abPdf" class="ab-btn primary" disabled onclick="generatePDF()">📄 PDF</button>
+</div>
+
 <div class="readme-wrap">
   <div class="readme-toggle" onclick="toggleReadme()">
     <span class="readme-toggle-lbl">📖 Documentation</span>
@@ -1920,6 +1957,7 @@ function computeFuel() {
     elLdg.textContent  = tag(ldg);
     note.textContent = 'Heure locale · sur ' + usable + ' L utilisables à ' + conso + ' L/h. À poser avant l\'heure rouge.';
   }
+  if (typeof updateActionBar === 'function') updateActionBar();
 }
 
 /* ─── Disclaimer ─── */
@@ -2194,6 +2232,27 @@ let lastMetarVsTafResult = null; // 'metar' | 'taf' | null
 let depComputed = false;
 let arrComputed = false;
 
+function fuelReady() {
+  try {
+    if (typeof fuelTouched === 'undefined' || !fuelTouched) return false;
+    const f = fuelCompute();
+    return f.conso > 0 && f.totL > 0;
+  } catch { return false; }
+}
+
+function updateActionBar() {
+  const set = (id, on) => { const el = document.getElementById(id); if (el) el.classList.toggle('is-on', !!on); };
+  const fu = fuelReady();
+  set('abDep', depComputed);
+  set('abArr', arrComputed);
+  set('abFuel', fu);
+  const any = depComputed || arrComputed || fu;
+  const bt = document.getElementById('abTicket');
+  const bp = document.getElementById('abPdf');
+  if (bt) bt.disabled = !any;
+  if (bp) bp.disabled = !any;
+}
+
 function updatePdfBtn() {
   const btn = document.getElementById('btnPrint');
   const done = depComputed || arrComputed;
@@ -2209,6 +2268,7 @@ function updatePdfBtn() {
   btn.disabled = !done;
   const tbtn = document.getElementById('btnTicket');
   if (tbtn) { tbtn.disabled = !done; tbtn.style.opacity = done ? '1' : '.45'; }
+  updateActionBar();
 }
 let depAssumeTA = false; // assumption 5kt arrière départ
 let arrAssumeTA = false; // assumption 5kt arrière arrivée
@@ -5237,7 +5297,7 @@ function printTicket() {
   setTimeout(go, 1200);
 }
 document.getElementById('btnTicket')?.addEventListener('click', () => {
-  if (!depComputed && !arrComputed) return;
+  if (!depComputed && !arrComputed && !fuelReady()) return;
   printTicket();
 });
 
@@ -5368,19 +5428,22 @@ function interpAT01(side, altFt, oat, massKg, surface, headKt, tailKt, obsFt) {
 const HIST_KEY = 'acbt-calc-history';
 const HIST_MAX = 20;
 
+let _restoring = false;
 function saveToHistory(side) {
-  const ac   = document.getElementById('aircraftSel')?.value || '—';
-  const icao = document.getElementById(side+'Icao')?.value?.toUpperCase() || '—';
+  if (_restoring) return;   // pas de doublon pendant une restauration
+  const gv = id => document.getElementById(id)?.value ?? '';
+  const ac   = gv('aircraftSel') || '—';
+  const icao = (gv(side+'Icao') || '—').toUpperCase();
   const name = document.getElementById(side+'AirportName')?.textContent || '';
-  const qfu  = document.getElementById(side+'Qfu')?.value || '—';
-  const dist = document.getElementById(side === 'dep' ? 'depToda' : 'arrLda')?.value || '—';
-  const mass = document.getElementById(side === 'dep' ? 'depTow' : 'arrLdw')?.value || '—';
-  const oat  = document.getElementById(side+'Oat')?.value || '—';
-  const alt  = document.getElementById(side+'Alt')?.value || '—';
-  const wdir = document.getElementById(side+'WindDir')?.value || '—';
-  const wkt  = document.getElementById(side+'WindKt')?.value || '—';
-  const wgust= document.getElementById(side+'WindGust')?.value || '';
-  const marge= document.getElementById('safety')?.value || '30';
+  const qfu  = gv(side+'Qfu') || '—';
+  const dist = gv(side === 'dep' ? 'depToda' : 'arrLda') || '—';
+  const mass = gv(side === 'dep' ? 'depTow' : 'arrLdw') || '—';
+  const oat  = gv(side+'Oat') || '—';
+  const alt  = gv(side+'Alt') || '—';
+  const wdir = gv(side+'WindDir') || '—';
+  const wkt  = gv(side+'WindKt') || '—';
+  const wgust= gv(side+'WindGust') || '';
+  const marge= gv('safety') || '30';
   const surf = side === 'dep' ? depSurface : landingMode;
 
   const chip = document.getElementById(side === 'dep' ? 'toChip' : 'ldgChip');
@@ -5395,6 +5458,17 @@ function saveToHistory(side) {
   const depMetarTxt = document.getElementById('depMetarMsg')?.textContent?.trim() || '';
   const arrMetarTxt = document.getElementById('arrMetarMsg')?.textContent?.trim() || '';
 
+  // ── Snapshot COMPLET : les deux côtés + carburant ──
+  const snap = { aircraftSel: ac, safety: marge };
+  ['depIcao','depQfu','depToda','depAlt','depOat','depTow','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo',
+   'arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrLdw','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo',
+   'fuelConso','fuelCap','fuelUnusable','fuelStartup','fuelCruiseH','fuelCruiseM','fuelBackH','fuelBackM',
+   'fuelAlt','fuelExtra','fuelReserve','fuelDepTime'
+  ].forEach(id => { const v = gv(id); if (v !== '') snap[id] = v; });
+  snap._roundtrip = !!document.getElementById('fuelRoundtrip')?.checked;
+  snap._depSurface  = depSurface;
+  snap._landingMode = landingMode;
+
   const entry = {
     id: Date.now(),
     ts: new Date().toISOString(),
@@ -5407,26 +5481,8 @@ function saveToHistory(side) {
     avail: availEl?.textContent || '—',
     depMetar: depMetarTxt,
     arrMetar: arrMetarTxt,
-    snap: {
-      aircraftSel: ac,
-      depTow: side==='dep' ? mass : undefined,
-      arrLdw: side==='arr' ? mass : undefined,
-      depQfu: side==='dep' ? qfu : undefined,
-      arrQfu: side==='arr' ? qfu : undefined,
-      depToda: side==='dep' ? dist : undefined,
-      arrLda:  side==='arr' ? dist : undefined,
-      depAlt:  side==='dep' ? alt : undefined,
-      arrAlt:  side==='arr' ? alt : undefined,
-      depOat:  side==='dep' ? oat : undefined,
-      arrOat:  side==='arr' ? oat : undefined,
-      depWindDir: side==='dep' ? wdir : undefined,
-      arrWindDir: side==='arr' ? wdir : undefined,
-      depWindKt:  side==='dep' ? wkt : undefined,
-      arrWindKt:  side==='arr' ? wkt : undefined,
-      depIcao: side==='dep' ? icao : undefined,
-      arrIcao: side==='arr' ? icao : undefined,
-      safety: marge,
-    }
+    flags: { dep: !!depComputed, arr: !!arrComputed, fuel: (typeof fuelReady === 'function' && fuelReady()) },
+    snap
   };
 
   try {
@@ -5490,6 +5546,7 @@ function openHistory() {
           <span class="hist-chip" style="background:var(--surface-2,#f1f5f9);color:var(--text-2,#374151)">${e.oat}°C / ${e.alt}ft</span>
         </div>
         <div class="hist-meta">Requis (marge ${e.marge}%) : ${e.requis} · ${e.side==='dep'?'TODA':'LDA'} dispo : ${e.avail}</div>
+        ${e.flags ? `<div class="hist-meta" style="margin-top:3px;font-weight:700;letter-spacing:.03em">${[e.flags.dep?'DÉC ✓':null,e.flags.arr?'ATT ✓':null,e.flags.fuel?'FUEL ✓':null].filter(Boolean).join(' · ')}</div>` : ''}
         ${(e.side==='dep'&&e.depMetar)||(e.side==='arr'&&e.arrMetar) ? `<div class="hist-meta" style="margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7">${e.side==='dep'?e.depMetar:e.arrMetar}</div>` : ''}
       </div>`;
     }).join('');
@@ -5519,9 +5576,11 @@ function restoreFromHistory(idx) {
       document.getElementById('depTow').value = '';
       document.getElementById('arrLdw').value  = '';
       applyAircraftData(snap.aircraftSel);
+      const fSel = document.getElementById('fuelAircraftSel');
+      if (fSel) fSel.value = snap.aircraftSel;
     }
 
-    // Restaurer les champs
+    // Restaurer tous les champs
     const setVal = (id, val) => {
       if (val !== undefined && val !== null) {
         const el = document.getElementById(id);
@@ -5529,8 +5588,23 @@ function restoreFromHistory(idx) {
       }
     };
     Object.entries(snap).forEach(([id, val]) => {
-      if (id !== 'aircraftSel') setVal(id, val);
+      if (id !== 'aircraftSel' && !id.startsWith('_')) setVal(id, val);
     });
+
+    // Surfaces / mode de freinage
+    if (snap._depSurface  !== undefined && typeof depSurface  !== 'undefined') depSurface  = snap._depSurface;
+    if (snap._landingMode !== undefined && typeof landingMode !== 'undefined') landingMode = snap._landingMode;
+
+    // Carburant : interrupteur retour + recalcul
+    const rt = document.getElementById('fuelRoundtrip');
+    if (rt) {
+      rt.checked = !!snap._roundtrip;
+      document.getElementById('fuelBackWrap')?.classList.toggle('open', rt.checked);
+      document.getElementById('fuelRetourRow')?.classList.toggle('is-on', rt.checked);
+    }
+    if (e.flags?.fuel) { fuelTouched = true; }
+    if (typeof syncFuelPreset === 'function') syncFuelPreset();
+    if (typeof computeFuel === 'function') computeFuel();
 
     // Restaurer les METAR affichés
     const setMetarDisplay = (side2, txt) => {
@@ -5541,11 +5615,19 @@ function restoreFromHistory(idx) {
     setMetarDisplay('dep', e.depMetar);
     setMetarDisplay('arr', e.arrMetar);
 
-    // Switcher sur le bon onglet mobile
-    if (window.innerWidth < 900) switchTab(side);
-
     updateWindDisplay('dep');
     updateWindDisplay('arr');
+
+    // ── Relancer automatiquement les calculs qui étaient faits ──
+    const flags = e.flags || { dep: side === 'dep', arr: side === 'arr' };
+    _restoring = true;
+    try { if (flags.dep && document.getElementById('depTow').value)  computeDepPerf(); } catch (err) { console.warn('recalc dep:', err); }
+    try { if (flags.arr && document.getElementById('arrLdw').value)  computeArrPerf(); } catch (err) { console.warn('recalc arr:', err); }
+    setTimeout(() => { _restoring = false; }, 300);
+    updatePdfBtn();
+
+    // Switcher sur le bon onglet mobile
+    if (window.innerWidth < 900) switchTab(side);
     closeHistory();
 
     // Scroller vers la section
