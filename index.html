@@ -5186,20 +5186,18 @@ function buildTicketHTML() {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
     @page { size: 80mm auto; margin: 0; }
     * { box-sizing: border-box; }
-    body { width: 80mm; margin: 0; padding: 3mm 3mm 6mm; font-family:'Courier New',monospace; color:#000; font-size:12px; line-height:1.35; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    .h1 { text-align:center; font-weight:bold; font-size:15px; letter-spacing:1px; }
-    .ac { text-align:center; font-weight:bold; font-size:17px; margin-top:2px; }
-    .sub { text-align:center; font-size:11px; }
-    .hr { border-top:1px dashed #000; margin:5px 0; }
-    .sec { font-weight:bold; font-size:12px; }
-    .r { display:flex; justify-content:space-between; gap:8px; }
-    .r.big { font-weight:bold; font-size:13px; }
-    .r span:last-child { text-align:right; white-space:nowrap; }
-    .vb { text-align:center; font-weight:bold; font-size:13px; padding:2px 0; margin:3px 0; }
-    .vb.ok  { border:1.5px solid #000; }
+    body { width: 80mm; margin: 0; padding: 4mm 4mm 8mm; font-family:Arial,Helvetica,sans-serif; color:#000; font-size:13px; line-height:1.45; font-weight:600; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .h1 { text-align:center; font-weight:800; font-size:18px; letter-spacing:1px; }
+    .ac { text-align:center; font-weight:800; font-size:21px; margin-top:3px; }
+    .sub { text-align:center; font-size:12px; font-weight:600; }
+    .hr { border-top:2px solid #000; margin:6px 0; }
+    .sec { font-weight:800; font-size:14px; text-transform:uppercase; }
+    .r { display:flex; justify-content:space-between; gap:8px; font-size:13px; margin:1px 0; }
+    .r.big { font-weight:800; font-size:16px; }
+    .r span:last-child { text-align:right; white-space:nowrap; font-weight:800; }
+    .vb { text-align:center; font-weight:800; font-size:16px; padding:4px 0; margin:4px 0; border:2px solid #000; }
     .vb.bad { background:#000; color:#fff; }
-    .vb.neu { border:1px dashed #000; }
-    .foot { text-align:center; font-size:10px; margin-top:6px; }
+    .foot { text-align:center; font-size:11px; font-weight:600; margin-top:8px; }
   </style></head><body>
     <div class="h1">PERFORMANCES</div>
     <div class="ac">${aircraft}</div>
@@ -5217,13 +5215,26 @@ function printTicket() {
   f = document.createElement('iframe');
   f.id = 'ticketFrame';
   f.setAttribute('aria-hidden', 'true');
-  f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0;';
+  // hors écran mais à taille réelle pour un vrai rendu (sinon impression trop rapide / vide)
+  f.style.cssText = 'position:fixed;left:-10000px;top:0;width:80mm;height:1400px;border:0;background:#fff;';
   document.body.appendChild(f);
   const doc = f.contentWindow.document;
   doc.open(); doc.write(html); doc.close();
-  const go = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { console.error('[ticket]', e); } };
-  if (doc.readyState === 'complete') setTimeout(go, 200);
-  else f.onload = () => setTimeout(go, 200);
+
+  let printed = false;
+  const go = () => {
+    if (printed) return; printed = true;
+    try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { console.error('[ticket]', e); }
+  };
+  // attendre le chargement des polices + le rendu avant d'imprimer
+  const win = f.contentWindow;
+  const waitFonts = win.document.fonts && win.document.fonts.ready
+    ? win.document.fonts.ready : Promise.resolve();
+  waitFonts.then(() => {
+    win.requestAnimationFrame(() => win.requestAnimationFrame(() => setTimeout(go, 450)));
+  });
+  // filet de sécurité
+  setTimeout(go, 1200);
 }
 document.getElementById('btnTicket')?.addEventListener('click', () => {
   if (!depComputed && !arrComputed) return;
