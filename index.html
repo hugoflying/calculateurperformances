@@ -599,6 +599,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 .toggle-label{font:600 11px 'Inter';text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
 .regwind-note{font:600 10.5px 'Inter';color:var(--text-2);line-height:1.35;margin-top:1px;display:flex;align-items:flex-start;gap:5px}
 .regwind-note::before{content:'ℹ';color:var(--blue-mid);font-weight:700;flex-shrink:0}
+.approx-note{font:600 10.5px 'Inter';color:var(--amber);line-height:1.35;margin-top:6px}
 
 /* Bouton 5kt assume */
 .tw-assume-wrap{display:none}
@@ -841,24 +842,24 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   [data-theme="dark"] * { background-color: inherit; color: inherit; }
   body > *:not(#printView){display:none!important}
   #printView{display:block!important;font-family:'Inter',sans-serif;color:#000;padding:0;margin:0}
-  .pv-page{padding:0;min-height:297mm;position:relative}
+  .pv-page{padding:0;position:relative}
   .pv-header{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:10mm 14mm;display:flex;justify-content:space-between;align-items:center;margin-bottom:0}
   .pv-header-title{font:700 16pt 'Inter'}
   .pv-header-sub{font:400 8pt 'Inter';opacity:.7;margin-top:2mm}
   .pv-header-right{text-align:right}
-  .pv-warn{background:#fff7ed;border-top:2pt solid #f97316;border-bottom:2pt solid #f97316;padding:4mm 14mm;font:600 7.5pt 'Inter';color:#c2410c;margin-bottom:6mm}
-  .pv-params{display:flex;gap:4mm;background:#f8fafc;border:1pt solid #e2e8f0;padding:4mm 14mm;margin-bottom:6mm}
+  .pv-warn{background:#fff7ed;border-top:2pt solid #f97316;border-bottom:2pt solid #f97316;padding:2.5mm 14mm;font:600 7.5pt 'Inter';color:#c2410c;margin-bottom:3mm}
+  .pv-params{display:flex;gap:4mm;background:#f8fafc;border:1pt solid #e2e8f0;padding:2.5mm 14mm;margin-bottom:3mm}
   .pv-param{flex:1;border-right:1pt solid #e2e8f0;padding-right:4mm}
   .pv-param:last-child{border-right:none}
   .pv-param-label{font:400 6pt 'Inter';text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;margin-bottom:1mm}
   .pv-param-value{font:700 8pt 'JetBrains Mono',monospace;color:#1a2332}
   .pv-cols{display:flex;gap:6mm;padding:0 14mm}
   .pv-col{flex:1}
-  .pv-col-head{padding:5mm 6mm;color:#fff;font:700 11pt 'Inter';border-radius:2mm 2mm 0 0}
+  .pv-col-head{padding:3mm 6mm;color:#fff;font:700 11pt 'Inter';border-radius:2mm 2mm 0 0}
   .pv-col-head.dep{background:#1e3a5f}
   .pv-col-head.arr{background:#047857}
   .pv-col-icao{font:400 7pt 'Inter';opacity:.7;margin-top:1mm}
-  .pv-verdict{padding:5mm;border:1.5pt solid;border-radius:2mm;margin-bottom:4mm;text-align:center}
+  .pv-verdict{padding:3mm;border:1.5pt solid;border-radius:2mm;margin-bottom:2.5mm;text-align:center}
   .pv-verdict.ok{border-color:#a7f3d0;background:#ecfdf5}
   .pv-verdict.bad{border-color:#fca5a5;background:#fef2f2}
   .pv-verdict.neu{border-color:#e2e8f0;background:#f8fafc}
@@ -867,13 +868,13 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   .pv-verdict.bad .pv-verdict-label{color:#dc2626}
   .pv-verdict.neu .pv-verdict-label{color:#94a3b8}
   .pv-verdict-dist{font:400 8pt 'Inter';color:#64748b;margin-top:2mm}
-  .pv-section-head{font:700 6.5pt 'Inter';text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:2mm 4mm;background:#f1f5f9;border-bottom:1pt solid #e2e8f0;margin-top:3mm;border-radius:1.5mm 1.5mm 0 0}
-  .pv-row{display:flex;justify-content:space-between;padding:2mm 4mm;border-bottom:.5pt solid #e2e8f0;font:400 7.5pt 'Inter'}
+  .pv-section-head{font:700 6.5pt 'Inter';text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:1.4mm 4mm;background:#f1f5f9;border-bottom:1pt solid #e2e8f0;margin-top:2mm;border-radius:1.5mm 1.5mm 0 0}
+  .pv-row{display:flex;justify-content:space-between;padding:1.3mm 4mm;border-bottom:.5pt solid #e2e8f0;font:400 7.5pt 'Inter'}
   .pv-row:last-child{border-bottom:none;font-weight:600}
   .pv-row-val{font:700 7.5pt 'JetBrains Mono',monospace;color:#1e3a5f}
   .pv-arr .pv-row-val{color:#047857}
-  .pv-metar{font:400 6.5pt 'JetBrains Mono',monospace;padding:3mm 4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:1.5mm;white-space:pre-wrap;word-break:break-all;margin-top:2mm;color:#475569}
-  .pv-footer{position:fixed;bottom:10mm;left:14mm;right:14mm;display:flex;justify-content:space-between;font:400 6pt 'Inter';color:#94a3b8;border-top:1pt solid #e2e8f0;padding-top:2mm}
+  .pv-metar{font:400 6.5pt 'JetBrains Mono',monospace;padding:2mm 4mm;background:#f8fafc;border:1pt solid #e2e8f0;border-radius:1.5mm;white-space:pre-wrap;word-break:break-all;margin-top:2mm;color:#475569}
+  .pv-footer{position:fixed;bottom:6mm;left:14mm;right:14mm;display:flex;justify-content:space-between;font:400 6pt 'Inter';color:#94a3b8;border-top:1pt solid #e2e8f0;padding-top:2mm}
 }
 
 .hist-card { background:var(--surface-2,#f8fafc); border:1px solid var(--border,#e2e8f0); border-radius:8px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:box-shadow .15s; }
@@ -1079,11 +1080,10 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
             <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
             <option value="F-GTPE" style="color:#1a2332;background:#fff">F-GTPE — DR400 160cv</option>
-            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B ⚠ abaque</option>
+            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B</option>
             <option value="F-HATX" style="color:#1a2332;background:#fff">F-HATX — Aquila AT01</option>
           </select>
         </div>
-        <div id="depApproxNote" class="regwind-note" style="display:none;color:var(--amber);margin-top:6px">⚠ Perfos lues sur abaque (DR400/140B) — valeurs approximatives, à vérifier au manuel.</div>
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="depTow" class="field-input" type="number"/><span id="depTowWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><input id="safety" class="field-input" type="number" value="30" min="0"/></div>
@@ -1280,11 +1280,10 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
             <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
             <option value="F-GTPE" style="color:#1a2332;background:#fff">F-GTPE — DR400 160cv</option>
-            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B ⚠ abaque</option>
+            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B</option>
             <option value="F-HATX" style="color:#1a2332;background:#fff">F-HATX — Aquila AT01</option>
           </select>
         </div>
-        <div id="arrApproxNote" class="regwind-note" style="display:none;color:var(--amber);margin-top:6px">⚠ Perfos lues sur abaque (DR400/140B) — valeurs approximatives, à vérifier au manuel.</div>
         <div class="row-2">
           <div class="field"><label class="field-label">Masse (kg)</label><input id="arrLdw" class="field-input" type="number"/><span id="arrLdwWarn" class="field-warn">⚠ Hors plage</span></div>
           <div class="field"><label class="field-label">Marge (%)</label><div class="field-input" style="display:flex;align-items:center;color:var(--text);font:700 15px 'JetBrains Mono',monospace" id="arrMargeDisplay">30 %</div></div>
@@ -1411,7 +1410,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <option value="F-BTXS" style="color:#1a2332;background:#fff">F-BTXS — DR300 120cv</option>
             <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
             <option value="F-GTPE" style="color:#1a2332;background:#fff">F-GTPE — DR400 160cv</option>
-            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B ⚠</option>
+            <option value="F-GYLC" style="color:#1a2332;background:#fff">F-GYLC — DR400/140B</option>
             <option value="F-HATX" style="color:#1a2332;background:#fff">F-HATX — Aquila AT01</option>
             <option value="AUTRE" style="color:#1a2332;background:#fff">Autre avion</option>
           </select>
@@ -1437,7 +1436,6 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <input id="fuelUnusable" class="field-input" type="number" value="" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
         </div>
-        <div id="fuelHint" class="fuel-hint">⚠ Valeurs approximatives pour cet avion — vérifiez conso, emport et inutilisable.</div>
         <div class="fuel-kpis">
           <div class="fuel-kpi"><div class="fuel-kpi-lbl">Utilisable</div><div class="fuel-kpi-val"><span id="fuelUsable">100</span><span class="fuel-kpi-unit">L</span></div></div>
           <div class="fuel-kpi"><div class="fuel-kpi-lbl">Autonomie</div><div class="fuel-kpi-val" id="fuelEndurance">4h00</div></div>
@@ -1617,9 +1615,9 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
       <ul>
         <li><strong>Composantes</strong> face/arrière/travers calculées depuis QFU et direction vent. Alerte à ~82 % de la limite travers ; calcul <strong>bloqué</strong> au-delà (22 kt DR400/DR300, 15 kt AT01).</li>
         <li><strong>Rafale</strong> : détectée dans le METAR (ex. 24015G28KT) ou saisissable à la main. C'est toujours le <strong>max entre vent moyen et rafale</strong> qui est retenu.</li>
-        <li><strong>Effet sur la distance</strong> : vent de face la réduit (×0,78 à 10 kt, ×0,52 à 30 kt) ; vent arrière l'augmente (+10 % par tranche de 2 kt).</li>
+        <li><strong>Effet sur la distance</strong> : vent de face la réduit, vent arrière l'augmente (+10 % par tranche de 2 kt). Les coefficients de vent de face dépendent de l'avion (ex. DR400/140B : ×0,79 à 10 kt, ×0,64 à 20 kt, ×0,53 à 30 kt).</li>
         <li><strong>VRB avec secteur</strong> (ex. 350V060) : la composante la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : traité en vent arrière pur (hypothèse conservative).</li>
-        <li><strong>Option 50/150 %</strong> (Paramètres) : face créditée à 50 %, arrière majoré à 150 % — norme des opérations commerciales.</li>
+        <li><strong>Option 100 % réel / 50 · 150 %</strong> : une ligne sous le sélecteur rappelle le mode actif — « 100 % du vent réel pris en compte » ou « vent de face crédité à 50 %, vent arrière majoré à 150 % » (norme des opérations commerciales).</li>
       </ul>
     </div>
 
@@ -1646,18 +1644,31 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 
     <div class="readme-section">
       <h3>Onglet Carburant — bilan réglementaire</h3>
-      <p>Préréglé <strong>DR400-120 / DR300</strong> : 25 L/h · 110 L · 10 L inutilisables (⚠ vérifiez pour F-GTPE et F-HATX). <strong>Emport</strong> = carburant réellement à bord ; <strong>utilisable = emport − inutilisable</strong>.</p>
+      <p><strong>Choisissez l'avion</strong> dans la liste : sa conso, son emport et son carburant inutilisable se chargent automatiquement (valeurs propres à chaque appareil). Sélectionnez <strong>« Autre avion »</strong> pour saisir vous-même ces trois valeurs — les champs restent alors vides.</p>
+      <p>Par défaut, <strong>tous les champs sont vides</strong> ; seule la <strong>réserve finale (30 min)</strong> est préremplie. <strong>Emport</strong> = carburant réellement à bord ; <strong>utilisable = emport − inutilisable</strong>.</p>
       <p>Postes du bilan, chacun converti en litres à la conso indiquée :</p>
       <ul>
-        <li><strong>Mise en route</strong> (forfait 15 min) : démarrage, essai moteur, roulage.</li>
+        <li><strong>Mise en route</strong> : démarrage, essai moteur, roulage (aucun forfait par défaut).</li>
         <li><strong>Trip fuel aller</strong> : temps de croisière jusqu'à destination, intégration comprise.</li>
-        <li><strong>Retour sans avitaillement</strong> : à activer si pas d'essence à destination — ajoute le trip fuel retour.</li>
-        <li><strong>Dégagement</strong> : minutes vers votre terrain de déroutement.</li>
-        <li><strong>Extra</strong> (défaut 0) : marge pilote optionnelle.</li>
-        <li><strong>Réserve finale</strong> : 45 min imposées par le club.</li>
+        <li><strong>Retour sans avitaillement</strong> : à activer si pas d'essence à destination — ajoute le trip fuel retour (recopié de l'aller uniquement si l'aller est renseigné).</li>
+        <li><strong>Dégagement</strong> : minutes vers votre terrain de déroutement (aucun forfait par défaut).</li>
+        <li><strong>Extra</strong> : marge pilote optionnelle.</li>
+        <li><strong>Réserve finale</strong> : 30 min préremplis, ajustables.</li>
       </ul>
       <p>Le <strong>verdict</strong> compare le total requis à l'utilisable : vert = vol réalisable avec la marge restante affichée (litres et minutes) ; rouge = il manque X litres.</p>
       <p><strong>Horaires limites</strong> (heure locale) : saisissez l'heure de mise en route ou touchez <strong>NOW</strong>. L'app affiche l'<strong>atterrissage max</strong> (réserve finale intacte) et l'<strong>arrêt moteur</strong> (panne sèche) — calculés sur l'emport utilisable. À poser impérativement avant l'heure rouge.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Barre du bas — badges T/O · LDG · FUEL</h3>
+      <p>En bas de l'écran, trois pastilles — <strong>T/O</strong> (décollage), <strong>LDG</strong> (atterrissage) et <strong>FUEL</strong> (carburant) — passent au <strong>vert</strong> dès qu'un calcul est fait et activent les boutons <strong>Ticket</strong> et <strong>PDF</strong>.</p>
+      <p><strong>Double-cliquez</strong> (ou double-tapez) sur une pastille pour <strong>effacer ce calcul</strong> : la fiche correspondante est retirée de l'historique et tous les champs de la section (décollage, atterrissage <em>ou</em> carburant) sont remis à zéro. Côté carburant, seule la réserve finale (30 min) est reprérenseignée.</p>
+    </div>
+
+    <div class="readme-section">
+      <h3>Avions &amp; préréglages</h3>
+      <p>Chaque avion charge ses propres tables de performances et son préréglage carburant. Exemple <strong>F-GYLC (DR400/140B)</strong> : emport <strong>160 L</strong> (avec réservoir supplémentaire), <strong>1 L inutilisable</strong> (159 L utilisables), conso <strong>39,3 L/h</strong> — valeur la plus pénalisante du manuel (75 % à 2700 tr/min).</p>
+      <p>Les distances de performance de certains appareils (F-GYLC, Aquila AT01) proviennent d'abaques ou de modèles approchés : à recouper avec le manuel de vol, qui reste la référence.</p>
     </div>
 
     <div class="readme-section">
@@ -1678,7 +1689,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
       <ul>
         <li>Outil d'<strong>aide à la préparation</strong> : le manuel de vol et le jugement du CDB restent la référence.</li>
         <li>METAR/TAF et coucher du soleil nécessitent une <strong>connexion internet</strong> ; tout le reste fonctionne hors ligne.</li>
-        <li>Le préréglage carburant ne vaut que pour <strong>DR400-120 / DR300</strong> — adaptez conso et réservoir pour les autres machines.</li>
+        <li>Chaque avion a désormais son <strong>propre préréglage carburant</strong> ; « Autre avion » permet une saisie entièrement manuelle.</li>
         <li>Coucher du soleil calculé pour la <strong>date du jour</strong> uniquement.</li>
       </ul>
     </div>
@@ -1751,8 +1762,10 @@ function syncFuelPreset() {
   if (fSel && sel) fSel.value = sel.value;   // sélecteur carburant ↔ perfs
 
   const isPreset = (profile === 'DR400' || profile === 'DR300');
-  if (immat && !isPreset) hint.classList.add('visible');
-  else                    hint.classList.remove('visible');
+  if (hint) {
+    if (immat && !isPreset) hint.classList.add('visible');
+    else                    hint.classList.remove('visible');
+  }
 }
 
 /* Préréglages carburant par profil avion (L/h, réservoir L, inutilisable L) */
@@ -1926,9 +1939,9 @@ function fuelPvHtml() {
     `<div class="pv-row"><span>${p.ph}</span><span class="pv-row-val">${fmtHM(p.min)} · ${p.L.toFixed(1)} L</span></div>`
   ).join('');
   return `
-    <div class="pv-section-head" style="margin:6mm 14mm 0">Bilan carburant réglementaire</div>
+    <div class="pv-section-head" style="margin:3mm 14mm 0">Bilan carburant réglementaire</div>
     <div style="padding:0 14mm">
-      <div class="pv-verdict ${vclass}" style="margin-top:3mm">
+      <div class="pv-verdict ${vclass}" style="margin-top:2mm">
         <div style="font:800 14pt Arial,sans-serif;color:${f.ok ? '#059669' : '#dc2626'}">${vtxt}</div>
         <div class="pv-verdict-dist">Requis <strong>${f.totL.toFixed(1)} L</strong> / ${f.usable} L utilisables · ${f.ok ? 'reste' : 'manque'} ${Math.abs(f.remaining).toFixed(1)} L</div>
       </div>
@@ -2232,7 +2245,7 @@ const DR300_TEMPS = [0, 15, 30, 45];
 
 function loadAllAircraft() {
   const sel = document.getElementById('aircraftSel');
-  const _DATA = {"F-GCAL":{"immat":"F-GCAL","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}},"xw_max":22},"F-BXEK":{"immat":"F-BXEK","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}},"xw_max":22},"F-BTBS":{"immat":"F-BTBS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"_note":"Manuel DR300-120 : distance de roulement avec freinage moyen à la masse maximale 865 kg = 280 m. Aucune donnée passage 15m ni correction altitude/température/surface.","_type":"single_value_roll_only","mass_max_kg":865,"roll_m":280,"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]}},"masse_max":865,"xw_max":22},"F-BTXS":{"immat":"F-BTXS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"_note":"Manuel DR300-120 : distance de roulement avec freinage moyen à la masse maximale 865 kg = 280 m. Aucune donnée passage 15m ni correction altitude/température/surface.","_type":"single_value_roll_only","mass_max_kg":865,"roll_m":280,"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]}},"masse_max":865,"xw_max":22},"F-GOVB":{"immat":"F-GOVB","puissance":"120cv","helice":"Sensenich 72CK-0-56","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[150,167,190],"pass":[328,362,397]},"kg900":{"roll":[259,270,328],"pass":[552,615,678]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[201,224,253],"pass":[431,477,529]},"kg900":{"roll":[351,397,448],"pass":[742,828,920]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[270,305,345],"pass":[575,644,713]},"kg900":{"roll":[489,546,615],"pass":[1023,1150,1294]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[145,200,240],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[167,178,190],"pass":[420,443,460]},"kg900":{"roll":[167,230,276],"pass":[500,529,558]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,250],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[184,201,213],"pass":[454,483,506]},"kg900":{"roll":[236,259,288],"pass":[546,581,615]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[207,224,241],"pass":[494,529,558]},"kg900":{"roll":[270,288,310],"pass":[604,638,678]}}}},"xw_max":22},"F-GTPE":{"profil":"DR400_160","moteur":"160cv","helice":"à vérifier","masse_max":1050,"masse_max_ldg":1045,"masse_min_perf":850,"to":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[170,185,205],"pass":[340,375,415]},"kg1050":{"roll":[265,295,330],"pass":[530,590,655]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[220,260,275],"pass":[445,500,550]},"kg1050":{"roll":[355,400,450],"pass":[710,800,890]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[300,340,380],"pass":[605,675,750]},"kg1050":{"roll":[485,550,620],"pass":[980,1105,1250]}}}},"ldg":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[190,205,215],"pass":[435,460,485]},"kg1050":{"roll":[230,250,270],"pass":[510,545,575]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[210,230,245],"pass":[475,505,535]},"kg1050":{"roll":[260,280,300],"pass":[565,600,635]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[240,260,275],"pass":[520,555,585]},"kg1050":{"roll":[295,320,340],"pass":[620,660,700]}}}},"vent_face_factors":{"10":0.85,"20":0.65,"30":0.55},"vent_arriere_per2kt":0.1,"xw_max":22},"F-GYLC":{"profil":"DR400_160","moteur":"140cv (DR400/140B)","helice":"à vérifier","masse_max":1000,"masse_max_ldg":1000,"masse_min_perf":850,"approx":true,"source":"abaque DR400/140B (lecture graphique — valeurs approximatives)","fuel":{"conso":35,"cap":160,"unusable":1},"to":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[170,185,205],"pass":[340,375,415]},"kg1050":{"roll":[265,295,330],"pass":[530,590,655]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[220,260,275],"pass":[445,500,550]},"kg1050":{"roll":[355,400,450],"pass":[710,800,890]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[300,340,380],"pass":[605,675,750]},"kg1050":{"roll":[485,550,620],"pass":[980,1105,1250]}}}},"ldg":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[190,205,215],"pass":[435,460,485]},"kg1050":{"roll":[230,250,270],"pass":[510,545,575]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[210,230,245],"pass":[475,505,535]},"kg1050":{"roll":[260,280,300],"pass":[565,600,635]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[240,260,275],"pass":[520,555,585]},"kg1050":{"roll":[295,320,340],"pass":[620,660,700]}}}},"vent_face_factors":{"10":0.79,"20":0.64,"30":0.53},"vent_arriere_per2kt":0.1,"xw_max":22},"F-HATX":{"profil":"AT01","moteur":"Rotax 912S 100hp","helice":"à confirmer","masse_max":750,"masse_min_perf":550,"to":{"alts_ft":[0,2000,4000,6000,8000],"temps_c":[-20,-10,0,10,20,30,40],"roll":[[120,140,165,195,230,275,325],[155,182,215,258,305,363,430],[200,237,280,335,400,478,570],[260,310,370,447,530,635,760],[340,407,490,588,700,838,1000]],"wind_hw":[[0,1.0],[5,0.9],[10,0.77],[15,0.64],[20,0.53]],"wind_tw":[[0,1.0],[2,1.1],[4,1.22],[6,1.36],[8,1.52],[10,1.7]],"obs_k":0.0168,"mass_exp":1.9,"mass_ref":750,"grass_factor":1.25},"ldg":{"alts_ft":[0,2000,4000,6000,8000],"temps_c":[-20,-10,0,10,20,30,40],"roll":[[145,163,185,205,225,255,285],[175,197,225,248,275,310,345],[210,237,270,300,335,377,420],[255,288,330,365,405,455,510],[310,350,400,443,495,553,620]],"wind_hw":[[0,1.0],[5,0.94],[10,0.87],[15,0.8],[20,0.73]],"wind_tw":[[0,1.0],[5,1.2],[10,1.45],[15,1.75],[20,2.1]],"obs_k":0.0268,"mass_exp":1.9,"mass_ref":750,"grass_factor":1.15},"xw_max":15}};
+  const _DATA = {"F-GCAL":{"immat":"F-GCAL","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}},"xw_max":22},"F-BXEK":{"immat":"F-BXEK","puissance":"120cv","helice":"Sensenich","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[165,185,215],"pass":[320,355,395]},"kg900":{"roll":[315,360,410],"pass":[570,640,715]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[230,265,300],"pass":[430,485,540]},"kg900":{"roll":[460,530,615],"pass":[800,905,1025]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[330,380,440],"pass":[595,675,760]},"kg900":{"roll":[700,820,960],"pass":[1165,1350,1550]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[185,200,210],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[215,230,250],"pass":[435,460,485]},"kg900":{"roll":[280,300,325],"pass":[530,560,590]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,240],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[240,260,285],"pass":[475,505,530]},"kg900":{"roll":[310,335,360],"pass":[580,615,655]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[275,290,315],"pass":[525,555,590]},"kg900":{"roll":[350,375,405],"pass":[640,680,725]}}}},"xw_max":22},"F-BTBS":{"immat":"F-BTBS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"_note":"Manuel DR300-120 : distance de roulement avec freinage moyen à la masse maximale 865 kg = 280 m. Aucune donnée passage 15m ni correction altitude/température/surface.","_type":"single_value_roll_only","mass_max_kg":865,"roll_m":280,"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]}},"masse_max":865,"xw_max":22},"F-BTXS":{"immat":"F-BTXS","puissance":"120cv","helice":"McCauley 1A135JCM7147","profil":"DR300","to":{"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],"pass":[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},"grass":{"alts":[0,1500,3000,4600],"roll":[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],"pass":[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]}},"ldg":{"_note":"Manuel DR300-120 : distance de roulement avec freinage moyen à la masse maximale 865 kg = 280 m. Aucune donnée passage 15m ni correction altitude/température/surface.","_type":"single_value_roll_only","mass_max_kg":865,"roll_m":280,"temps":[0,15,30,45],"hard":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]},"grass":{"alts":[0,1500,3000,4500],"roll":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]],"pass":[[280,280,280,280],[280,280,280,280],[280,280,280,280],[280,280,280,280]]}},"masse_max":865,"xw_max":22},"F-GOVB":{"immat":"F-GOVB","puissance":"120cv","helice":"Sensenich 72CK-0-56","profil":"DR400","to":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"hard":{"kg700":{"roll":[130,145,165],"pass":[285,315,345]},"kg900":{"roll":[225,235,285],"pass":[480,535,590]}},"grass":{"kg700":{"roll":[150,167,190],"pass":[328,362,397]},"kg900":{"roll":[259,270,328],"pass":[552,615,678]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"hard":{"kg700":{"roll":[175,195,220],"pass":[375,415,460]},"kg900":{"roll":[305,345,390],"pass":[645,720,800]}},"grass":{"kg700":{"roll":[201,224,253],"pass":[431,477,529]},"kg900":{"roll":[351,397,448],"pass":[742,828,920]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"hard":{"kg700":{"roll":[235,265,300],"pass":[500,560,620]},"kg900":{"roll":[425,475,535],"pass":[890,1000,1125]}},"grass":{"kg700":{"roll":[270,305,345],"pass":[575,644,713]},"kg900":{"roll":[489,546,615],"pass":[1023,1150,1294]}}}},"ldg":{"0":{"temps":{"minus20":-5,"isa":15,"plus20":35},"moderate":{"kg700":{"roll":[145,155,165],"pass":[365,385,400]},"kg900":{"roll":[145,200,240],"pass":[435,460,485]}},"nobrake_grass":{"kg700":{"roll":[167,178,190],"pass":[420,443,460]},"kg900":{"roll":[167,230,276],"pass":[500,529,558]}}},"4000":{"temps":{"minus20":-13,"isa":7,"plus20":27},"moderate":{"kg700":{"roll":[160,175,185],"pass":[395,420,440]},"kg900":{"roll":[205,225,250],"pass":[475,505,535]}},"nobrake_grass":{"kg700":{"roll":[184,201,213],"pass":[454,483,506]},"kg900":{"roll":[236,259,288],"pass":[546,581,615]}}},"8000":{"temps":{"minus20":-21,"isa":-1,"plus20":19},"moderate":{"kg700":{"roll":[180,195,210],"pass":[430,460,485]},"kg900":{"roll":[235,250,270],"pass":[525,555,590]}},"nobrake_grass":{"kg700":{"roll":[207,224,241],"pass":[494,529,558]},"kg900":{"roll":[270,288,310],"pass":[604,638,678]}}}},"xw_max":22},"F-GTPE":{"profil":"DR400_160","moteur":"160cv","helice":"à vérifier","masse_max":1050,"masse_max_ldg":1045,"masse_min_perf":850,"to":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[170,185,205],"pass":[340,375,415]},"kg1050":{"roll":[265,295,330],"pass":[530,590,655]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[220,260,275],"pass":[445,500,550]},"kg1050":{"roll":[355,400,450],"pass":[710,800,890]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[300,340,380],"pass":[605,675,750]},"kg1050":{"roll":[485,550,620],"pass":[980,1105,1250]}}}},"ldg":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[190,205,215],"pass":[435,460,485]},"kg1050":{"roll":[230,250,270],"pass":[510,545,575]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[210,230,245],"pass":[475,505,535]},"kg1050":{"roll":[260,280,300],"pass":[565,600,635]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[240,260,275],"pass":[520,555,585]},"kg1050":{"roll":[295,320,340],"pass":[620,660,700]}}}},"vent_face_factors":{"10":0.85,"20":0.65,"30":0.55},"vent_arriere_per2kt":0.1,"xw_max":22},"F-GYLC":{"profil":"DR400_160","moteur":"140cv (DR400/140B)","helice":"à vérifier","masse_max":1000,"masse_max_ldg":1000,"masse_min_perf":850,"approx":true,"source":"abaque DR400/140B (lecture graphique — valeurs approximatives)","approxNote":"⚠ Perfos lues sur abaque (DR400/140B) — valeurs approximatives, à vérifier au manuel.","fuel":{"conso":39.3,"cap":160,"unusable":1},"to":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[170,185,205],"pass":[340,375,415]},"kg1050":{"roll":[265,295,330],"pass":[530,590,655]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[220,260,275],"pass":[445,500,550]},"kg1050":{"roll":[355,400,450],"pass":[710,800,890]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[300,340,380],"pass":[605,675,750]},"kg1050":{"roll":[485,550,620],"pass":[980,1105,1250]}}}},"ldg":{"0":{"temps":[-5,15,35],"hard":{"kg850":{"roll":[190,205,215],"pass":[435,460,485]},"kg1050":{"roll":[230,250,270],"pass":[510,545,575]}}},"4000":{"temps":[-13,7,27],"hard":{"kg850":{"roll":[210,230,245],"pass":[475,505,535]},"kg1050":{"roll":[260,280,300],"pass":[565,600,635]}}},"8000":{"temps":[-21,-1,19],"hard":{"kg850":{"roll":[240,260,275],"pass":[520,555,585]},"kg1050":{"roll":[295,320,340],"pass":[620,660,700]}}}},"vent_face_factors":{"10":0.79,"20":0.64,"30":0.53},"vent_arriere_per2kt":0.1,"xw_max":22},"F-HATX":{"profil":"AT01","moteur":"Rotax 912S 100hp","helice":"à confirmer","masse_max":750,"masse_min_perf":550,"approx":true,"approxNote":"⚠ Perfos approximatives (Aquila AT01) — à vérifier au manuel de vol.","to":{"alts_ft":[0,2000,4000,6000,8000],"temps_c":[-20,-10,0,10,20,30,40],"roll":[[120,140,165,195,230,275,325],[155,182,215,258,305,363,430],[200,237,280,335,400,478,570],[260,310,370,447,530,635,760],[340,407,490,588,700,838,1000]],"wind_hw":[[0,1.0],[5,0.9],[10,0.77],[15,0.64],[20,0.53]],"wind_tw":[[0,1.0],[2,1.1],[4,1.22],[6,1.36],[8,1.52],[10,1.7]],"obs_k":0.0168,"mass_exp":1.9,"mass_ref":750,"grass_factor":1.25},"ldg":{"alts_ft":[0,2000,4000,6000,8000],"temps_c":[-20,-10,0,10,20,30,40],"roll":[[145,163,185,205,225,255,285],[175,197,225,248,275,310,345],[210,237,270,300,335,377,420],[255,288,330,365,405,455,510],[310,350,400,443,495,553,620]],"wind_hw":[[0,1.0],[5,0.94],[10,0.87],[15,0.8],[20,0.73]],"wind_tw":[[0,1.0],[5,1.2],[10,1.45],[15,1.75],[20,2.1]],"obs_k":0.0268,"mass_exp":1.9,"mass_ref":750,"grass_factor":1.15},"xw_max":15}};
   Object.assign(aircraftData, _DATA);
   // Options déjà dans le HTML — on charge juste les données en mémoire
   if (sel.options.length > 0) applyAircraftData(sel.value);
@@ -2240,12 +2253,6 @@ function loadAllAircraft() {
 
 function applyAircraftData(immat) {
   const d = aircraftData[immat];
-  // Bandeau « valeurs approximatives » (perfos lues sur abaque)
-  const depNote = document.getElementById('depApproxNote');
-  const arrNote = document.getElementById('arrApproxNote');
-  const showApprox = !!(d && d.approx);
-  if (depNote) depNote.style.display = showApprox ? 'flex' : 'none';
-  if (arrNote) arrNote.style.display = showApprox ? 'flex' : 'none';
   if (!d) {
     // Avion désélectionné : vider les masses
     const depTow = document.getElementById('depTow');
@@ -5293,11 +5300,11 @@ function generatePDF() {
   <div class="pv-page" style="padding:0">
     <table width="100%" cellpadding="0" cellspacing="0" style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;margin-bottom:0">
       <tr style="background-color:#1e3a5f">
-        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:10mm 14mm;vertical-align:middle">
+        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:6mm 14mm;vertical-align:middle">
           <div style="font:800 18pt Arial,sans-serif;color:#ffffff !important;letter-spacing:-.02em">FICHE DE PERFORMANCES</div>
           <div style="font:400 8pt Arial,sans-serif;color:#93c5fd !important;margin-top:2mm">Aéroclub de Beauvais-Tillé · LFOB · Calcul préparatoire au vol</div>
         </td>
-        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:10mm 14mm;vertical-align:middle;text-align:right">
+        <td style="-webkit-print-color-adjust:exact;print-color-adjust:exact;background-color:#1e3a5f;padding:6mm 14mm;vertical-align:middle;text-align:right">
           <div style="font:800 20pt 'Courier New',monospace;color:#ffffff !important;letter-spacing:.02em">${aircraft}</div>
           <div style="font:400 8pt Arial,sans-serif;color:#93c5fd !important;margin-top:2mm">${stamp}</div>
         </td>
