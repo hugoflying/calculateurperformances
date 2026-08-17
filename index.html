@@ -382,7 +382,9 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   font:700 10px 'Inter';letter-spacing:.04em;text-transform:uppercase;
   padding:5px 9px;border-radius:14px;white-space:nowrap;
   background:var(--surface-2);border:1px solid var(--border);color:var(--text-3);
+  -webkit-user-select:none;user-select:none;cursor:pointer;transition:transform .1s ease;
 }
+.ab-badge:active{transform:scale(.92)}
 .ab-badge.is-on{background:var(--green-light);border-color:var(--green);color:var(--green)}
 .ab-btn{
   flex-shrink:0;padding:10px 14px;border-radius:10px;
@@ -595,6 +597,8 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 
 .toggle-wrap{display:flex;flex-direction:column;gap:6px}
 .toggle-label{font:600 11px 'Inter';text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)}
+.regwind-note{font:600 10.5px 'Inter';color:var(--text-2);line-height:1.35;margin-top:1px;display:flex;align-items:flex-start;gap:5px}
+.regwind-note::before{content:'ℹ';color:var(--blue-mid);font-weight:700;flex-shrink:0}
 
 /* Bouton 5kt assume */
 .tw-assume-wrap{display:none}
@@ -1128,6 +1132,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <button id="btnRegWindOff" class="toggle-btn is-selected is-primary">100 % réel</button>
             <button id="btnRegWindOn"  class="toggle-btn">50 % / 150 %</button>
           </div>
+          <div id="depRegWindNote" class="regwind-note">100 % du vent réel pris en compte</div>
         </div>
         <div id="depTwAssumeWrap" class="tw-assume-wrap">
           <button id="depTwAssumeBtn" class="tw-assume-btn" onclick="toggleTwAssume('dep')">
@@ -1325,6 +1330,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <button id="btnRegWindOffArr" class="toggle-btn is-selected is-primary" onclick="setRegWindArr(false)">100 % réel</button>
             <button id="btnRegWindOnArr"  class="toggle-btn" onclick="setRegWindArr(true)">50 % / 150 %</button>
           </div>
+          <div id="arrRegWindNote" class="regwind-note">100 % du vent réel pris en compte</div>
         </div>
         <div id="arrTafTwSuggest" style="display:none"></div>
         <div id="arrTwAssumeWrap" class="tw-assume-wrap">
@@ -1402,6 +1408,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <option value="F-GOVB" style="color:#1a2332;background:#fff">F-GOVB — DR400 120cv</option>
             <option value="F-GTPE" style="color:#1a2332;background:#fff">F-GTPE — DR400 160cv</option>
             <option value="F-HATX" style="color:#1a2332;background:#fff">F-HATX — Aquila AT01</option>
+            <option value="AUTRE" style="color:#1a2332;background:#fff">Autre avion</option>
           </select>
         </div>
       </div>
@@ -1414,15 +1421,15 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
         <div class="row-3">
           <div class="field">
             <label class="field-label">Conso (L/h)</label>
-            <input id="fuelConso" class="field-input" type="number" value="25" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
+            <input id="fuelConso" class="field-input" type="number" value="" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Emport (L)</label>
-            <input id="fuelCap" class="field-input" type="number" value="110" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
+            <input id="fuelCap" class="field-input" type="number" value="" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Inutilisable (L)</label>
-            <input id="fuelUnusable" class="field-input" type="number" value="10" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/>
+            <input id="fuelUnusable" class="field-input" type="number" value="" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/>
           </div>
         </div>
         <div id="fuelHint" class="fuel-hint">⚠ Valeurs approximatives pour cet avion — vérifiez conso, emport et inutilisable.</div>
@@ -1456,14 +1463,14 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
         <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
           <div class="field">
             <label class="field-label"><span class="lbl-lg">Mise en route (min)</span><span class="lbl-sm">Mise en r. (min)</span></label>
-            <input id="fuelStartup" class="field-input" type="number" value="15" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <input id="fuelStartup" class="field-input" type="number" value="" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Trip fuel — croisière aller</label>
             <div class="fuel-time">
-              <input id="fuelCruiseH" class="field-input" type="number" value="1" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+              <input id="fuelCruiseH" class="field-input" type="number" value="" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
               <span class="fuel-suffix">h</span>
-              <input id="fuelCruiseM" class="field-input" type="number" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
+              <input id="fuelCruiseM" class="field-input" type="number" value="" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
               <span class="fuel-suffix">min</span>
             </div>
           </div>
@@ -1482,9 +1489,9 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
             <div class="field">
               <label class="field-label">Trip fuel — croisière retour</label>
               <div class="fuel-time">
-                <input id="fuelBackH" class="field-input" type="number" value="1" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+                <input id="fuelBackH" class="field-input" type="number" value="" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
                 <span class="fuel-suffix">h</span>
-                <input id="fuelBackM" class="field-input" type="number" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
+                <input id="fuelBackM" class="field-input" type="number" value="" min="0" max="59" step="1" inputmode="numeric" oninput="computeFuel()"/>
                 <span class="fuel-suffix">min</span>
               </div>
             </div>
@@ -1495,15 +1502,15 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
         <div class="row-3">
           <div class="field">
             <label class="field-label"><span class="lbl-lg">Dégagement (min)</span><span class="lbl-sm">Dégagem. (min)</span></label>
-            <input id="fuelAlt" class="field-input" type="number" value="30" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <input id="fuelAlt" class="field-input" type="number" value="" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Extra (min)</label>
-            <input id="fuelExtra" class="field-input" type="number" value="0" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <input id="fuelExtra" class="field-input" type="number" value="" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
           <div class="field">
             <label class="field-label">Réserve (min)</label>
-            <input id="fuelReserve" class="field-input" type="number" value="45" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
+            <input id="fuelReserve" class="field-input" type="number" value="30" min="0" step="1" inputmode="numeric" oninput="computeFuel()"/>
           </div>
         </div>
 
@@ -1536,7 +1543,7 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
           <div class="fuel-clock">
             <div class="fuel-clock-lbl">Atterrissage max<br>(réserve conservée)</div>
             <div class="fuel-clock-val" id="fuelMaxLdg">—:—</div>
-            <div class="fuel-clock-sub" id="fuelMaxLdgSub">réserve 45 min</div>
+            <div class="fuel-clock-sub" id="fuelMaxLdgSub">réserve 30 min</div>
           </div>
           <div class="fuel-clock is-limit">
             <div class="fuel-clock-lbl">Arrêt moteur<br>(panne sèche)</div>
@@ -1556,9 +1563,9 @@ body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
 <!-- ═══ Barre d'action globale ═══ -->
 <div class="action-bar" id="actionBar">
   <div class="ab-badges">
-    <span id="abDep"  class="ab-badge"><span class="ab-lg">Décollage</span><span class="ab-sm">T/O</span></span>
-    <span id="abArr"  class="ab-badge"><span class="ab-lg">Atterrissage</span><span class="ab-sm">LDG</span></span>
-    <span id="abFuel" class="ab-badge"><span class="ab-lg">Carburant</span><span class="ab-sm">FUEL</span></span>
+    <span id="abDep"  class="ab-badge" title="Double-cliquez pour effacer le décollage" ondblclick="clearSectionFromBadge('dep')"><span class="ab-lg">Décollage</span><span class="ab-sm">T/O</span></span>
+    <span id="abArr"  class="ab-badge" title="Double-cliquez pour effacer l'atterrissage" ondblclick="clearSectionFromBadge('arr')"><span class="ab-lg">Atterrissage</span><span class="ab-sm">LDG</span></span>
+    <span id="abFuel" class="ab-badge" title="Double-cliquez pour effacer le carburant" ondblclick="clearSectionFromBadge('fuel')"><span class="ab-lg">Carburant</span><span class="ab-sm">FUEL</span></span>
   </div>
   <button id="abTicket" class="ab-btn" disabled onclick="printTicket()"><span class="ab-ic">🧾</span><span class="ab-tx">Ticket</span></button>
   <button id="abPdf" class="ab-btn primary" disabled onclick="generatePDF()"><span class="ab-ic">📄</span><span class="ab-tx">PDF</span></button>
@@ -1769,6 +1776,23 @@ function fuelAircraftChange() {
   const sel  = document.getElementById('aircraftSel');
   const fSel = document.getElementById('fuelAircraftSel');
   if (!sel || !fSel) return;
+
+  // « Autre avion » : aucun préréglage, on laisse l'utilisateur saisir conso / emport / inutilisable
+  if (fSel.value === 'AUTRE') {
+    sel.value = '';
+    sel.dispatchEvent(new Event('change'));          // reset perfs + masses (aucun preset appliqué)
+    fSel.value = 'AUTRE';                             // (le sync a remis le select carburant sur '')
+    document.getElementById('fuelConso').value = '';
+    document.getElementById('fuelCap').value = '';
+    document.getElementById('fuelUnusable').value = '';
+    const chip = document.getElementById('fuelAcChip');
+    if (chip) { chip.textContent = 'Autre'; chip.title = 'Avion non listé'; }
+    const hint = document.getElementById('fuelHint');
+    if (hint) hint.classList.remove('visible');
+    if (typeof computeFuel === 'function') computeFuel();
+    return;
+  }
+
   sel.value = fSel.value;
   sel.dispatchEvent(new Event('change'));   // déclenche le chargement avion + applyFuelPreset
 }
@@ -1797,12 +1821,16 @@ function fuelToggleRoundtrip() {
   wrap.classList.toggle('open', on);
   document.getElementById('fuelRetourRow').classList.toggle('is-on', on);
   if (on) {
-    // préremplir le retour avec l'aller si vide/nul
+    // préremplir le retour avec l'aller UNIQUEMENT si l'aller est renseigné (jamais de 0 forcé)
     const bH = document.getElementById('fuelBackH');
     const bM = document.getElementById('fuelBackM');
-    if ((parseFloat(bH.value) || 0) === 0 && (parseFloat(bM.value) || 0) === 0) {
-      bH.value = document.getElementById('fuelCruiseH').value || 0;
-      bM.value = document.getElementById('fuelCruiseM').value || 0;
+    const aH = document.getElementById('fuelCruiseH').value;
+    const aM = document.getElementById('fuelCruiseM').value;
+    const backEmpty = (parseFloat(bH.value) || 0) === 0 && (parseFloat(bM.value) || 0) === 0;
+    const allerRenseigne = (parseFloat(aH) || 0) !== 0 || (parseFloat(aM) || 0) !== 0;
+    if (backEmpty && allerRenseigne) {
+      bH.value = aH || '';
+      bM.value = aM || '';
     }
   }
   computeFuel();
@@ -2302,6 +2330,57 @@ function updateActionBar() {
   if (bp) bp.disabled = !any;
 }
 
+/* ─── Double-clic sur une pastille de la barre : efface le calcul enregistré + reset des valeurs ─── */
+function deleteHistoryBySide(side) {
+  try {
+    let hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    hist = hist.filter(e => (e.side || e.kind) !== side);   // dep / arr / fuel
+    localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+    if (typeof updateHistoryBadge === 'function') updateHistoryBadge(hist.length);
+  } catch (e) { console.warn('Historique:', e); }
+}
+
+function clearSectionFromBadge(side) {
+  // 1) supprimer l'entrée d'historique correspondante
+  deleteHistoryBySide(side);
+
+  if (side === 'fuel') {
+    // 2) vider tous les champs carburant
+    ['fuelConso','fuelCap','fuelUnusable','fuelStartup','fuelCruiseH','fuelCruiseM',
+     'fuelBackH','fuelBackM','fuelAlt','fuelExtra','fuelReserve','fuelDepTime']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    // seule valeur conservée par défaut : la réserve finale (30 min)
+    const resEl = document.getElementById('fuelReserve');
+    if (resEl) resEl.value = '30';
+    const rt = document.getElementById('fuelRoundtrip');
+    if (rt) { rt.checked = false; if (typeof fuelToggleRoundtrip === 'function') fuelToggleRoundtrip(); }
+    const fSel = document.getElementById('fuelAircraftSel');
+    if (fSel) fSel.value = '';
+    const chip = document.getElementById('fuelAcChip');
+    if (chip) { chip.textContent = '—'; chip.title = ''; }
+    const hint = document.getElementById('fuelHint');
+    if (hint) hint.classList.remove('visible');
+    fuelTouched = false;
+    if (typeof computeFuel === 'function') computeFuel();
+    if (typeof updateActionBar === 'function') updateActionBar();
+    return;
+  }
+
+  // 2) vider les champs Décollage / Atterrissage
+  const ids = side === 'dep'
+    ? ['depIcao','depQfu','depToda','depAlt','depOat','depTow','depWindDir','depWindKt','depWindGust','depVrbFrom','depVrbTo']
+    : ['arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrLdw','arrWindDir','arrWindKt','arrWindGust','arrVrbFrom','arrVrbTo'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+  const disp = document.getElementById(side + 'Icao_display'); if (disp) disp.textContent = '—';
+  const nam  = document.getElementById(side + 'AirportName');   if (nam)  nam.textContent  = '';
+  const met  = document.getElementById(side + 'MetarMsg');      if (met)  met.textContent  = '';
+
+  // 3) reset de l'état calculé + affichages
+  if (typeof resetComputedState === 'function') resetComputedState(side);
+  if (typeof updateWindDisplay  === 'function') updateWindDisplay(side);
+}
+
 function updatePdfBtn() {
   const btn = document.getElementById('btnPrint');
   const done = depComputed || arrComputed;
@@ -2419,8 +2498,8 @@ $('#arrGrassDry').onclick       = () => { arrWetFactor = 1.0;  setToggleActive($
 $('#arrGrassWet').onclick       = () => { arrWetFactor = 1.15; setToggleActive($('#arrGrassWet'), $('#arrGrassDry'), $('#arrGrassWetShort')); resetComputedState('arr'); };
 $('#arrGrassWetShort').onclick  = () => { arrWetFactor = 1.60; setToggleActive($('#arrGrassWetShort'), $('#arrGrassDry'), $('#arrGrassWet')); resetComputedState('arr'); };
 
-$('#btnRegWindOff').onclick = () => { useRegWindDep = false; useRegWind = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); resetComputedState('dep'); };
-$('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  useRegWind = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); resetComputedState('dep'); };
+$('#btnRegWindOff').onclick = () => { useRegWindDep = false; useRegWind = false; setToggleActive($('#btnRegWindOff'), $('#btnRegWindOn')); updateRegWindNote('dep', false); resetComputedState('dep'); };
+$('#btnRegWindOn').onclick  = () => { useRegWindDep = true;  useRegWind = true;  setToggleActive($('#btnRegWindOn'), $('#btnRegWindOff')); updateRegWindNote('dep', true);  resetComputedState('dep'); };
 
 /* ===================== MARGE ===================== */
 $('#safety').addEventListener('input', () => {
@@ -3033,12 +3112,21 @@ function syncDisplays() {
   if (cd)  cd.textContent  = withSpats  ? 'Avec' : 'Sans (+3 %)';
 }
 
+function updateRegWindNote(side, on) {
+  const el = document.getElementById(side === 'dep' ? 'depRegWindNote' : 'arrRegWindNote');
+  if (!el) return;
+  el.textContent = on
+    ? 'Vent de face crédité à 50 %, vent arrière majoré à 150 %'
+    : '100 % du vent réel pris en compte';
+}
+
 function setRegWindArr(val) {
   useRegWindArr = val;
   const off = document.getElementById('btnRegWindOffArr');
   const on  = document.getElementById('btnRegWindOnArr');
   if (val) { on?.classList.add('is-selected','is-primary');  off?.classList.remove('is-selected','is-primary'); }
   else      { off?.classList.add('is-selected','is-primary'); on?.classList.remove('is-selected','is-primary'); }
+  updateRegWindNote('arr', val);
   resetComputedState('arr');
   syncDisplays();
 }
