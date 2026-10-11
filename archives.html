@@ -294,79 +294,120 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
     return bytes;
   };
 
-  /* ── Mise en page de la fiche ── */
+  /* ── Mise en page de la fiche (style épuré, proche de l'application) ── */
   const C = {
-    ink: [0.08, 0.13, 0.17], muted: [0.36, 0.42, 0.47], line: [0.84, 0.86, 0.89], soft: [0.96, 0.97, 0.98],
-    blue: [0.12, 0.44, 0.82], navy: [0.10, 0.30, 0.57], green: [0.11, 0.54, 0.31], greenBg: [0.91, 0.96, 0.93],
-    red: [0.70, 0.15, 0.12], redBg: [0.99, 0.93, 0.92], amber: [0.54, 0.32, 0.0], amberBg: [1, 0.96, 0.9], white: [1, 1, 1]
+    ink: [0.08, 0.13, 0.17], muted: [0.36, 0.42, 0.47], faint: [0.55, 0.6, 0.65], line: [0.85, 0.87, 0.9], soft: [0.965, 0.972, 0.98],
+    accent: [0.12, 0.44, 0.82], accentSoft: [0.92, 0.95, 0.99],
+    ok: [0.11, 0.54, 0.31], okText: [0.11, 0.42, 0.24], okBg: [0.91, 0.96, 0.93],
+    bad: [0.70, 0.15, 0.12], badText: [0.60, 0.12, 0.09], badBg: [0.99, 0.93, 0.92],
+    amber: [0.54, 0.32, 0.0], amberBg: [1, 0.965, 0.9], white: [1, 1, 1]
   };
   function fmtLocal(iso) {
     const d = new Date(iso);
     const p = n => String(n).padStart(2, '0');
     return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
+  // Rectangle à coins arrondis
+  PDF.prototype.rrect = function (x, y, w, h, r, o) {
+    o = o || {};
+    const k = 0.5523 * r, H = this.H, Y = y;
+    const P = (px, py) => f2(px) + ' ' + f2(H - py);
+    let s = 'q ';
+    if (o.fill) s += this.color(o.fill) + ' ';
+    if (o.stroke) s += this.color(o.stroke, true) + ' ' + f2(o.lw || 0.7) + ' w ';
+    s += P(x + r, Y) + ' m ' + P(x + w - r, Y) + ' l ' +
+      P(x + w - r + k, Y) + ' ' + P(x + w, Y + r - k) + ' ' + P(x + w, Y + r) + ' c ' +
+      P(x + w, Y + h - r) + ' l ' +
+      P(x + w, Y + h - r + k) + ' ' + P(x + w - r + k, Y + h) + ' ' + P(x + w - r, Y + h) + ' c ' +
+      P(x + r, Y + h) + ' l ' +
+      P(x + r - k, Y + h) + ' ' + P(x, Y + h - r + k) + ' ' + P(x, Y + h - r) + ' c ' +
+      P(x, Y + r) + ' l ' +
+      P(x, Y + r - k) + ' ' + P(x + r - k, Y) + ' ' + P(x + r, Y) + ' c h ' +
+      (o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S') + ' Q';
+    this.ops.push(s);
+  };
+  // Pastille de verdict ; renvoie sa largeur
+  function pill(pdf, xRight, yTop, txt, kind) {
+    const t = txt.toUpperCase(), size = 7.5;
+    const w = textWidth(t, 'HB', size) + 14;
+    const fill = kind === 'ok' ? C.okBg : kind === 'bad' ? C.badBg : C.soft;
+    const col = kind === 'ok' ? C.okText : kind === 'bad' ? C.badText : C.muted;
+    pdf.rrect(xRight - w, yTop, w, 15, 7.5, { fill });
+    pdf.text(xRight - w / 2, yTop + 10.3, t, { font: 'HB', size, color: col, align: 'center' });
+    return w;
+  }
 
   function renderFichePDF(d) {
     const pdf = new PDF();
-    const M = 36, W = pdf.W - 2 * M, BOTTOM = pdf.H - 60;
+    const M = 40, W = pdf.W - 2 * M, BOTTOM = pdf.H - 64;
     let y = 0;
-    const ensure = (need, redraw) => {
-      if (y + need > BOTTOM) { footer(); pdf.addPage(); y = M; if (redraw) redraw(); }
-    };
+    const ensure = need => { if (y + need > BOTTOM) { footer(); pdf.addPage(); y = M; } };
+    const label = (x, yy, t, o) => pdf.text(x, yy, t.toUpperCase(), Object.assign({ font: 'HB', size: 6.6, color: C.muted }, o || {}));
 
-    // En-tête
-    pdf.rect(0, 0, pdf.W, 66, { fill: C.navy });
-    pdf.text(M, 30, 'FICHE DE PRÉPARATION DU VOL', { font: 'HB', size: 16, color: C.white });
-    pdf.text(M, 47, 'Aéroclub de Beauvais-Tillé · Calcul préparatoire au vol', { size: 8.5, color: [0.78, 0.86, 0.97] });
-    pdf.text(pdf.W - M, 31, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 18, color: C.white, align: 'right' });
-    pdf.text(pdf.W - M, 47, 'Fiche n° ' + d.id, { size: 8.5, color: [0.78, 0.86, 0.97], align: 'right' });
-    y = 80;
+    // ── En-tête blanc, filet bleu
+    pdf.text(M, 44, 'Fiche de préparation du vol', { font: 'HB', size: 17 });
+    pdf.text(M, 60, 'Aéroclub de Beauvais-Tillé · Perfs ACBT', { size: 9, color: C.muted });
+    pdf.text(pdf.W - M, 44, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 20, color: C.accent, align: 'right' });
+    pdf.text(pdf.W - M, 60, 'Fiche n° ' + d.id, { size: 8.5, color: C.muted, align: 'right' });
+    pdf.rect(M, 72, W, 2, { fill: C.accent });
+    y = 90;
 
-    // Bandeau d'informations
+    // ── Bandeau d'informations (sans cadre)
     const info = [
       ['Pilote', d.pilot || '—'],
       ['Date et heure (locale)', fmtLocal(d.created)],
       ['Type', (d.aircraft && (d.aircraft.type || d.aircraft.label)) || '—'],
       ['Marge', (d.margin != null ? d.margin : '—') + ' %'],
-      ['Carénages', d.spats ? 'Avec' : 'Sans (+3 %)']
+      ['Carénages', d.spats ? 'Avec' : 'Sans']
     ];
-    pdf.rect(M, y, W, 34, { fill: C.soft, stroke: C.line });
-    const cw = W / info.length;
+    const iw = [0.25, 0.23, 0.22, 0.12, 0.18];
+    let ix = M;
     info.forEach(([l, v], i) => {
-      const x = M + i * cw + 8;
-      if (i) pdf.line(M + i * cw, y + 6, M + i * cw, y + 28, { color: C.line });
-      pdf.text(x, y + 12, l.toUpperCase(), { size: 6.5, color: C.muted });
-      const lines = wrap(v, 'HB', 9, cw - 14);
-      pdf.text(x, y + 25, lines[0] + (lines.length > 1 ? '…' : ''), { font: 'HB', size: 9 });
+      const cw = W * iw[i];
+      label(ix, y, l);
+      const ln = wrap(v, 'HB', 10, cw - 10);
+      pdf.text(ix, y + 15, ln[0] + (ln.length > 1 ? '…' : ''), { font: 'HB', size: 10 });
+      ix += cw;
     });
-    y += 46;
+    y += 27;
+    pdf.line(M, y, M + W, y, { color: C.line, lw: 0.6 });
+    y += 14;
 
-    // Colonne décollage / atterrissage
+    // ── Résumé : une carte par calcul
+    const cards = [];
+    if (d.dep) cards.push({ t: 'Décollage · ' + (d.dep.icao || '—'), big: d.dep.result.required, sub: 'requis / ' + d.dep.result.available + ' ' + d.dep.dist.label, v: d.dep.result.verdict });
+    if (d.arr) cards.push({ t: 'Atterrissage · ' + (d.arr.icao || '—'), big: d.arr.result.required, sub: 'requis / ' + d.arr.result.available + ' ' + d.arr.dist.label, v: d.arr.result.verdict });
+    if (d.fuel) cards.push({ t: 'Carburant', big: d.fuel.totalL + ' L', sub: 'requis / ' + d.fuel.usable + ' L utilisables', v: d.fuel.ok ? 'ok' : 'bad' });
+    if (cards.length) {
+      const gap = 10, cw = (W - gap * (cards.length - 1)) / cards.length, ch = 64;
+      cards.forEach((c, i) => {
+        const x = M + i * (cw + gap);
+        const bad = c.v === 'bad';
+        pdf.rrect(x, y, cw, ch, 8, { fill: bad ? C.badBg : C.white, stroke: bad ? [0.93, 0.7, 0.68] : C.line, lw: 0.8 });
+        label(x + 12, y + 17, wrap(c.t, 'HB', 6.6, cw - 90)[0]);
+        pill(pdf, x + cw - 10, y + 8, c.v === 'ok' ? 'OK' : c.v === 'bad' ? 'Insuffisant' : '—', c.v);
+        pdf.text(x + 12, y + 42, c.big, { font: 'HB', size: 21, color: bad ? C.badText : C.ink });
+        pdf.text(x + 12, y + 55, wrap(c.sub, 'H', 8, cw - 24)[0], { size: 8, color: C.muted });
+      });
+      y += ch + 18;
+    }
+
+    // ── Détail décollage / atterrissage
     function block(x, y0, w, s, kind) {
       let yy = y0;
       const dep = kind === 'dep';
-      const head = dep ? C.navy : [0.02, 0.47, 0.34];
-      pdf.rect(x, yy, w, 24, { fill: head });
-      pdf.text(x + 9, yy + 15.5, (dep ? 'DÉCOLLAGE' : 'ATTERRISSAGE') + ' · ' + (s.icao || '—'), { font: 'HB', size: 10.5, color: C.white });
-      if (s.name) pdf.text(x + w - 9, yy + 15.5, wrap(s.name, 'H', 7.5, w * 0.45)[0], { size: 7.5, color: [0.85, 0.92, 0.97], align: 'right' });
-      yy += 30;
-      const ok = s.result && s.result.verdict === 'ok';
-      const bad = s.result && s.result.verdict === 'bad';
-      const vc = ok ? C.green : bad ? C.red : C.muted;
-      pdf.rect(x, yy, w, 40, { fill: ok ? C.greenBg : bad ? C.redBg : C.soft, stroke: vc, lw: 1 });
-      pdf.text(x + 10, yy + 16, ok ? (dep ? 'DÉCOLLAGE POSSIBLE' : 'ATTERRISSAGE POSSIBLE') : bad ? 'DISTANCE INSUFFISANTE' : 'NON VÉRIFIÉ',
-        { font: 'HB', size: 11.5, color: vc });
-      pdf.text(x + 10, yy + 31, 'Requis ' + s.result.required + ' (marge incluse) · ' + s.dist.label + ' ' + s.result.available,
-        { size: 8.5, color: C.ink });
-      yy += 50;
-      const sect = t => { pdf.text(x, yy + 8, t.toUpperCase(), { font: 'HB', size: 6.8, color: C.muted }); yy += 13; };
+      pdf.rect(x, yy, 3, 14, { fill: C.accent });
+      pdf.text(x + 10, yy + 11, (dep ? 'Décollage' : 'Atterrissage') + ' · ' + (s.icao || '—'), { font: 'HB', size: 11.5 });
+      if (s.name) pdf.text(x + w, yy + 11, wrap(s.name, 'H', 8, w * 0.42)[0], { size: 8, color: C.muted, align: 'right' });
+      yy += 21;
       const row = (l, v) => {
-        const lines = wrap(v, 'HB', 8.3, w * 0.58);
-        pdf.text(x, yy + 8, l, { size: 8.3, color: C.muted });
-        lines.forEach((ln, i) => pdf.text(x + w, yy + 8 + i * 10, ln, { font: 'HB', size: 8.3, align: 'right' }));
-        yy += 6 + lines.length * 10;
+        const lines = wrap(v, 'HB', 8.4, w * 0.6);
+        pdf.text(x, yy + 8.5, l, { size: 8.4, color: C.muted });
+        lines.forEach((ln, i) => pdf.text(x + w, yy + 8.5 + i * 10, ln, { font: 'HB', size: 8.4, align: 'right' }));
+        yy += 5.5 + lines.length * 10;
         pdf.line(x, yy - 1, x + w, yy - 1, { color: C.line, lw: 0.4 });
       };
+      const sect = t => { yy += 3; label(x, yy + 7, t); yy += 11; };
       sect('Piste et conditions');
       row('QFU', s.qfu ? s.qfu + '°' : '—');
       row(s.dist.label, s.dist.value ? s.dist.value + ' m' : '—');
@@ -376,95 +417,87 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
       row('Vent', s.windText || '—');
       if (s.comps) row('Composantes', s.comps);
       row(dep ? 'Surface' : 'Freinage / état', s.surface || '—');
-      row('Vent pris en compte', s.windRule || '—');
-      yy += 4;
+      if (s.windRule && s.windRule.indexOf('+') >= 0) row('Vent pris en compte', s.windRule);
       sect('Détail du calcul (sans marge)');
       (s.result.rows || []).forEach(([l, v]) => row(l, v));
       if (s.note) {
-        wrap(s.note, 'H', 7.3, w).forEach(ln => { pdf.text(x, yy + 8, ln, { size: 7.3, color: C.muted }); yy += 9; });
-        yy += 2;
+        yy += 3;
+        wrap(s.note, 'H', 7.2, w).forEach(ln => { pdf.text(x, yy + 8, ln, { size: 7.2, color: C.faint }); yy += 9; });
       }
-      if (s.meteo && s.meteo.length) {
-        yy += 4;
-        s.meteo.forEach(m => {
-          sect(m.type);
-          const lines = wrap(m.raw, 'C', 7, w - 12);
-          pdf.rect(x, yy - 2, w, lines.length * 9 + 8, { fill: C.soft, stroke: C.line, lw: 0.4 });
-          lines.forEach((ln, i) => pdf.text(x + 6, yy + 7 + i * 9, ln, { font: 'C', size: 7, color: [0.25, 0.3, 0.35] }));
-          yy += lines.length * 9 + 12;
-        });
-      }
+      (s.meteo || []).forEach(m => {
+        sect(m.type);
+        const lines = wrap(m.raw, 'C', 7, w - 16);
+        pdf.rrect(x, yy - 3, w, lines.length * 9 + 10, 5, { fill: C.soft });
+        lines.forEach((ln, i) => pdf.text(x + 8, yy + 7 + i * 9, ln, { font: 'C', size: 7, color: [0.25, 0.3, 0.35] }));
+        yy += lines.length * 9 + 12;
+      });
       return yy;
     }
-
     const sides = [];
     if (d.dep) sides.push(['dep', d.dep]);
     if (d.arr) sides.push(['arr', d.arr]);
     if (sides.length) {
-      ensure(260);
-      const gap = 16;
-      const colW = sides.length === 2 ? (W - gap) / 2 : W;
+      ensure(250);
+      const gap = 22, colW = sides.length === 2 ? (W - gap) / 2 : W;
       let maxY = y;
       sides.forEach(([k, s], i) => { maxY = Math.max(maxY, block(M + i * (colW + gap), y, colW, s, k)); });
-      y = maxY + 10;
+      y = maxY + 12;
     }
 
-    // Carburant
+    // ── Carburant
     if (d.fuel) {
       const f = d.fuel;
-      const rows = (f.phases || []).length;
-      ensure(120 + rows * 14);
-      pdf.rect(M, y, W, 24, { fill: [0.48, 0.28, 0.02] });
-      pdf.text(M + 9, y + 15.5, 'BILAN CARBURANT', { font: 'HB', size: 10.5, color: C.white });
-      pdf.text(M + W - 9, y + 15.5, 'Consommation ' + f.conso + ' L/h · utilisable ' + f.usable + ' L', { size: 8, color: [1, 0.92, 0.8], align: 'right' });
-      y += 30;
-      const vc = f.ok ? C.green : C.red;
-      pdf.rect(M, y, W, 26, { fill: f.ok ? C.greenBg : C.redBg, stroke: vc, lw: 1 });
-      pdf.text(M + 10, y + 16.5, f.ok ? 'CARBURANT SUFFISANT' : 'CARBURANT INSUFFISANT', { font: 'HB', size: 11, color: vc });
-      pdf.text(M + W - 10, y + 16.5, 'Requis ' + f.totalL + ' L · ' + (f.ok ? 'reste ' : 'manque ') + f.remainingL + ' L',
-        { font: 'HB', size: 9, align: 'right' });
-      y += 34;
-      const xT = M + W * 0.72, xL = M + W;
-      pdf.text(M, y + 8, 'POSTE', { font: 'HB', size: 6.8, color: C.muted });
-      pdf.text(xT, y + 8, 'DURÉE', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
-      pdf.text(xL, y + 8, 'LITRES', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
-      y += 13;
+      ensure(110 + (f.phases || []).length * 14);
+      pdf.rect(M, y, 3, 14, { fill: C.accent });
+      pdf.text(M + 10, y + 11, 'Bilan carburant', { font: 'HB', size: 11.5 });
+      pill(pdf, M + W, y, f.ok ? 'Suffisant' : 'Insuffisant', f.ok ? 'ok' : 'bad');
+      y += 24;
+      const facts = [
+        f.onboard ? 'À bord ' + String(f.onboard).replace('.', ',') + ' L' + (f.full ? ' (plein)' : f.usedSince ? ' (plein entamé, ' + f.usedSince + ' de vol)' : '') : null,
+        'Utilisable ' + f.usable + ' L',
+        'Conso ' + String(f.conso).replace('.', ',') + ' L/h' + (f.spatsPenalty ? ' (+3 % sans carénages)' : ''),
+        (f.ok ? 'Reste ' : 'Manque ') + f.remainingL + ' L'
+      ].filter(Boolean);
+      pdf.text(M, y + 8, facts.join('   ·   '), { size: 8.4, color: C.ink });
+      y += 18;
+      const xT = M + W * 0.74, xL = M + W;
+      label(M, y + 7, 'Poste'); label(xT, y + 7, 'Durée', { align: 'right' }); label(xL, y + 7, 'Litres', { align: 'right' });
+      y += 12;
       (f.phases || []).forEach(p => {
-        pdf.text(M, y + 8, p.ph, { size: 8.5 });
-        pdf.text(xT, y + 8, p.time, { size: 8.5, align: 'right', color: C.muted });
-        pdf.text(xL, y + 8, p.L + ' L', { font: 'HB', size: 8.5, align: 'right' });
+        pdf.text(M, y + 8.5, p.ph, { size: 8.6 });
+        pdf.text(xT, y + 8.5, p.time, { size: 8.6, color: C.muted, align: 'right' });
+        pdf.text(xL, y + 8.5, p.L + ' L', { font: 'HB', size: 8.6, align: 'right' });
         y += 13; pdf.line(M, y - 1, M + W, y - 1, { color: C.line, lw: 0.4 });
       });
-      pdf.line(M, y, M + W, y, { color: C.ink, lw: 1 });
-      pdf.text(M, y + 11, 'Carburant minimum requis', { font: 'HB', size: 9 });
-      pdf.text(xT, y + 11, f.totalTime, { font: 'HB', size: 9, align: 'right' });
-      pdf.text(xL, y + 11, f.totalL + ' L', { font: 'HB', size: 9, align: 'right' });
-      y += 20;
+      pdf.line(M, y + 1, M + W, y + 1, { color: C.ink, lw: 0.9 });
+      pdf.text(M, y + 13, 'Carburant minimum requis', { font: 'HB', size: 9.2 });
+      pdf.text(xT, y + 13, f.totalTime, { font: 'HB', size: 9.2, align: 'right' });
+      pdf.text(xL, y + 13, f.totalL + ' L', { font: 'HB', size: 9.2, align: 'right' });
+      y += 24;
       if (f.depTime) {
-        pdf.text(M, y + 8, 'Mise en route ' + f.depTime + ' · atterrissage max (réserve conservée) ' + f.maxLdg +
-          ' · arrêt moteur (panne sèche) ' + f.engineStop + ' — heure locale', { size: 8.3, color: C.ink });
+        pdf.text(M, y + 8, 'Mise en route ' + f.depTime + '   ·   atterrissage max (réserve conservée) ' + f.maxLdg +
+          '   ·   arrêt moteur (panne sèche) ' + f.engineStop + '   —   heure locale', { size: 8.2, color: C.muted });
         y += 16;
       }
-      y += 6;
+      y += 8;
     }
 
-    // Nuit aéronautique
+    // ── Nuit aéronautique
     if (d.sun && d.sun.sunset) {
       ensure(30);
-      pdf.rect(M, y, W, 22, { fill: C.amberBg, stroke: [0.94, 0.83, 0.6], lw: 0.6 });
-      pdf.text(M + 10, y + 14, 'Coucher du soleil ' + d.sun.sunset + ' · Nuit aéronautique ' + d.sun.night +
-        (d.sun.icao ? ' (' + d.sun.icao + ')' : '') + ' — heure locale, date du jour', { font: 'HB', size: 8.5, color: C.amber });
-      y += 30;
+      pdf.rrect(M, y, W, 24, 6, { fill: C.amberBg });
+      pdf.text(M + 12, y + 15.5, 'Coucher du soleil ' + d.sun.sunset + '   ·   Nuit aéronautique ' + d.sun.night +
+        (d.sun.icao ? '  (' + d.sun.icao + ')' : '') + '   —   heure locale, date du jour', { font: 'HB', size: 8.6, color: C.amber });
+      y += 32;
     }
 
     function footer() {
-      const fy = pdf.H - 46;
+      const fy = pdf.H - 50;
       pdf.line(M, fy, M + W, fy, { color: C.line, lw: 0.6 });
-      pdf.text(M, fy + 12, 'Calcul préparatoire au vol : ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable de ses décisions.',
+      pdf.text(M, fy + 13, 'Calcul préparatoire au vol : ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable de ses décisions.',
         { size: 7, color: C.muted });
-      pdf.text(M, fy + 23, 'Fiche n° ' + d.id + ' · établie le ' + fmtLocal(d.created) + ' · Perfs ACBT ' + (d.app || ''),
-        { size: 7, color: C.muted });
-      if (d.hash) pdf.text(M, fy + 33, 'Empreinte SHA-256 : ' + d.hash, { font: 'C', size: 6.3, color: C.muted });
+      pdf.text(M, fy + 24, 'Fiche n° ' + d.id + ' · établie le ' + fmtLocal(d.created) + ' · Perfs ACBT ' + (d.app || ''), { size: 7, color: C.muted });
+      if (d.hash) pdf.text(M, fy + 34, 'Empreinte SHA-256 : ' + d.hash, { font: 'C', size: 6.3, color: C.faint });
     }
     footer();
     return pdf.build({ title: 'Fiche ' + d.id });
