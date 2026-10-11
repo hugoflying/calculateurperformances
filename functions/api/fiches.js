@@ -142,3 +142,15 @@ export async function onRequestGet({ request, env }) {
   const total = await env.DB.prepare('SELECT COUNT(*) AS n FROM fiches').first();
   return json({ ok: true, total: total ? total.n : results.length, fiches: results });
 }
+
+/* ── Suppression (page archives.html, protégée par le mot de passe) ── */
+export async function onRequestDelete({ request, env }) {
+  if (!env.DB) return json({ ok: false, error: 'Base D1 non reliée (liaison DB manquante).' }, 503);
+  if (!env.ARCHIVE_PASSWORD) return json({ ok: false, error: 'Mot de passe des archives non défini (ARCHIVE_PASSWORD).' }, 503);
+  if (!checkPassword(request, env)) return json({ ok: false, error: 'Mot de passe incorrect.' }, 401);
+  const id = new URL(request.url).searchParams.get('id') || '';
+  if (!ID_RE.test(id)) return json({ ok: false, error: 'Numéro de fiche invalide.' }, 400);
+  await ensureTable(env.DB);
+  const r = await env.DB.prepare('DELETE FROM fiches WHERE id = ?').bind(id).run();
+  return json({ ok: true, deleted: (r.meta && r.meta.changes) || 0 });
+}
