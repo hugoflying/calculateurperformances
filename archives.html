@@ -50,6 +50,8 @@ main{max-width:1180px;margin:0 auto;padding:24px 20px 48px;display:grid;gap:16px
 .btn{height:44px;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--card);font:600 15px var(--body);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
 .btn:hover{border-color:var(--accent)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--err-text)}
+.btn.danger:hover{border-color:var(--err)}
 .btn svg{width:17px;height:17px}
 .login{max-width:440px;margin:40px auto 0}
 .login form{display:grid;gap:10px}
@@ -489,9 +491,9 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
   try { pw = sessionStorage.getItem(KEY) || ''; } catch (e) {}
   let list = [];
 
-  async function api(params) {
+  async function api(params, method) {
     const r = await fetch('/api/fiches' + (params ? '?' + new URLSearchParams(params) : ''), {
-      headers: { Authorization: 'Bearer ' + pw }, cache: 'no-store'
+      method: method || 'GET', headers: { Authorization: 'Bearer ' + pw }, cache: 'no-store'
     });
     let j = null;
     try { j = await r.json(); } catch (e) {}
@@ -538,7 +540,16 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
         ? '<span class="badge ok">✓ Empreinte vérifiée : fiche non modifiée</span>'
         : '<span class="badge bad">Empreinte non conforme</span>'}</p>
       <div class="hash">SHA-256 ${esc(fiche.hash)}</div>
-      <p style="margin:16px 0 0"><button class="btn pri" id="dl" type="button">Télécharger le PDF</button></p>`;
+      <p style="margin:16px 0 0;display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" id="dl" type="button">Télécharger le PDF</button>
+      <button class="btn danger" id="del" type="button">Supprimer la fiche</button></p>`;
+    $('del').onclick = async () => {
+      if (!confirm('Supprimer définitivement la fiche ' + fiche.id + ' des archives du club ?\n\nCette action ne peut pas être annulée.')) return;
+      try {
+        await api({ id: fiche.id }, 'DELETE');
+        $('detailIn').innerHTML = '<div class="empty">Fiche supprimée.</div>';
+        await load($('q').value.trim());
+      } catch (err) { alert(err.message); }
+    };
     $('dl').onclick = () => {
       const blob = new Blob([F.renderFichePDF(d)], { type: 'application/pdf' });
       const a = document.createElement('a');
