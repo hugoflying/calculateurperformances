@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f6fd1">
+<meta name="robots" content="noindex,nofollow">
+<title>Perfs ACBT — Archives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>(function(){try{var t=localStorage.getItem("acbt-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+<style>
+:root{
+  --bg:#eef1f4; --card:#ffffff; --field:#f4f6f8; --ink:#15212c; --muted:#5d6b78; --line:#d5dce2;
+  --accent:#1f6fd1; --accent-ink:#ffffff; --accent-soft:#eaf2fd;
+  --ok:#1d8a4e; --ok-bg:#e8f5ee; --ok-text:#1d6b3e; --err:#b3261e; --err-bg:#fdecea; --err-text:#9a1f18;
+  --warn:#8a5200; --warn-bg:#fff6e5; --band:#e6eefb; --band-line:#bcd0ee; --band-ink:#1a4c91;
+  --shadow:0 1px 2px rgba(20,33,44,.06),0 4px 14px rgba(20,33,44,.05);
+  --display:"Barlow Condensed","Arial Narrow",sans-serif; --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d141a; --card:#151f28; --field:#0f171e; --ink:#e4eaef; --muted:#8a98a5; --line:#26333f;
+  --accent:#5aa2ff; --accent-ink:#06121f; --accent-soft:#132235;
+  --ok:#4cc48a; --ok-bg:#10261b; --ok-text:#7fdcaa; --err:#ff7a70; --err-bg:#2c1414; --err-text:#ffa39c;
+  --warn:#f0b340; --warn-bg:#2a2210; --band:#18293b; --band-line:#2a4766; --band-ink:#a9cdff; --shadow:none; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d141a; --card:#151f28; --field:#0f171e; --ink:#e4eaef; --muted:#8a98a5; --line:#26333f;
+  --accent:#5aa2ff; --accent-ink:#06121f; --accent-soft:#132235;
+  --ok:#4cc48a; --ok-bg:#10261b; --ok-text:#7fdcaa; --err:#ff7a70; --err-bg:#2c1414; --err-text:#ffa39c;
+  --warn:#f0b340; --warn-bg:#2a2210; --band:#18293b; --band-line:#2a4766; --band-ink:#a9cdff; --shadow:none; color-scheme:dark;}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1180px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px}
+.brand{font:700 22px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;flex:1;white-space:nowrap}
+.brand span{color:var(--accent)}
+.brand small{font:700 13px var(--display);letter-spacing:.1em;color:var(--muted);margin-left:10px}
+main{max-width:1180px;margin:0 auto;padding:24px 20px 48px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.card h2{margin:0;padding:12px 18px;background:var(--band);border-bottom:1px solid var(--band-line);font:700 15px/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--band-ink)}
+.in{padding:16px 18px}
+.lbl{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.inp{height:44px;border:1px solid var(--line);border-radius:8px;background:var(--field);padding:0 12px;font:600 16px var(--body);min-width:0}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.btn{height:44px;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--card);font:600 15px var(--body);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn svg{width:17px;height:17px}
+.login{max-width:440px;margin:40px auto 0}
+.login form{display:grid;gap:10px}
+.msg{font:600 14px var(--body);color:var(--err-text)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tools .inp{flex:1;min-width:200px}
+.count{color:var(--muted);font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+th{font:700 12px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--field);position:sticky;top:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--accent-soft)}
+tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.tw{max-height:62vh;overflow:auto}
+.v{display:inline-block;font:700 11.5px var(--display);letter-spacing:.06em;padding:3px 7px;border-radius:4px;margin-right:4px}
+.v.ok{background:var(--ok-bg);color:var(--ok-text)} .v.bad{background:var(--err-bg);color:var(--err-text)}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:1fr}}
+.detail .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.detail .row:last-of-type{border-bottom:0}
+.detail .row span:first-child{color:var(--muted)}
+.detail .row span:last-child{font-weight:600;text-align:right}
+.detail h3{font:700 16px var(--display);letter-spacing:.06em;text-transform:uppercase;margin:16px 0 4px}
+.badge{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--body);padding:5px 10px;border-radius:6px}
+.badge.ok{background:var(--ok-bg);color:var(--ok-text)} .badge.bad{background:var(--err-bg);color:var(--err-text)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.hash{font:500 11.5px ui-monospace,Menlo,Consolas,monospace;color:var(--muted);word-break:break-all}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand">Perfs <span>ACBT</span><small>Archives du club</small></div>
+    <button class="btn" id="logout" type="button" hidden>Se déconnecter</button>
+  </div>
+</header>
+
+<main>
+  <section class="card login" id="loginCard">
+    <h2>Accès aux archives</h2>
+    <div class="in">
+      <form id="loginForm">
+        <label class="lbl" for="pw">Mot de passe des archives</label>
+        <input class="inp" id="pw" type="password" autocomplete="current-password" required>
+        <button class="btn pri" type="submit">Ouvrir les archives</button>
+        <div class="msg" id="loginMsg" role="alert"></div>
+      </form>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+    <div class="grid">
+      <section class="card">
+        <h2>Fiches de préparation</h2>
+        <div class="in">
+          <div class="tools">
+            <input class="inp" id="q" type="search" placeholder="Rechercher : pilote, immatriculation, terrain, n° de fiche" aria-label="Rechercher">
+            <button class="btn" id="csv" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>Exporter (CSV)</button>
+            <span class="count" id="count"></span>
+          </div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Date du calcul</th><th>Pilote</th><th>Avion</th><th>Départ</th><th>Arrivée</th><th>Verdicts</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card detail" id="detail">
+        <h2>Détail</h2>
+        <div class="in" id="detailIn"><div class="empty">Sélectionne une fiche dans la liste.</div></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FICHE PDF — module autonome (aucune dépendance, fonctionne hors ligne)
+   Utilisé par l'application et par la page d'archives du club.
+   ═══════════════════════════════════════════════════════════════ */
+(function (global) {
+  'use strict';
+
+  /* ── JSON canonique (clés triées) : même résultat partout, pour l'empreinte ── */
+  function canon(v) {
+    if (v === null || typeof v !== 'object') return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+    return '{' + Object.keys(v).filter(k => v[k] !== undefined).sort()
+      .map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  }
+
+  /* ── SHA-256 synchrone (pour garder le geste utilisateur avant le partage) ── */
+  function sha256Hex(str) {
+    const bytes = new TextEncoder().encode(str);
+    const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const l = bytes.length, nBlocks = ((l + 9 + 63) >> 6);
+    const m = new Uint8Array(nBlocks * 64);
+    m.set(bytes); m[l] = 0x80;
+    const bitLen = l * 8;
+    const dv = new DataView(m.buffer);
+    dv.setUint32(m.length - 4, bitLen >>> 0);
+    dv.setUint32(m.length - 8, Math.floor(bitLen / 0x100000000));
+    const w = new Uint32Array(64);
+    const r = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let b = 0; b < nBlocks; b++) {
+      for (let i = 0; i < 16; i++) w[i] = dv.getUint32(b * 64 + i * 4);
+      for (let i = 16; i < 64; i++) {
+        const s0 = r(w[i-15], 7) ^ r(w[i-15], 18) ^ (w[i-15] >>> 3);
+        const s1 = r(w[i-2], 17) ^ r(w[i-2], 19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
+      }
+      let [a, bb, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const S1 = r(e, 6) ^ r(e, 11) ^ r(e, 25);
+        const ch = (e & f) ^ (~e & g);
+        const t1 = (h + S1 + ch + K[i] + w[i]) >>> 0;
+        const S0 = r(a, 2) ^ r(a, 13) ^ r(a, 22);
+        const mj = (a & bb) ^ (a & c) ^ (bb & c);
+        const t2 = (S0 + mj) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+      }
+      H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + bb) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+      H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+    }
+    return H.map(x => x.toString(16).padStart(8, '0')).join('');
+  }
+
+  /* ── Mini-générateur PDF (polices standard Helvetica / Courier) ── */
+  const WID = {"Helvetica": [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584, 350, 556, 350, 222, 556, 333, 1000, 556, 556, 333, 1000, 667, 333, 1000, 350, 611, 350, 350, 222, 222, 333, 333, 350, 556, 1000, 333, 1000, 500, 333, 944, 350, 500, 667, 278, 333, 556, 556, 556, 556, 260, 556, 333, 737, 370, 556, 584, 333, 737, 333, 400, 584, 333, 333, 333, 556, 537, 278, 333, 333, 365, 556, 834, 834, 834, 611, 667, 667, 667, 667, 667, 667, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611, 556, 556, 556, 556, 556, 556, 889, 500, 556, 556, 556, 556, 278, 278, 278, 278, 556, 556, 556, 556, 556, 556, 556, 584, 611, 556, 556, 556, 556, 500, 556, 500], "Helvetica-Bold": [278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584, 584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333, 584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889, 611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389, 584, 350, 556, 350, 278, 556, 500, 1000, 556, 556, 333, 1000, 667, 333, 1000, 350, 611, 350, 350, 278, 278, 500, 500, 350, 556, 1000, 333, 1000, 556, 333, 944, 350, 500, 667, 278, 333, 556, 556, 556, 556, 280, 556, 333, 737, 370, 556, 584, 333, 737, 333, 400, 584, 333, 333, 333, 611, 556, 278, 333, 333, 365, 556, 834, 834, 834, 611, 722, 722, 722, 722, 722, 722, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611, 556, 556, 556, 556, 556, 556, 889, 556, 556, 556, 556, 556, 278, 278, 278, 278, 611, 611, 611, 611, 611, 611, 611, 584, 611, 611, 611, 611, 611, 556, 611, 556]};
+  const FONTS = { H: 'Helvetica', HB: 'Helvetica-Bold', C: 'Courier' };
+  const CP1252 = { 0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F };
+  const SUBST = { '→':'->', '←':'<-', '✓':'OK', '✗':'X', '✕':'X', '≤':'<=', '≥':'>=', '⚠':'!', '★':'*', ' ':' ', ' ':' ' };
+  function toWin(str) {
+    str = String(str == null ? '' : str);
+    let out = '';
+    for (const ch of str) {
+      if (SUBST[ch] !== undefined) { out += SUBST[ch]; continue; }
+      const c = ch.codePointAt(0);
+      if (c === 10 || c === 13 || c === 9) { out += ' '; continue; }
+      if (c < 32) continue;
+      if (c < 128 || (c >= 0xA0 && c < 256)) out += String.fromCharCode(c);
+      else if (CP1252[c]) out += String.fromCharCode(CP1252[c]);
+      else out += '?';
+    }
+    return out;
+  }
+  function textWidth(str, font, size) {
+    const s = toWin(str);
+    if (font === 'C') return s.length * 0.6 * size;
+    const t = WID[FONTS[font]];
+    let w = 0;
+    for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); w += (c >= 32 && c < 256) ? t[c - 32] : 556; }
+    return w * size / 1000;
+  }
+  function wrap(str, font, size, maxW) {
+    const words = String(str || '').split(/\s+/).filter(Boolean);
+    const lines = []; let cur = '';
+    words.forEach(wd => {
+      const test = cur ? cur + ' ' + wd : wd;
+      if (textWidth(test, font, size) <= maxW || !cur) cur = test;
+      else { lines.push(cur); cur = wd; }
+    });
+    if (cur) lines.push(cur);
+    // mots trop longs (METAR) : coupe brute
+    const out = [];
+    lines.forEach(l => {
+      while (textWidth(l, font, size) > maxW && l.length > 1) {
+        let n = l.length;
+        while (n > 1 && textWidth(l.slice(0, n), font, size) > maxW) n--;
+        out.push(l.slice(0, n)); l = l.slice(n);
+      }
+      out.push(l);
+    });
+    return out;
+  }
+  const esc = s => s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  const f2 = n => (Math.round(n * 100) / 100).toString();
+
+  function PDF() {
+    this.W = 595.28; this.H = 841.89;
+    this.pages = []; this.addPage();
+  }
+  PDF.prototype.addPage = function () { this.ops = []; this.pages.push(this.ops); };
+  PDF.prototype.color = function (c, stroke) { return c.map(f2).join(' ') + (stroke ? ' RG' : ' rg'); };
+  PDF.prototype.rect = function (x, y, w, h, o) {
+    o = o || {};
+    const Y = this.H - y - h;
+    let s = 'q ';
+    if (o.fill) s += this.color(o.fill) + ' ';
+    if (o.stroke) s += this.color(o.stroke, true) + ' ' + f2(o.lw || 0.6) + ' w ';
+    s += f2(x) + ' ' + f2(Y) + ' ' + f2(w) + ' ' + f2(h) + ' re ' + (o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S') + ' Q';
+    this.ops.push(s);
+  };
+  PDF.prototype.line = function (x1, y1, x2, y2, o) {
+    o = o || {};
+    this.ops.push('q ' + this.color(o.color || [0.85, 0.87, 0.9], true) + ' ' + f2(o.lw || 0.5) + ' w ' +
+      f2(x1) + ' ' + f2(this.H - y1) + ' m ' + f2(x2) + ' ' + f2(this.H - y2) + ' l S Q');
+  };
+  PDF.prototype.text = function (x, y, str, o) {
+    o = o || {};
+    const font = o.font || 'H', size = o.size || 9;
+    const s = toWin(str);
+    let X = x;
+    if (o.align === 'right') X = x - textWidth(s, font, size);
+    else if (o.align === 'center') X = x - textWidth(s, font, size) / 2;
+    const fid = font === 'H' ? 'F1' : font === 'HB' ? 'F2' : 'F3';
+    this.ops.push('BT ' + this.color(o.color || [0.08, 0.13, 0.17]) + ' /' + fid + ' ' + f2(size) + ' Tf ' +
+      f2(X) + ' ' + f2(this.H - y) + ' Td (' + esc(s) + ') Tj ET');
+  };
+  PDF.prototype.build = function (meta) {
+    const objs = [];
+    const add = s => { objs.push(s); return objs.length; };
+    const catalog = add(null), pagesId = add(null);
+    const f1 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    const f2i = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    const f3 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>');
+    const kids = [];
+    this.pages.forEach(ops => {
+      const content = ops.join('\n');
+      const cid = add('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream');
+      kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + f2(this.W) + ' ' + f2(this.H) +
+        '] /Resources << /Font << /F1 ' + f1 + ' 0 R /F2 ' + f2i + ' 0 R /F3 ' + f3 + ' 0 R >> >> /Contents ' + cid + ' 0 R >>'));
+    });
+    objs[catalog - 1] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
+    objs[pagesId - 1] = '<< /Type /Pages /Kids [' + kids.map(k => k + ' 0 R').join(' ') + '] /Count ' + kids.length + ' >>';
+    const info = add('<< /Title (' + esc(toWin(meta && meta.title || 'Fiche')) + ') /Producer (Perfs ACBT) /Creator (Perfs ACBT) >>');
+    let out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+    const offs = [];
+    objs.forEach((o, i) => { offs.push(out.length); out += (i + 1) + ' 0 obj\n' + o + '\nendobj\n'; });
+    const xref = out.length;
+    out += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n' +
+      offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('');
+    out += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root ' + catalog + ' 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF';
+    const bytes = new Uint8Array(out.length);
+    for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
+    return bytes;
+  };
+
+  /* ── Mise en page de la fiche ── */
+  const C = {
+    ink: [0.08, 0.13, 0.17], muted: [0.36, 0.42, 0.47], line: [0.84, 0.86, 0.89], soft: [0.96, 0.97, 0.98],
+    blue: [0.12, 0.44, 0.82], navy: [0.10, 0.30, 0.57], green: [0.11, 0.54, 0.31], greenBg: [0.91, 0.96, 0.93],
+    red: [0.70, 0.15, 0.12], redBg: [0.99, 0.93, 0.92], amber: [0.54, 0.32, 0.0], amberBg: [1, 0.96, 0.9], white: [1, 1, 1]
+  };
+  function fmtLocal(iso) {
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2, '0');
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function renderFichePDF(d) {
+    const pdf = new PDF();
+    const M = 36, W = pdf.W - 2 * M, BOTTOM = pdf.H - 60;
+    let y = 0;
+    const ensure = (need, redraw) => {
+      if (y + need > BOTTOM) { footer(); pdf.addPage(); y = M; if (redraw) redraw(); }
+    };
+
+    // En-tête
+    pdf.rect(0, 0, pdf.W, 66, { fill: C.navy });
+    pdf.text(M, 30, 'FICHE DE PRÉPARATION DU VOL', { font: 'HB', size: 16, color: C.white });
+    pdf.text(M, 47, 'Aéroclub de Beauvais-Tillé · Calcul préparatoire au vol', { size: 8.5, color: [0.78, 0.86, 0.97] });
+    pdf.text(pdf.W - M, 31, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 18, color: C.white, align: 'right' });
+    pdf.text(pdf.W - M, 47, 'Fiche n° ' + d.id, { size: 8.5, color: [0.78, 0.86, 0.97], align: 'right' });
+    y = 80;
+
+    // Bandeau d'informations
+    const info = [
+      ['Pilote', d.pilot || '—'],
+      ['Date et heure (locale)', fmtLocal(d.created)],
+      ['Type', (d.aircraft && (d.aircraft.type || d.aircraft.label)) || '—'],
+      ['Marge', (d.margin != null ? d.margin : '—') + ' %'],
+      ['Carénages', d.spats ? 'Avec' : 'Sans (+3 %)']
+    ];
+    pdf.rect(M, y, W, 34, { fill: C.soft, stroke: C.line });
+    const cw = W / info.length;
+    info.forEach(([l, v], i) => {
+      const x = M + i * cw + 8;
+      if (i) pdf.line(M + i * cw, y + 6, M + i * cw, y + 28, { color: C.line });
+      pdf.text(x, y + 12, l.toUpperCase(), { size: 6.5, color: C.muted });
+      const lines = wrap(v, 'HB', 9, cw - 14);
+      pdf.text(x, y + 25, lines[0] + (lines.length > 1 ? '…' : ''), { font: 'HB', size: 9 });
+    });
+    y += 46;
+
+    // Colonne décollage / atterrissage
+    function block(x, y0, w, s, kind) {
+      let yy = y0;
+      const dep = kind === 'dep';
+      const head = dep ? C.navy : [0.02, 0.47, 0.34];
+      pdf.rect(x, yy, w, 24, { fill: head });
+      pdf.text(x + 9, yy + 15.5, (dep ? 'DÉCOLLAGE' : 'ATTERRISSAGE') + ' · ' + (s.icao || '—'), { font: 'HB', size: 10.5, color: C.white });
+      if (s.name) pdf.text(x + w - 9, yy + 15.5, wrap(s.name, 'H', 7.5, w * 0.45)[0], { size: 7.5, color: [0.85, 0.92, 0.97], align: 'right' });
+      yy += 30;
+      const ok = s.result && s.result.verdict === 'ok';
+      const bad = s.result && s.result.verdict === 'bad';
+      const vc = ok ? C.green : bad ? C.red : C.muted;
+      pdf.rect(x, yy, w, 40, { fill: ok ? C.greenBg : bad ? C.redBg : C.soft, stroke: vc, lw: 1 });
+      pdf.text(x + 10, yy + 16, ok ? (dep ? 'DÉCOLLAGE POSSIBLE' : 'ATTERRISSAGE POSSIBLE') : bad ? 'DISTANCE INSUFFISANTE' : 'NON VÉRIFIÉ',
+        { font: 'HB', size: 11.5, color: vc });
+      pdf.text(x + 10, yy + 31, 'Requis ' + s.result.required + ' (marge incluse) · ' + s.dist.label + ' ' + s.result.available,
+        { size: 8.5, color: C.ink });
+      yy += 50;
+      const sect = t => { pdf.text(x, yy + 8, t.toUpperCase(), { font: 'HB', size: 6.8, color: C.muted }); yy += 13; };
+      const row = (l, v) => {
+        const lines = wrap(v, 'HB', 8.3, w * 0.58);
+        pdf.text(x, yy + 8, l, { size: 8.3, color: C.muted });
+        lines.forEach((ln, i) => pdf.text(x + w, yy + 8 + i * 10, ln, { font: 'HB', size: 8.3, align: 'right' }));
+        yy += 6 + lines.length * 10;
+        pdf.line(x, yy - 1, x + w, yy - 1, { color: C.line, lw: 0.4 });
+      };
+      sect('Piste et conditions');
+      row('QFU', s.qfu ? s.qfu + '°' : '—');
+      row(s.dist.label, s.dist.value ? s.dist.value + ' m' : '—');
+      row('Élévation', (s.alt || '—') + ' ft');
+      row('Température (OAT)', (s.oat || '—') + ' °C');
+      row('Masse', (s.mass || '—') + ' kg');
+      row('Vent', s.windText || '—');
+      if (s.comps) row('Composantes', s.comps);
+      row(dep ? 'Surface' : 'Freinage / état', s.surface || '—');
+      row('Vent pris en compte', s.windRule || '—');
+      yy += 4;
+      sect('Détail du calcul (sans marge)');
+      (s.result.rows || []).forEach(([l, v]) => row(l, v));
+      if (s.note) {
+        wrap(s.note, 'H', 7.3, w).forEach(ln => { pdf.text(x, yy + 8, ln, { size: 7.3, color: C.muted }); yy += 9; });
+        yy += 2;
+      }
+      if (s.meteo && s.meteo.length) {
+        yy += 4;
+        s.meteo.forEach(m => {
+          sect(m.type);
+          const lines = wrap(m.raw, 'C', 7, w - 12);
+          pdf.rect(x, yy - 2, w, lines.length * 9 + 8, { fill: C.soft, stroke: C.line, lw: 0.4 });
+          lines.forEach((ln, i) => pdf.text(x + 6, yy + 7 + i * 9, ln, { font: 'C', size: 7, color: [0.25, 0.3, 0.35] }));
+          yy += lines.length * 9 + 12;
+        });
+      }
+      return yy;
+    }
+
+    const sides = [];
+    if (d.dep) sides.push(['dep', d.dep]);
+    if (d.arr) sides.push(['arr', d.arr]);
+    if (sides.length) {
+      ensure(260);
+      const gap = 16;
+      const colW = sides.length === 2 ? (W - gap) / 2 : W;
+      let maxY = y;
+      sides.forEach(([k, s], i) => { maxY = Math.max(maxY, block(M + i * (colW + gap), y, colW, s, k)); });
+      y = maxY + 10;
+    }
+
+    // Carburant
+    if (d.fuel) {
+      const f = d.fuel;
+      const rows = (f.phases || []).length;
+      ensure(120 + rows * 14);
+      pdf.rect(M, y, W, 24, { fill: [0.48, 0.28, 0.02] });
+      pdf.text(M + 9, y + 15.5, 'BILAN CARBURANT', { font: 'HB', size: 10.5, color: C.white });
+      pdf.text(M + W - 9, y + 15.5, 'Consommation ' + f.conso + ' L/h · utilisable ' + f.usable + ' L', { size: 8, color: [1, 0.92, 0.8], align: 'right' });
+      y += 30;
+      const vc = f.ok ? C.green : C.red;
+      pdf.rect(M, y, W, 26, { fill: f.ok ? C.greenBg : C.redBg, stroke: vc, lw: 1 });
+      pdf.text(M + 10, y + 16.5, f.ok ? 'CARBURANT SUFFISANT' : 'CARBURANT INSUFFISANT', { font: 'HB', size: 11, color: vc });
+      pdf.text(M + W - 10, y + 16.5, 'Requis ' + f.totalL + ' L · ' + (f.ok ? 'reste ' : 'manque ') + f.remainingL + ' L',
+        { font: 'HB', size: 9, align: 'right' });
+      y += 34;
+      const xT = M + W * 0.72, xL = M + W;
+      pdf.text(M, y + 8, 'POSTE', { font: 'HB', size: 6.8, color: C.muted });
+      pdf.text(xT, y + 8, 'DURÉE', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
+      pdf.text(xL, y + 8, 'LITRES', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
+      y += 13;
+      (f.phases || []).forEach(p => {
+        pdf.text(M, y + 8, p.ph, { size: 8.5 });
+        pdf.text(xT, y + 8, p.time, { size: 8.5, align: 'right', color: C.muted });
+        pdf.text(xL, y + 8, p.L + ' L', { font: 'HB', size: 8.5, align: 'right' });
+        y += 13; pdf.line(M, y - 1, M + W, y - 1, { color: C.line, lw: 0.4 });
+      });
+      pdf.line(M, y, M + W, y, { color: C.ink, lw: 1 });
+      pdf.text(M, y + 11, 'Carburant minimum requis', { font: 'HB', size: 9 });
+      pdf.text(xT, y + 11, f.totalTime, { font: 'HB', size: 9, align: 'right' });
+      pdf.text(xL, y + 11, f.totalL + ' L', { font: 'HB', size: 9, align: 'right' });
+      y += 20;
+      if (f.depTime) {
+        pdf.text(M, y + 8, 'Mise en route ' + f.depTime + ' · atterrissage max (réserve conservée) ' + f.maxLdg +
+          ' · arrêt moteur (panne sèche) ' + f.engineStop + ' — heure locale', { size: 8.3, color: C.ink });
+        y += 16;
+      }
+      y += 6;
+    }
+
+    // Nuit aéronautique
+    if (d.sun && d.sun.sunset) {
+      ensure(30);
+      pdf.rect(M, y, W, 22, { fill: C.amberBg, stroke: [0.94, 0.83, 0.6], lw: 0.6 });
+      pdf.text(M + 10, y + 14, 'Coucher du soleil ' + d.sun.sunset + ' · Nuit aéronautique ' + d.sun.night +
+        (d.sun.icao ? ' (' + d.sun.icao + ')' : '') + ' — heure locale, date du jour', { font: 'HB', size: 8.5, color: C.amber });
+      y += 30;
+    }
+
+    function footer() {
+      const fy = pdf.H - 46;
+      pdf.line(M, fy, M + W, fy, { color: C.line, lw: 0.6 });
+      pdf.text(M, fy + 12, 'Calcul préparatoire au vol : ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable de ses décisions.',
+        { size: 7, color: C.muted });
+      pdf.text(M, fy + 23, 'Fiche n° ' + d.id + ' · établie le ' + fmtLocal(d.created) + ' · Perfs ACBT ' + (d.app || ''),
+        { size: 7, color: C.muted });
+      if (d.hash) pdf.text(M, fy + 33, 'Empreinte SHA-256 : ' + d.hash, { font: 'C', size: 6.3, color: C.muted });
+    }
+    footer();
+    return pdf.build({ title: 'Fiche ' + d.id });
+  }
+
+  /* Empreinte d'une fiche : SHA-256 du JSON canonique, sans le champ hash */
+  function ficheHash(d) {
+    const c = Object.assign({}, d); delete c.hash;
+    return sha256Hex(canon(c));
+  }
+
+  global.FichePDF = { renderFichePDF, ficheHash, sha256Hex, canon, fmtLocal };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const F = window.FichePDF;
+  const KEY = 'acbt-archives-pw';
+  let pw = '';
+  try { pw = sessionStorage.getItem(KEY) || ''; } catch (e) {}
+  let list = [];
+
+  async function api(params) {
+    const r = await fetch('/api/fiches' + (params ? '?' + new URLSearchParams(params) : ''), {
+      headers: { Authorization: 'Bearer ' + pw }, cache: 'no-store'
+    });
+    let j = null;
+    try { j = await r.json(); } catch (e) {}
+    if (!j) throw new Error("Les archives ne répondent pas. La fonction /api/fiches est-elle bien en ligne ?");
+    if (!r.ok || !j.ok) { const err = new Error(j.error || ('Erreur ' + r.status)); err.status = r.status; throw err; }
+    return j;
+  }
+
+  const fmt = iso => F.fmtLocal(iso);
+  const vchip = (l, v) => v ? `<span class="v ${v === 'bad' ? 'bad' : 'ok'}">${l} ${v === 'bad' ? 'KO' : 'OK'}</span>` : '';
+
+  async function load(q) {
+    const j = await api(q ? { q } : { limit: 500 });
+    list = j.fiches;
+    $('count').textContent = list.length + ' affichée' + (list.length > 1 ? 's' : '') + ' sur ' + j.total;
+    $('rows').innerHTML = list.length ? list.map(f => `<tr data-id="${esc(f.id)}" tabindex="0">
+        <td>${esc(fmt(f.created_at))}</td><td>${esc(f.pilot)}</td><td>${esc(f.aircraft)}</td>
+        <td>${esc(f.dep_icao || '—')}</td><td>${esc(f.arr_icao || '—')}</td>
+        <td>${vchip('T/O', f.dep_verdict)}${vchip('LDG', f.arr_verdict)}${vchip('FUEL', f.fuel_verdict)}</td></tr>`).join('')
+      : `<tr><td colspan="6" class="empty">Aucune fiche${q ? ' pour cette recherche' : ' pour le moment'}.</td></tr>`;
+  }
+
+  async function show(id) {
+    document.querySelectorAll('#rows tr').forEach(tr => tr.classList.toggle('sel', tr.dataset.id === id));
+    $('detailIn').innerHTML = '<div class="empty">Chargement…</div>';
+    const { fiche } = await api({ id });
+    const d = fiche.data;
+    const side = (lbl, s) => !s ? '' : `<h3>${lbl} · ${esc(s.icao)}</h3>
+      <div class="row"><span>Verdict</span><span>${s.result.verdict === 'bad' ? '<span class="v bad">INSUFFISANT</span>' : '<span class="v ok">OK</span>'}</span></div>
+      <div class="row"><span>Requis / disponible</span><span>${esc(s.result.required)} / ${esc(s.result.available)}</span></div>
+      <div class="row"><span>QFU · masse</span><span>${esc(s.qfu)} · ${esc(s.mass)} kg</span></div>
+      <div class="row"><span>Vent</span><span>${esc(s.windText)}</span></div>`;
+    const fuel = d.fuel ? `<h3>Carburant</h3>
+      <div class="row"><span>Verdict</span><span>${d.fuel.ok ? '<span class="v ok">OK</span>' : '<span class="v bad">INSUFFISANT</span>'}</span></div>
+      <div class="row"><span>Requis / utilisable</span><span>${esc(d.fuel.totalL)} L / ${esc(d.fuel.usable)} L</span></div>` : '';
+    $('detailIn').innerHTML = `
+      <div class="row"><span>Fiche</span><span>${esc(fiche.id)}</span></div>
+      <div class="row"><span>Pilote</span><span>${esc(d.pilot)}</span></div>
+      <div class="row"><span>Avion</span><span>${esc(d.aircraft.label || d.aircraft.immat)}</span></div>
+      <div class="row"><span>Calculée le</span><span>${esc(fmt(fiche.created_at))}</span></div>
+      <div class="row"><span>Reçue au club le</span><span>${esc(fmt(fiche.received_at))}</span></div>
+      ${side('Décollage', d.dep)}${side('Atterrissage', d.arr)}${fuel}
+      <p style="margin:16px 0 8px">${fiche.hash_ok
+        ? '<span class="badge ok">✓ Empreinte vérifiée : fiche non modifiée</span>'
+        : '<span class="badge bad">Empreinte non conforme</span>'}</p>
+      <div class="hash">SHA-256 ${esc(fiche.hash)}</div>
+      <p style="margin:16px 0 0"><button class="btn pri" id="dl" type="button">Télécharger le PDF</button></p>`;
+    $('dl').onclick = () => {
+      const blob = new Blob([F.renderFichePDF(d)], { type: 'application/pdf' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Fiche_' + d.aircraft.immat + '_' + fiche.id + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 15000);
+    };
+  }
+
+  function exportCsv() {
+    const head = ['Fiche', 'Calculée le', 'Reçue le', 'Pilote', 'Avion', 'Départ', 'Verdict T/O', 'Arrivée', 'Verdict LDG', 'Verdict carburant', 'Empreinte vérifiée'];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [head.map(q).join(';')].concat(list.map(f => [f.id, fmt(f.created_at), fmt(f.received_at), f.pilot, f.aircraft,
+      f.dep_icao, f.dep_verdict, f.arr_icao, f.arr_verdict, f.fuel_verdict, f.hash_ok ? 'oui' : 'non'].map(q).join(';')));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'archives_perfs_acbt.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  async function enter() {
+    try {
+      await load('');
+      $('loginCard').hidden = true; $('app').hidden = false; $('logout').hidden = false;
+      try { sessionStorage.setItem(KEY, pw); } catch (e) {}
+    } catch (e) {
+      $('loginCard').hidden = false; $('app').hidden = true;
+      $('loginMsg').textContent = e.message;
+      try { sessionStorage.removeItem(KEY); } catch (_) {}
+    }
+  }
+
+  $('loginForm').addEventListener('submit', e => { e.preventDefault(); pw = $('pw').value; $('loginMsg').textContent = ''; enter(); });
+  $('logout').addEventListener('click', () => { try { sessionStorage.removeItem(KEY); } catch (e) {} location.reload(); });
+  let t = null;
+  $('q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => load($('q').value.trim()).catch(err => alert(err.message)), 300); });
+  $('rows').addEventListener('click', e => { const tr = e.target.closest('tr[data-id]'); if (tr) show(tr.dataset.id).catch(err => { $('detailIn').innerHTML = '<div class="empty">' + esc(err.message) + '</div>'; }); });
+  $('rows').addEventListener('keydown', e => { if (e.key === 'Enter') { const tr = e.target.closest('tr[data-id]'); if (tr) tr.click(); } });
+  $('csv').addEventListener('click', exportCsv);
+  if (pw) enter();
+})();
+</script>
+</body>
+</html>
