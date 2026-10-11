@@ -58,7 +58,7 @@
 [hidden]{display:none!important}
 html,body{margin:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);-webkit-font-smoothing:antialiased;min-height:100dvh;
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;min-height:100dvh;
   padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 input,button,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
@@ -75,12 +75,12 @@ input[type=number]{-moz-appearance:textfield}
 .topbar-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:10px}
 .brand{font:700 24px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0;flex:1;min-width:0;white-space:nowrap}
 .brand span{color:var(--accent)}
-.brand small{font:600 11px/1 var(--mono);letter-spacing:.06em;color:var(--muted);margin-left:8px;padding:3px 6px;border:1px solid var(--line);border-radius:4px;vertical-align:middle}
+.brand small{font:600 11px/1 var(--body);letter-spacing:.06em;color:var(--muted);margin-left:8px;padding:3px 6px;border:1px solid var(--line);border-radius:4px;vertical-align:middle}
 .icon-btn{position:relative;width:var(--ctl);height:var(--ctl);border:1px solid var(--line);border-radius:8px;background:var(--card);
   display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .icon-btn:hover{color:var(--ink)}
 .hist-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--accent);
-  color:var(--accent-ink);font:700 10px/18px var(--mono);text-align:center}
+  color:var(--accent-ink);font:700 10px/18px var(--body);text-align:center}
 
 /* ═══════════ Mise en page ═══════════ */
 .app{max-width:640px;margin:0 auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:12px}
@@ -90,7 +90,7 @@ input[type=number]{-moz-appearance:textfield}
 /* ═══════════ Typo utilitaire ═══════════ */
 .lbl{font:600 11px/1.1 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .h2{font:700 20px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0}
-.mono{font-family:var(--mono)}
+.mono{font-family:var(--body)}
 .note{font:500 12.5px/1.45 var(--body);color:var(--muted)}
 
 /* ═══════════ Choix du périmètre ═══════════ */
@@ -121,10 +121,18 @@ input[type=number]{-moz-appearance:textfield}
 .step.is-done .step-name{font:600 11px/1 var(--display);letter-spacing:.08em;color:var(--muted)}
 .step.is-todo .step-name{color:var(--muted)}
 .step.is-open .step-name{font-size:20px}
-.step-sum{font:600 14px/1.4 var(--mono);display:none;flex-wrap:wrap;column-gap:14px;row-gap:2px}
-.step-sum span{white-space:nowrap}
+.step-sum{display:none;flex-direction:column;gap:1px;min-width:0}
 .step.is-done .step-sum{display:flex}
-.step-state{font:700 11px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:4px;flex-shrink:0}
+.step-sum .s1{font:700 17px/1.25 var(--body);color:var(--ink)}
+.step-sum .s2{font:500 13.5px/1.4 var(--body);color:var(--muted);display:flex;flex-wrap:wrap;column-gap:14px}
+.step-sum .s2 > span{white-space:nowrap}
+.step-sum .s2:empty{display:none}
+.step.is-bad .step-sum .s2{color:var(--err-text);font-weight:600}
+.step.is-done.is-bad .step-num{background:var(--err);border-color:var(--err)}
+.step-num .x{display:none;width:13px;height:13px}
+.step.is-done.is-bad .step-num .chk{display:none}
+.step.is-done.is-bad .step-num .x{display:block}
+.step-state{display:none!important;font:700 11px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:4px;flex-shrink:0}
 .step-state.ok{color:var(--ok-text);background:var(--ok-bg);border:1px solid var(--ok)}
 .step-state.bad{color:var(--err-text);background:var(--err-bg);border:1px solid var(--err)}
 .step-edit{width:var(--ctl);height:var(--ctl);border:1px solid var(--line);border-radius:8px;color:var(--accent);flex-shrink:0;display:flex;align-items:center;justify-content:center}
@@ -142,22 +150,22 @@ input[type=number]{-moz-appearance:textfield}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .f{display:flex;flex-direction:column;gap:5px;min-width:0}
 .inp{width:100%;height:var(--ctl);border:1px solid var(--line);border-radius:var(--r-sm);background:var(--field);color:var(--ink);
-  font:600 16px var(--mono);padding:0 10px;-webkit-appearance:none;appearance:none}
+  font:600 17px var(--body);padding:0 10px;-webkit-appearance:none;appearance:none}
 .inp::placeholder{color:var(--muted);font-weight:500;opacity:.7}
 .inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .inp.c{text-align:center}
-.inp.icao{text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:17px}
+.inp.icao{text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:18px}
 .inp.is-invalid{border-color:var(--err);background:var(--err-bg)}
 select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235d6b78' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center}
 .unit-in{position:relative}
 .unit-in .inp{padding-right:34px}
-.unit-in .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:600 12px var(--mono);color:var(--muted);pointer-events:none}
+.unit-in .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:600 12px var(--body);color:var(--muted);pointer-events:none}
 .vrb{display:flex;align-items:center}
 .vrb .inp{text-align:center}
 .vrb .inp:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)}
 .vrb .inp:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
-.vrb .v{height:var(--ctl);padding:0 8px;display:flex;align-items:center;font:700 13px var(--mono);color:var(--muted);
+.vrb .v{height:var(--ctl);padding:0 8px;display:flex;align-items:center;font:700 13px var(--body);color:var(--muted);
   background:var(--field);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .field-warn{font:600 12px var(--body);color:var(--warn);display:none}
 .field-warn.visible{display:block}
@@ -197,7 +205,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .wind-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .wind-cell{border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 4px;text-align:center;background:var(--card)}
 .wc-lbl{font:600 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.wc-val{font:700 21px/1.15 var(--mono)}
+.wc-val{font:700 24px/1.1 var(--display)}
 .wc-unit{font:500 10px var(--body);color:var(--muted)}
 .wind-cell.warn-yellow{border-color:var(--warn-line);background:var(--warn-bg)}
 .wind-cell.warn-yellow .wc-val,.wind-cell.warn-yellow .wc-lbl{color:var(--warn)}
@@ -225,7 +233,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .sun-item{border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .sun-item.is-night{border-color:var(--warn-line);background:var(--warn-bg)}
 .sun-lbl{font:600 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.sun-val{font:700 15px var(--mono)}
+.sun-val{font:700 17px var(--display)}
 .sun-item.is-night .sun-val,.sun-item.is-night .sun-lbl{color:var(--warn)}
 .sun-note{font:500 12px var(--body);color:var(--muted)}
 
@@ -238,10 +246,10 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .rwy-btn:hover{border-color:var(--accent)}
 .rwy-btn.rwy-preferred{border-color:var(--accent-line)}
 .rwy-btn.active{border:2px solid var(--accent);background:var(--accent-soft)}
-.rwy-desig{font:700 16px/1.1 var(--mono);color:var(--ink)}
+.rwy-desig{font:700 19px/1.1 var(--display);color:var(--ink)}
 .rwy-btn.active .rwy-desig{color:var(--accent-text)}
 .rwy-len{font:600 11.5px var(--body);color:var(--muted)}
-.rwy-hdg{font:500 10.5px var(--mono);color:var(--muted)}
+.rwy-hdg{font:500 10.5px var(--body);color:var(--muted)}
 .rwy-surf-badge{font:600 10.5px var(--body);color:var(--muted)}
 .rwy-btn.grass-surface .rwy-surf-badge{color:var(--ok-text)}
 
@@ -260,9 +268,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .taf-period:hover{border-color:var(--muted)}
 .tp-type-col{width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 2px;border-right:1px solid var(--line);background:var(--field)}
 .tp-type{font:700 11px var(--display);letter-spacing:.06em;color:var(--muted);text-align:center}
-.tp-time{font:500 9.5px var(--mono);color:var(--muted)}
+.tp-time{font:500 9.5px var(--body);color:var(--muted)}
 .tp-main{flex:1;min-width:0;padding:7px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px}
-.tp-wind{font:700 14.5px var(--mono)}
+.tp-wind{font:700 15px var(--body)}
 .tp-extra{font:500 11.5px/1.35 var(--body);color:var(--muted)}
 .tp-apply{flex-shrink:0;padding:6px 10px;display:flex;align-items:center;font:600 12px var(--body);color:var(--muted);max-width:42%;text-align:right}
 .taf-period.is-tempo{border-style:dashed}
@@ -281,12 +289,12 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 /* ═══════════ Carburant ═══════════ */
 .fuel-time{display:flex;align-items:center;gap:6px}
 .fuel-time .inp{text-align:center}
-.fuel-suffix{font:600 12px var(--mono);color:var(--muted)}
+.fuel-suffix{font:600 12px var(--body);color:var(--muted)}
 .fuel-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .fuel-kpi{border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 6px;text-align:center}
 .fuel-kpi-lbl{font:600 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.fuel-kpi-val{font:700 17px/1.2 var(--mono)}
-.fuel-kpi-unit{font:600 11px var(--mono);color:var(--muted);margin-left:2px}
+.fuel-kpi-val{font:700 19px/1.2 var(--display)}
+.fuel-kpi-unit{font:600 11px var(--body);color:var(--muted);margin-left:2px}
 .fuel-switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:var(--ctl)}
 .fuel-switch-lbl{font:600 14px var(--body)}
 .fuel-switch{position:relative;width:46px;height:28px;flex-shrink:0}
@@ -301,8 +309,8 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .fuel-brk{display:flex;flex-direction:column}
 .fuel-brk-row,.fuel-brk-total{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .fuel-brk-ph{font:500 14px var(--body)}
-.fuel-brk-tm{font:500 13px var(--mono);color:var(--muted);text-align:right;min-width:50px}
-.fuel-brk-lt{font:700 14px var(--mono);text-align:right;min-width:62px}
+.fuel-brk-tm{font:500 13px var(--body);color:var(--muted);text-align:right;min-width:50px}
+.fuel-brk-lt{font:700 14px var(--body);text-align:right;min-width:62px}
 .fuel-brk-total{border-bottom:0;border-top:2px solid var(--ink);margin-top:-1px}
 .fuel-brk-total .fuel-brk-ph{font:700 14px var(--display);letter-spacing:.06em;text-transform:uppercase}
 .fuel-brk-total .fuel-brk-lt{font-size:16px}
@@ -320,7 +328,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .fuel-clock.is-limit{border-color:var(--err-line);background:var(--err-bg)}
 .fuel-clock-lbl{font:600 10.5px/1.25 var(--display);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .fuel-clock.is-limit .fuel-clock-lbl,.fuel-clock.is-limit .fuel-clock-val{color:var(--err-text)}
-.fuel-clock-val{font:700 22px/1.25 var(--mono)}
+.fuel-clock-val{font:700 26px/1.2 var(--display)}
 .fuel-clock-sub{font:500 11px var(--body);color:var(--muted)}
 
 /* ═══════════ Fiche du vol ═══════════ */
@@ -333,7 +341,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .tag.is-ok-chip{color:var(--ok-text);background:var(--ok-bg);border-color:var(--ok)}
 .tag.is-bad-chip{color:var(--err-text);background:var(--err-bg);border-color:var(--err)}
 .res .kpi-bar{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.kpi-val{font:700 34px/1 var(--mono)}
+.kpi-val{font:700 40px/1 var(--display);letter-spacing:.01em}
 .kpi-bar.is-bad .kpi-val{color:var(--err-text)}
 .kpi-avail{font:500 14px var(--body);color:var(--muted)}
 .res-wait{font:500 14px var(--body);color:var(--muted)}
@@ -345,9 +353,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .pf-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
 .pf-row:last-of-type{border-bottom:0}
 .pf-label{font:500 13.5px var(--body);color:var(--muted)}
-.pf-val{font:600 13px var(--mono);text-align:right}
+.pf-val{font:600 13px var(--body);text-align:right}
 .pf-row.tot .pf-label{color:var(--ink);font-weight:600}
-.res-sub{display:flex;justify-content:space-between;gap:8px;font:500 13px var(--mono);color:var(--muted);border-top:1px solid var(--line);padding-top:8px;flex-wrap:wrap}
+.res-sub{display:flex;justify-content:space-between;gap:8px;font:500 13px var(--body);color:var(--muted);border-top:1px solid var(--line);padding-top:8px;flex-wrap:wrap}
 .res-sub .night{color:var(--warn)}
 .fiche-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
@@ -359,7 +367,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .pill{min-height:50px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px;text-align:left;background:var(--card);
   -webkit-user-select:none;user-select:none}
 .pill .p-l{font:600 10.5px var(--display);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill .p-v{font:700 15px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill .p-v{font:700 17px var(--display);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pill.ok{border-color:var(--ok);background:var(--ok-bg)}
 .pill.ok .p-l{color:var(--ok-text)} .pill.ok .p-v{color:var(--ink)}
 .pill.bad{border-color:var(--err);background:var(--err-bg)}
@@ -420,9 +428,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .hist-card{border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--card)}
 .hist-card:hover{border-color:var(--accent)}
 .hist-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
-.hist-card-ac{font:700 13px var(--mono);color:var(--ink)}
+.hist-card-ac{font:700 13px var(--body);color:var(--ink)}
 .hist-card-ac span{color:var(--muted)!important}
-.hist-card-date{font:500 11.5px var(--mono);color:var(--muted)}
+.hist-card-date{font:500 11.5px var(--body);color:var(--muted)}
 .hist-card-rows{display:flex;gap:6px;flex-wrap:wrap}
 .hist-chip{font:600 11px var(--body);padding:3px 8px;border-radius:4px;background:var(--field)!important;color:var(--muted)!important;border:1px solid var(--line)}
 .hist-chip.dep,.hist-chip.arr{background:var(--accent-soft)!important;color:var(--accent-text)!important;border-color:var(--accent-line)}
@@ -511,7 +519,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 <header class="topbar">
   <div class="topbar-in">
     <h1 class="brand">Perfs <span>ACBT</span><small>LFOB</small></h1>
-    <a class="icon-btn" href="#docs" aria-label="Documentation" title="Documentation" onclick="document.getElementById('docsDetails').open=true">
+    <a class="icon-btn" href="documentation.html" aria-label="Documentation" title="Documentation">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M19 17v4H6.5"/></svg>
     </a>
     <button id="btnHistory" class="icon-btn" type="button" onclick="openHistory()" aria-label="Historique des calculs" title="Historique des calculs">
@@ -538,7 +546,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     <!-- ── 1 · AVION ── -->
     <section class="step" id="stepAc" data-step="ac">
       <div class="step-hd" data-open="ac">
-        <span class="step-num"><span class="n">1</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg></span>
+        <span class="step-num"><span class="n">1</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
         <span class="step-ttl"><span class="step-name">Avion</span><span class="step-sum" id="sumAc"></span></span>
         <button class="step-edit" type="button" data-open="ac" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
       </div>
@@ -577,7 +585,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     <!-- ── 2 · DÉPART ── -->
     <section class="step" id="stepDep" data-step="dep">
       <div class="step-hd" data-open="dep">
-        <span class="step-num"><span class="n">2</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg></span>
+        <span class="step-num"><span class="n">2</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
         <span class="step-ttl"><span class="step-name">Départ</span><span class="step-sum" id="sumDep"></span></span>
         <span class="step-state" id="stateDep" hidden></span>
         <button class="step-edit" type="button" data-open="dep" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
@@ -663,7 +671,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     <!-- ── 3 · ARRIVÉE ── -->
     <section class="step" id="stepArr" data-step="arr">
       <div class="step-hd" data-open="arr">
-        <span class="step-num"><span class="n">3</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg></span>
+        <span class="step-num"><span class="n">3</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
         <span class="step-ttl"><span class="step-name">Arrivée</span><span class="step-sum" id="sumArr"></span></span>
         <span class="step-state" id="stateArr" hidden></span>
         <button class="step-edit" type="button" data-open="arr" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
@@ -771,7 +779,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     <!-- ── 4 · CARBURANT ── -->
     <section class="step" id="stepFuel" data-step="fuel">
       <div class="step-hd" data-open="fuel">
-        <span class="step-num"><span class="n">4</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg></span>
+        <span class="step-num"><span class="n">4</span><svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg><svg class="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
         <span class="step-ttl"><span class="step-name">Carburant</span><span class="step-sum" id="sumFuel"></span></span>
         <span class="step-state" id="stateFuel" hidden></span>
         <button class="step-edit" type="button" data-open="fuel" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
@@ -917,109 +925,6 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     </div>
   </section>
 </main>
-
-<!-- DOCUMENTATION -->
-<section class="docs" id="docs">
-  <details id="docsDetails">
-    <summary>Documentation</summary>
-    <div class="docs-body">
-      <div class="readme-section">
-        <h3>Ce que fait l'application</h3>
-        <ul>
-          <li><strong>Performances décollage / atterrissage</strong> : distances requises comparées aux distances disponibles.</li>
-          <li><strong>Bilan carburant réglementaire</strong> : carburant minimum requis et horaires limites.</li>
-          <li><strong>Coucher du soleil et nuit aéronautique</strong> au terrain.</li>
-        </ul>
-        <p>Les distances viennent des tables des manuels de vol, interpolées pour vos conditions exactes.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Le déroulé</h3>
-        <ol>
-          <li><strong>Que prépares-tu ?</strong> Cochez Décollage, Atterrissage et/ou Carburant. Seules les étapes cochées s'affichent ; le choix est mémorisé.</li>
-          <li><strong>Avion</strong> : immatriculation, masse au décollage, marge et carénages, saisis une seule fois pour tout le vol.</li>
-          <li><strong>Départ / Arrivée</strong> : tapez le code OACI puis <strong>METAR</strong> (ou <strong>TAF</strong> à l'arrivée). Vent, température et altitude se remplissent seuls, et les pistes s'affichent : touchez-en une pour charger QFU, distance et surface.</li>
-          <li><strong>Valider</strong> : le calcul est fait, l'étape se replie en une ligne de résumé et la suivante s'ouvre.</li>
-        </ol>
-        <p>Une étape validée se rouvre avec <strong>Modifier</strong>. Toute modification relance le calcul automatiquement. Tout champ rempli automatiquement reste modifiable à la main.</p>
-        <p><strong>Vol local</strong> : dans l'étape Arrivée, « Même terrain qu'au départ » recopie le terrain, la piste et la météo du départ en un appui.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Lecture du résultat</h3>
-        <p><strong>Requis = distance du manuel × (1 + marge)</strong>. Marge par défaut : 30 %. La distance du manuel est le <strong>passage des 15 m</strong>, pas le roulement seul. <strong>OK</strong> : requis ≤ disponible (TODA au décollage, LDA à l'atterrissage). <strong>Insuffisant</strong> : piste trop courte dans ces conditions.</p>
-        <p>Le verdict apparaît dans la <strong>fiche du vol</strong>, avec le détail du calcul dépliable. Sur téléphone, la barre du bas affiche les verdicts en direct pendant la préparation, puis les boutons <strong>Ticket</strong> et <strong>PDF</strong> une fois tout calculé. Touchez une pastille pour aller à la fiche ; <strong>double-touchez</strong> pour effacer ce calcul.</p>
-        <p>Sur tablette et ordinateur, toutes les étapes restent ouvertes et la fiche reste visible à droite.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Vent</h3>
-        <ul>
-          <li><strong>Composantes</strong> face / arrière / travers calculées depuis le QFU et la direction du vent. Alerte vers 18 kt de travers ; calcul <strong>bloqué</strong> au-delà de la limite (22 kt DR400/DR300, 15 kt AT01).</li>
-          <li><strong>Rafale</strong> : lue dans le METAR (ex. 24015G28KT) ou saisie à la main. C'est toujours le <strong>max entre vent moyen et rafale</strong> qui est retenu.</li>
-          <li><strong>Effet sur la distance</strong> : le vent de face la réduit, le vent arrière l'augmente (+10 % par tranche de 2 kt). Les coefficients de vent de face dépendent de l'avion (ex. DR400/140B : ×0,79 à 10 kt, ×0,64 à 20 kt, ×0,53 à 30 kt).</li>
-          <li><strong>VRB avec secteur</strong> (ex. 350V060) : la composante la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : traité en vent arrière pur (hypothèse conservatrice).</li>
-          <li><strong>100 % réel / 50 · 150 %</strong> : vent de face crédité à 50 % et vent arrière majoré à 150 % (norme des opérations commerciales), réglable séparément au départ et à l'arrivée.</li>
-          <li>Si le vent arrière calculé est inférieur à 5 kt, l'option <strong>« Appliquer 5 kt de vent arrière »</strong> permet une hypothèse plus restrictive.</li>
-        </ul>
-      </div>
-      <div class="readme-section">
-        <h3>Surface et état de piste</h3>
-        <p>Au décollage, les tables DR400 distinguent <strong>revêtue</strong> et <strong>herbe</strong>. Facteurs d'état :</p>
-        <ul>
-          <li>Sèche ×1,00 · Mouillée ×1,15 · Herbe très courte mouillée ×1,60 <em>(atterrissage : sans freins uniquement)</em>.</li>
-          <li>Mode <strong>« Sans freins (herbe) »</strong> : utilise la colonne dédiée du manuel.</li>
-          <li>Avion <strong>sans carénages de roues</strong> : +3 %.</li>
-        </ul>
-        <p><em>Particularité DR300 :</em> le manuel ne donne qu'un roulement à l'atterrissage (280 m à 865 kg, freinage moyen), sans correction altitude ni température. La valeur affichée est donc constante.</p>
-      </div>
-      <div class="readme-section">
-        <h3>TAF à l'arrivée</h3>
-        <p>Après chargement du TAF, choisissez votre <strong>heure d'arrivée</strong>. Seules les périodes actives à cet horaire sont comparées ; la plus restrictive est appliquée et mise en évidence. Touchez une période pour l'appliquer à la main.</p>
-        <ul>
-          <li><strong>Retenu</strong> : FROM, BECMG, TEMPO à phénomène durable (brouillard, pluie, neige, brume), PROB40.</li>
-          <li><strong>Ignoré</strong> : PROB30, PROB TEMPO, TEMPO à phénomène passager (orage, averse).</li>
-          <li><strong>BECMG</strong> : une dégradation s'applique dès le <em>début</em> de la transition, une amélioration seulement à la <em>fin</em>.</li>
-          <li>Si l'arrivée tombe dans les 2 h de validité du METAR, le plus restrictif des deux est utilisé.</li>
-        </ul>
-      </div>
-      <div class="readme-section">
-        <h3>Météo périmée</h3>
-        <p>Un METAR de plus de 2 h ou un TAF expiré n'est <strong>pas utilisé</strong> : le message l'indique et propose de chercher le report valide le plus proche parmi les terrains voisins. Sinon, saisissez le vent à la main.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Carburant</h3>
-        <p>Conso, emport et carburant inutilisable sont <strong>préréglés selon l'avion</strong> et restent modifiables. <strong>Utilisable = emport − inutilisable</strong>. Seule la réserve finale (30 min) est préremplie.</p>
-        <ul>
-          <li><strong>Mise en route</strong> : démarrage, essai moteur, roulage.</li>
-          <li><strong>Trip fuel aller</strong> : croisière jusqu'à destination, intégration comprise.</li>
-          <li><strong>Retour sans avitaillement</strong> : ajoute le trip fuel retour (recopié de l'aller s'il est renseigné).</li>
-          <li><strong>Dégagement</strong>, <strong>Extra</strong> (marge pilote) et <strong>Réserve finale</strong>.</li>
-        </ul>
-        <p><strong>Horaires limites</strong> (heure locale) : saisissez l'heure de mise en route ou touchez <strong>Maintenant</strong>. L'app affiche l'<strong>atterrissage max</strong> (réserve intacte) et l'<strong>arrêt moteur</strong> (panne sèche), calculés sur l'emport utilisable.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Avions</h3>
-        <p>Chaque avion charge ses propres tables et son préréglage carburant. Exemple <strong>F-GYLC (DR400/140B)</strong> : emport 160 L (réservoir supplémentaire), 1 L inutilisable, conso 39,3 L/h (75 % à 2700 tr/min, valeur la plus pénalisante du manuel).</p>
-        <p>Les distances de certains appareils (F-GYLC, Aquila AT01) proviennent d'abaques ou de modèles approchés : à recouper avec le manuel de vol, qui reste la référence.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Coucher du soleil</h3>
-        <p>Dès que le METAR ou le TAF est chargé, l'app affiche le <strong>coucher du soleil du terrain</strong> et la <strong>nuit aéro = coucher + 30 min</strong>, en heure locale, pour la date du jour. Source : sunrise-sunset.org ; à défaut, un calcul local approximatif. En VFR de jour, la nuit aéro est votre heure limite d'atterrissage.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Historique et PDF</h3>
-        <p>Chaque calcul validé est <strong>sauvegardé automatiquement</strong> (20 dernières entrées, bouton horloge en haut). Toucher une fiche <strong>restaure tous les paramètres</strong> et relance les calculs. Stockage local : l'historique reste sur <em>cet</em> appareil.</p>
-        <p>Le <strong>PDF A4</strong> et le <strong>ticket 80 mm</strong> reprennent ce qui a été calculé : décollage, atterrissage, carburant, METAR/TAF et nuit aéro.</p>
-      </div>
-      <div class="readme-section">
-        <h3>Limites</h3>
-        <ul>
-          <li>Outil d'<strong>aide à la préparation</strong> : le manuel de vol et le jugement du CDB restent la référence.</li>
-          <li>METAR, TAF, pistes et coucher du soleil nécessitent une <strong>connexion internet</strong> ; le reste fonctionne hors ligne.</li>
-          <li>Coucher du soleil calculé pour la <strong>date du jour</strong> uniquement.</li>
-        </ul>
-      </div>
-    </div>
-  </details>
-</section>
 
 <footer class="app-footer">© 2026 · Hugo DERUELLE</footer>
 
@@ -5199,27 +5104,44 @@ if ('serviceWorker' in navigator) {
   const fuelOk = () => scope.fuel && typeof fuelReady === 'function' && fuelReady() && (validated.fuel || fuelTrip());
 
   /* ── Résumés des étapes repliées ── */
+  const fr = n => String(n).replace('.', ',');
   function windStr(side) {
     const d = val(side + 'WindDir').toUpperCase(), k = val(side + 'WindKt'), g = val(side + 'WindGust');
     if (!d && !k) return '';
-    return (d || '—') + '/' + (k || '0') + (g && +g > 0 ? 'G' + g : '') + 'kt';
+    return 'Vent ' + (d || '—') + '/' + (k || '0') + (g && +g > 0 ? 'G' + g : '') + ' kt';
   }
   function sumAc() {
-    if (!val('aircraftSel')) return [];
-    return [val('aircraftSel'), val('depTow') ? val('depTow') + ' kg' : null, 'marge ' + (val('safety') || '30') + ' %',
-      withSpats ? null : 'sans carénages'].filter(Boolean);
+    if (!val('aircraftSel')) return { s1: '', s2: [] };
+    return { s1: val('aircraftSel'),
+      s2: [val('depTow') ? val('depTow') + ' kg' : null, 'marge ' + (val('safety') || '30') + ' %',
+           withSpats ? null : 'sans carénages'].filter(Boolean) };
   }
   function sumSide(side) {
     const icao = val(side + 'Icao').toUpperCase(), q = val(side + 'Qfu');
-    return [icao || '—', q ? 'QFU ' + q : null, windStr(side) || null].filter(Boolean);
+    const s1 = [icao || '—', q ? 'QFU ' + q : null].filter(Boolean).join(' · ');
+    const parts = [windStr(side) || null];
+    let bad = false;
+    if (isComputed(side)) {
+      const req = $id(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal').textContent;
+      const av = $id(side === 'dep' ? 'todaMini' : 'ldaMini').textContent;
+      parts.push(req + ' requis / ' + av);
+      bad = chipState(side) === 'bad';
+    }
+    return { s1, s2: parts.filter(Boolean), bad };
   }
   function sumFuel() {
     const h = +val('fuelCruiseH') || 0, m = +val('fuelCruiseM') || 0, parts = [];
     if (h || m) parts.push('aller ' + h + 'h' + String(m).padStart(2, '0'));
-    if ($id('fuelRoundtrip') && $id('fuelRoundtrip').checked) parts.push('+ retour');
+    if ($id('fuelRoundtrip') && $id('fuelRoundtrip').checked) parts.push('retour');
     parts.push('réserve ' + (val('fuelReserve') || '0') + ' min');
-    if (fuelOk()) parts.push(fuelCompute().totL.toFixed(1) + ' L');
-    return parts;
+    let s1 = 'À compléter', bad = false;
+    if (fuelOk()) {
+      const f = fuelCompute();
+      s1 = fr(f.totL.toFixed(1)) + ' L requis / ' + f.usable + ' L';
+      bad = !f.ok;
+    }
+    parts[0] = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : parts[0];
+    return { s1, s2: parts.filter(Boolean), bad };
   }
   function chipState(side) {
     const c = $id(side === 'dep' ? 'toChip' : 'ldgChip');
@@ -5250,20 +5172,18 @@ if ('serviceWorker' in navigator) {
       el.classList.toggle('is-done', !open && validated[s]);
       el.classList.toggle('is-todo', !open && !validated[s]);
     });
-    const putSum = (id, parts) => {
+    const putSum = (step, id, sum) => {
       const el = $id(id);
-      el.replaceChildren(...parts.map(t => { const s = document.createElement('span'); s.textContent = t; return s; }));
+      const a = document.createElement('span'); a.className = 's1'; a.textContent = sum.s1;
+      const b = document.createElement('span'); b.className = 's2';
+      sum.s2.forEach(t => { const i = document.createElement('span'); i.textContent = t; b.appendChild(i); });
+      el.replaceChildren(a, b);
+      stepEl(step).classList.toggle('is-bad', !!sum.bad && validated[step] && openStep !== step);
     };
-    putSum('sumAc', sumAc());
-    putSum('sumDep', sumSide('dep'));
-    putSum('sumArr', sumSide('arr'));
-    putSum('sumFuel', sumFuel());
-
-    setStateTag($id('stateDep'), openStep !== 'dep' && depComputed ? chipState('dep') : null);
-    setStateTag($id('stateArr'), openStep !== 'arr' && arrComputed ? chipState('arr') : null);
-    let fst = null;
-    if (openStep !== 'fuel' && fuelOk()) fst = fuelCompute().ok ? 'ok' : 'bad';
-    setStateTag($id('stateFuel'), fst);
+    putSum('ac', 'sumAc', sumAc());
+    putSum('dep', 'sumDep', sumSide('dep'));
+    putSum('arr', 'sumArr', sumSide('arr'));
+    putSum('fuel', 'sumFuel', sumFuel());
 
     $id('flow').classList.toggle('single', scope.dep !== scope.arr);
 
