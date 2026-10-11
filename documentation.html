@@ -197,10 +197,10 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
   <div class="in">
     <p>L'application se remplit étape par étape, de haut en bas. Une seule étape est ouverte à la fois sur téléphone.</p>
     <ol class="steps">
-      <li><strong>Avion</strong> : saisissez votre nom (une seule fois, il est retenu sur votre appareil), choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale) et, sur DR300 et DR400, si les carénages de roues sont montés. Ces réglages valent pour tout le vol.</li>
+      <li><strong>Avion</strong> : saisissez votre nom (une seule fois, il est retenu sur votre appareil), choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale) et, sur DR300 et DR400, si l'avion vole avec ou sans carénages de roues. Ces réglages valent pour tout le vol.</li>
       <li><strong>Départ</strong> : tapez le code OACI du terrain, par exemple <code>LFOB</code>, puis touchez <strong>METAR</strong>. Le vent, la température et l'altitude se remplissent, et les pistes s'affichent. Touchez une piste : son QFU, sa distance et sa surface se chargent et s'affichent sur une ligne de résumé (« Saisie manuelle » pour les modifier).</li>
       <li><strong>Arrivée</strong> : même principe, avec <strong>METAR</strong> ou <strong>TAF</strong>. La masse à l'atterrissage reprend celle du décollage ; ajustez-la si vous aurez consommé du carburant.</li>
-      <li><strong>Carburant</strong> : indiquez le carburant à bord (« Plein » ou « Autre quantité »), puis les temps de vol. La consommation est préréglée selon l'avion.</li>
+      <li><strong>Carburant</strong> : indiquez le carburant à bord (« Plein », ou « Plein entamé » avec le temps de vol depuis le dernier plein), puis les temps de vol. La consommation est préréglée selon l'avion.</li>
       <li><strong>Fiche du vol</strong> : les verdicts s'affichent. Touchez <strong>Enregistrer la fiche</strong> pour garder la trace de votre préparation.</li>
     </ol>
     <p>À chaque <strong>Valider</strong>, le calcul est fait, l'étape se replie en une ligne de résumé et la suivante s'ouvre. Touchez le crayon d'une étape repliée pour la rouvrir.</p>
@@ -239,7 +239,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
         <tr><td><span class="tag no">Insuffisant</span></td><td>La piste est trop courte dans ces conditions. Le chiffre passe en rouge.</td></tr>
       </tbody>
     </table>
-    <p>Dans la fiche du vol, <strong>Détail du calcul</strong> montre le roulement et le passage des 15 m sans marge, le facteur vent, les carénages, la majoration de surface et le résultat sans marge.</p>
+    <p>Dans la fiche du vol, <strong>Détail du calcul</strong> montre le roulement et le passage des 15 m sans marge, le facteur vent, la majoration de surface et le résultat sans marge.</p>
     <h3>La barre du bas (téléphone)</h3>
     <p>Pendant la préparation, elle affiche en direct les pastilles <strong>T/O</strong>, <strong>LDG</strong> et <strong>FUEL</strong>, vertes si c'est bon, rouges sinon. Une fois tout calculé, elle laisse place au bouton <strong>Enregistrer la fiche</strong>.</p>
     <ul>
@@ -320,8 +320,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
         <tr><td>Sèche</td><td class="num">×1,00</td></tr>
         <tr><td>Mouillée</td><td class="num">×1,15</td></tr>
         <tr><td>Herbe très courte mouillée</td><td class="num">×1,60</td></tr>
-        <tr><td>Carénages de roues déposés (DR300, DR400)</td><td class="num">+3 % au décollage</td></tr>
-      </tbody>
+              </tbody>
     </table>
     <p>À l'atterrissage, le mode <strong>« Sans freins (herbe) »</strong> utilise la colonne dédiée du manuel ; l'état « très courte mouillée » n'est proposé que dans ce mode.</p>
     <p class="note">Particularité DR300 : le manuel ne donne qu'un roulement à l'atterrissage (280 m à 865 kg, freinage moyen), sans correction d'altitude ni de température. La valeur affichée est donc constante.</p>
@@ -331,7 +330,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 <section class="card" id="carburant">
   <h2>9 · Bilan carburant</h2>
   <div class="in">
-    <p>Indiquez d'abord le <strong>carburant réellement à bord</strong> : « Plein » (capacité de l'avion) ou « Autre quantité ». Ce choix est obligatoire, pour ne jamais calculer sur un plein supposé. Utilisable = à bord − inutilisable.</p><p>La consommation et le carburant inutilisable (donnée constructeur) sont préréglés selon l'avion ; « Modifier » permet de les ajuster. Sur DR300 et DR400, carénages déposés : <strong>+3 % de consommation</strong> (note Robin). Seule la réserve finale (30 min) est préremplie.</p>
+    <p>Indiquez d'abord le <strong>carburant à bord</strong>. Ce choix est obligatoire, pour ne jamais calculer sur un plein supposé :</p><ul><li><strong>Plein</strong> : la capacité de l'avion (110 L pour les DR400 120 ch, par exemple).</li><li><strong>Plein entamé</strong> : saisissez le <strong>temps de vol depuis le dernier plein</strong> (carnet de route). L'application calcule le carburant restant : plein − consommation × temps de vol.</li><li>Si vous connaissez la quantité exacte, le lien « Je connais la quantité en litres » permet de la saisir directement.</li></ul><p>Utilisable = à bord − inutilisable.</p><p>La consommation et le carburant inutilisable (donnée constructeur) sont préréglés selon l'avion ; « Modifier » permet de les ajuster. Sur DR300 et DR400, sans carénages : <strong>+3 % de consommation</strong> (note Robin), y compris dans le calcul du plein entamé. Seule la réserve finale (30 min) est préremplie.</p>
     <table>
       <thead><tr><th>Poste</th><th>Contenu</th></tr></thead>
       <tbody>
