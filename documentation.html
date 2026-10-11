@@ -394,10 +394,10 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
     <h3>Numéro et empreinte</h3>
     <p>Chaque fiche porte un <strong>numéro unique</strong> (par exemple <code>ACBT-20261011-1530-K7QD</code>) et une <strong>empreinte SHA-256</strong>, un code calculé sur tout son contenu. À la réception, le serveur du club recalcule l'empreinte : si la fiche avait été modifiée, elle ne correspondrait plus.</p>
     <h3>Vos fiches</h3>
-    <p>Le bouton horloge en haut de l'écran ouvre la liste des fiches de votre appareil. Pour chacune : <strong>Ouvrir le PDF</strong> ou <strong>Reprendre</strong> ses paramètres pour refaire un calcul. Un <strong>point orange</strong> sur le bouton signale des fiches pas encore envoyées au club ; « Envoyer au club » force l'envoi.</p>
+    <p>Le bouton horloge en haut de l'écran ouvre la liste des fiches de votre appareil. Pour chacune : <strong>Ouvrir le PDF</strong>, <strong>Reprendre</strong> ses paramètres pour refaire un calcul, ou <strong>Supprimer</strong> la fiche de l'appareil (la copie déjà envoyée au club est conservée). Un <strong>point orange</strong> sur le bouton signale des fiches pas encore envoyées au club ; « Envoyer au club » force l'envoi.</p>
     <p class="note">Enregistrer deux fois de suite sans rien modifier ne crée pas de doublon : c'est la même fiche qui est repartagée.</p>
     <h3>Archives du club</h3>
-    <p>Sur le PC du club, la page <code>archives.html</code>, protégée par un mot de passe, liste toutes les fiches reçues : recherche par pilote, avion, terrain ou numéro, détail, contrôle de l'empreinte, téléchargement du PDF et export de la liste au format CSV.</p>
+    <p>Sur le PC du club, la page <code>archives.html</code>, protégée par un mot de passe, liste toutes les fiches reçues : recherche par pilote, avion, terrain ou numéro, détail, contrôle de l'empreinte, téléchargement du PDF, export de la liste au format CSV et suppression d'une fiche (fiches de test, erreurs), après confirmation.</p>
   </div>
 </section>
 
@@ -422,7 +422,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
     <div><h3>Le METAR est refusé.</h3><p>Il a plus de 2 h. Utilisez le METAR valide le plus proche, ou saisissez le vent à la main.</p></div>
     <div><h3>La masse a changé quand j'ai chargé la météo.</h3><p>Elle ne doit plus changer : seule la sélection d'un autre avion la remet à la masse maximale.</p></div>
     <div><h3>Je n'avais pas de réseau en enregistrant la fiche.</h3><p>Aucun problème : elle est sur votre appareil et partira aux archives du club à la prochaine connexion. Le point orange sur le bouton horloge disparaît une fois l'envoi fait.</p></div>
-    <div><h3>Comment effacer un calcul ?</h3><p>Double-touchez sa pastille dans la barre du bas, ou décochez-le dans « Que prépares-tu ? ».</p></div>
+    <div><h3>Comment effacer un calcul ou une fiche ?</h3><p>Le calcul en cours : double-touchez sa pastille dans la barre du bas, ou décochez-le dans « Que prépares-tu ? ». Une fiche enregistrée : bouton horloge, puis « Supprimer » ; aux archives du club, « Supprimer la fiche » dans son détail.</p></div>
   </div>
 </section>
 
