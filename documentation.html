@@ -197,10 +197,10 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
   <div class="in">
     <p>L'application se remplit étape par étape, de haut en bas. Une seule étape est ouverte à la fois sur téléphone.</p>
     <ol class="steps">
-      <li><strong>Avion</strong> : saisissez votre nom (une seule fois, il est retenu sur votre appareil), choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale), la marge de sécurité et les carénages. Ces réglages valent pour tout le vol.</li>
-      <li><strong>Départ</strong> : tapez le code OACI du terrain, par exemple <code>LFOB</code>, puis touchez <strong>METAR</strong>. Le vent, la température et l'altitude se remplissent, et les pistes s'affichent. Touchez une piste pour charger son QFU, sa distance et sa surface.</li>
+      <li><strong>Avion</strong> : saisissez votre nom (une seule fois, il est retenu sur votre appareil), choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale) et, sur DR300 et DR400, si les carénages de roues sont montés. Ces réglages valent pour tout le vol.</li>
+      <li><strong>Départ</strong> : tapez le code OACI du terrain, par exemple <code>LFOB</code>, puis touchez <strong>METAR</strong>. Le vent, la température et l'altitude se remplissent, et les pistes s'affichent. Touchez une piste : son QFU, sa distance et sa surface se chargent et s'affichent sur une ligne de résumé (« Saisie manuelle » pour les modifier).</li>
       <li><strong>Arrivée</strong> : même principe, avec <strong>METAR</strong> ou <strong>TAF</strong>. La masse à l'atterrissage reprend celle du décollage ; ajustez-la si vous aurez consommé du carburant.</li>
-      <li><strong>Carburant</strong> : la consommation et le réservoir sont préréglés selon l'avion. Saisissez les temps de vol.</li>
+      <li><strong>Carburant</strong> : indiquez le carburant à bord (« Plein » ou « Autre quantité »), puis les temps de vol. La consommation est préréglée selon l'avion.</li>
       <li><strong>Fiche du vol</strong> : les verdicts s'affichent. Touchez <strong>Enregistrer la fiche</strong> pour garder la trace de votre préparation.</li>
     </ol>
     <p>À chaque <strong>Valider</strong>, le calcul est fait, l'étape se replie en une ligne de résumé et la suivante s'ouvre. Touchez le crayon d'une étape repliée pour la rouvrir.</p>
@@ -231,7 +231,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
   <h2>4 · Lire le résultat</h2>
   <div class="in">
     <div class="formula">Requis = distance du manuel × (1 + marge)</div>
-    <p>La distance du manuel est le <strong>passage des 15 m</strong>, pas le roulement seul. La marge par défaut est de 30 %, réglable dans l'étape Avion.</p>
+    <p>La distance du manuel est le <strong>passage des 15 m</strong>, pas le roulement seul. La marge de 30 % est imposée par le club et n'est pas modifiable.</p>
     <table>
       <thead><tr><th>Verdict</th><th>Signification</th></tr></thead>
       <tbody>
@@ -289,7 +289,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
   <div class="in">
     <ul>
       <li><strong>Composantes</strong> face, arrière et travers, calculées depuis le QFU et la direction du vent.</li>
-      <li><strong>Rafale</strong> : c'est toujours le maximum entre le vent moyen et la rafale qui est retenu.</li>
+      <li><strong>Rafale</strong> : c'est toujours le maximum entre le vent moyen et la rafale qui est retenu. Les champs rafale et secteur variable s'affichent d'eux-mêmes si le METAR en contient ou si la météo n'a pas pu être chargée ; sinon, utilisez le lien « + Rafale / vent variable ».</li>
       <li><strong>Vent variable avec secteur</strong> (ex. <code>350V060</code>) : la direction la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : traité comme du vent arrière pur.</li>
       <li><strong>Vent de travers</strong> : la case passe en orange vers 18 kt et le calcul est <strong>bloqué</strong> à la limite de l'avion (22 kt DR400 et DR300, 15 kt Aquila).</li>
     </ul>
@@ -305,7 +305,6 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
     </table>
     <h3>Options</h3>
     <ul>
-      <li><strong>100 % réel / 50 % · 150 %</strong> : le second mode ne crédite que la moitié du vent de face et majore le vent arrière de moitié, comme en transport commercial. Réglable séparément au départ et à l'arrivée.</li>
       <li><strong>Appliquer 5 kt de vent arrière</strong> : proposé quand le vent arrière calculé est inférieur à 5 kt, pour une hypothèse plus prudente.</li>
     </ul>
   </div>
@@ -321,7 +320,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
         <tr><td>Sèche</td><td class="num">×1,00</td></tr>
         <tr><td>Mouillée</td><td class="num">×1,15</td></tr>
         <tr><td>Herbe très courte mouillée</td><td class="num">×1,60</td></tr>
-        <tr><td>Sans carénages de roues</td><td class="num">+3 %</td></tr>
+        <tr><td>Carénages de roues déposés (DR300, DR400)</td><td class="num">+3 % au décollage</td></tr>
       </tbody>
     </table>
     <p>À l'atterrissage, le mode <strong>« Sans freins (herbe) »</strong> utilise la colonne dédiée du manuel ; l'état « très courte mouillée » n'est proposé que dans ce mode.</p>
@@ -332,7 +331,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 <section class="card" id="carburant">
   <h2>9 · Bilan carburant</h2>
   <div class="in">
-    <p>La consommation, l'emport et le carburant inutilisable sont <strong>préréglés selon l'avion</strong> et restent modifiables. Utilisable = emport − inutilisable. Seule la réserve finale (30 min) est préremplie.</p>
+    <p>Indiquez d'abord le <strong>carburant réellement à bord</strong> : « Plein » (capacité de l'avion) ou « Autre quantité ». Ce choix est obligatoire, pour ne jamais calculer sur un plein supposé. Utilisable = à bord − inutilisable.</p><p>La consommation et le carburant inutilisable (donnée constructeur) sont préréglés selon l'avion ; « Modifier » permet de les ajuster. Sur DR300 et DR400, carénages déposés : <strong>+3 % de consommation</strong> (note Robin). Seule la réserve finale (30 min) est préremplie.</p>
     <table>
       <thead><tr><th>Poste</th><th>Contenu</th></tr></thead>
       <tbody>
@@ -353,7 +352,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 <section class="card" id="nuit">
   <h2>10 · Coucher du soleil et nuit aéro</h2>
   <div class="in">
-    <p>Dès que le METAR ou le TAF d'un terrain est chargé, l'application affiche son <strong>coucher du soleil</strong> et la <strong>nuit aéronautique</strong> (coucher + 30 min), en heure locale, pour la date du jour. La fiche du vol reprend ceux de l'arrivée.</p>
+    <p>Dès que le METAR ou le TAF du terrain d'arrivée est chargé, l'application affiche son <strong>coucher du soleil</strong> et la <strong>nuit aéronautique</strong> (coucher + 30 min), en heure locale, pour la date du jour. Ils figurent aussi sur la fiche du vol.</p>
     <p class="note">Source : sunrise-sunset.org, avec la position exacte du terrain. Si le service ne répond pas, un calcul local prend le relais et l'indique comme approximatif.</p>
     <div class="callout warn"><strong>VFR de jour.</strong> La nuit aéronautique est votre heure limite d'atterrissage.</div>
   </div>
