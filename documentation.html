@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f6fd1">
+<title>Perfs ACBT — Documentation</title>
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script>
+/* Même réglage de thème que l'application */
+(function(){try{var t=localStorage.getItem("acbt-theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
+</script>
+<style>
+:root{
+  --bg:#eef1f4; --card:#ffffff; --field:#f4f6f8; --ink:#15212c; --muted:#5d6b78; --line:#d5dce2;
+  --accent:#1f6fd1; --accent-ink:#ffffff; --ok:#1d8a4e; --err:#b3261e;
+  --warn:#8a5200; --warn-bg:#fff6e5; --warn-line:#efd39b;
+  --tip:#1a4c91; --tip-bg:#eaf2fd; --tip-line:#bcd0ee;
+  --band:#e6eefb; --band-line:#bcd0ee; --band-ink:#1a4c91;
+  --shadow:0 1px 2px rgba(20,33,44,.06),0 4px 14px rgba(20,33,44,.05);
+  --display:"Barlow Condensed","Arial Narrow","Segoe UI",sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",Consolas,ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d141a; --card:#151f28; --field:#0f171e; --ink:#e4eaef; --muted:#8a98a5; --line:#26333f;
+  --accent:#5aa2ff; --accent-ink:#06121f; --ok:#4cc48a; --err:#ff7a70;
+  --warn:#f0b340; --warn-bg:#2a2210; --warn-line:#5a4618;
+  --tip:#a9cdff; --tip-bg:#132235; --tip-line:#2a4766;
+  --band:#18293b; --band-line:#2a4766; --band-ink:#a9cdff; --shadow:none; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0d141a; --card:#151f28; --field:#0f171e; --ink:#e4eaef; --muted:#8a98a5; --line:#26333f;
+  --accent:#5aa2ff; --accent-ink:#06121f; --ok:#4cc48a; --err:#ff7a70;
+  --warn:#f0b340; --warn-bg:#2a2210; --warn-line:#5a4618;
+  --tip:#a9cdff; --tip-bg:#132235; --tip-line:#2a4766;
+  --band:#18293b; --band-line:#2a4766; --band-ink:#a9cdff; --shadow:none; color-scheme:dark;}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);-webkit-text-size-adjust:100%}
+a{color:var(--accent)}
+code{font:500 .86em var(--mono);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+
+/* ---- Barre du haut ---- */
+.bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.bar-in{max-width:820px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.brand{font:700 22px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink);text-decoration:none;flex:1;min-width:0;white-space:nowrap}
+.brand span{color:var(--accent)}
+.back{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);text-decoration:none;font:700 13.5px var(--display);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.back:hover{border-color:var(--accent);color:var(--accent)}
+.back svg{width:16px;height:16px}
+
+/* Interrupteur clair / sombre */
+.switch{position:relative;width:58px;height:30px;border-radius:30px;border:1px solid var(--line);background:var(--field);cursor:pointer;padding:0;flex:none}
+.switch .knob{position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25);display:grid;place-items:center;transition:transform .2s ease}
+.switch[aria-checked="true"] .knob{transform:translateX(28px)}
+.switch[aria-checked="true"]{background:var(--band)}
+.switch svg{width:15px;height:15px}
+.switch .sun{color:#d48a00} .switch .moon{color:var(--accent)}
+.switch[aria-checked="true"] .sun,.switch[aria-checked="false"] .moon{display:none}
+.switch:focus-visible,.back:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- Contenu ---- */
+main{max-width:820px;margin:0 auto;padding:28px 16px 56px;display:grid;gap:18px}
+.hero{padding:6px 2px 4px}
+.kicker{margin:0 0 6px;font:700 13px/1.2 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hero h1{margin:0 0 10px;font:700 46px/1 var(--display);letter-spacing:.04em;text-transform:uppercase}
+.hero h1 span{color:var(--accent)}
+.lead{margin:0;font-size:17.5px;max-width:68ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.card h2{margin:0;padding:12px 20px;background:var(--band);border-bottom:1px solid var(--band-line);font:700 15px/1.2 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--band-ink)}
+.card .in{padding:18px 20px}
+.card .in > :first-child{margin-top:0}.card .in > :last-child{margin-bottom:0}
+.card h3{margin:22px 0 8px;font:700 17px/1.3 var(--body)}
+.card .in > h3:first-child{margin-top:0}
+p{margin:0 0 12px}
+ul{margin:0 0 12px;padding-left:22px}
+ul li{margin:4px 0}
+.note{color:var(--muted);font-size:14.5px}
+
+.toc ol{margin:0;padding-left:24px;columns:2;column-gap:28px}
+.toc li{break-inside:avoid;margin:0;padding:2px 0}
+.toc a{text-decoration:none}
+.toc a:hover{text-decoration:underline}
+
+ul.check{list-style:none;padding:0}
+ul.check li{position:relative;padding-left:28px;margin:8px 0}
+ul.check li::before{content:"✓";position:absolute;left:3px;top:0;color:var(--ok);font-weight:700}
+
+ol.steps{list-style:none;counter-reset:s;margin:0 0 14px;padding:0;display:grid;gap:14px}
+ol.steps > li{counter-increment:s;position:relative;padding-left:44px;min-height:30px}
+ol.steps > li::before{content:counter(s);position:absolute;left:0;top:-1px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:700 16px/30px var(--display);text-align:center}
+
+table{width:100%;border-collapse:collapse;font-size:15px;margin:0 0 12px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 12.5px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font:700 12px/1 var(--display);letter-spacing:.07em;text-transform:uppercase;padding:5px 8px;border-radius:5px;white-space:nowrap}
+.tag.yes{background:var(--ok);color:#fff}
+.tag.no{background:var(--field);color:var(--muted);border:1px solid var(--line)}
+
+.callout{border-radius:10px;padding:12px 14px;margin:0 0 12px;border:1px solid}
+.callout.warn{background:var(--warn-bg);border-color:var(--warn-line)}
+.callout.warn strong{color:var(--warn)}
+.callout.tip{background:var(--tip-bg);border-color:var(--tip-line)}
+.callout.tip strong{color:var(--tip)}
+
+.formula{font:600 15px/1.5 var(--mono);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:0 0 12px;overflow-x:auto}
+
+.faq{display:grid;gap:16px}
+.faq h3{margin:0 0 3px!important;font-size:16px}
+.faq p{margin:0;color:var(--muted)}
+
+.foot{margin-top:6px;text-align:center;color:var(--muted);font-size:13px}
+
+@media (max-width:640px){
+  .toc ol{columns:1}
+  .hero h1{font-size:38px}
+  .card .in{padding:16px}
+  .card h2{padding:11px 16px}
+  table{font-size:14px}
+  th,td{padding:8px 6px}
+  .back .t{display:none}
+}
+@media print{
+  .bar{display:none}
+  .card{box-shadow:none;break-inside:avoid-page}
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="#top">Perfs <span>ACBT</span></a>
+    <a class="back" href="./" aria-label="Retour au calculateur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="t">Calculateur</span></a>
+    <button class="switch" id="theme" type="button" role="switch" aria-checked="false" aria-label="Mode sombre">
+      <span class="knob">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
+      </span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+<div class="hero">
+  <p class="kicker">Aéroclub de Beauvais-Tillé · LFOB</p>
+  <h1>Perfs <span>ACBT</span></h1>
+  <p class="lead">Perfs ACBT prépare les performances de votre vol : distances de décollage et d'atterrissage comparées à la piste, bilan carburant réglementaire, et heure de nuit aéronautique au terrain. La météo et les pistes se chargent toutes seules, et le résultat sort en PDF A4 ou en ticket 80 mm.</p>
+</div>
+
+<nav class="toc card" aria-label="Sommaire">
+  <h2>Sommaire</h2>
+  <div class="in"><ol>
+    <li><a href="#quoi">Ce que fait l'application</a></li>
+    <li><a href="#deroule">Préparer un vol</a></li>
+    <li><a href="#perimetre">Choisir ce qu'on calcule</a></li>
+    <li><a href="#resultat">Lire le résultat</a></li>
+    <li><a href="#meteo">METAR, TAF et météo périmée</a></li>
+    <li><a href="#taf">Quelle période du TAF est retenue</a></li>
+    <li><a href="#vent">Le vent</a></li>
+    <li><a href="#piste">Surface et état de piste</a></li>
+    <li><a href="#carburant">Bilan carburant</a></li>
+    <li><a href="#nuit">Coucher du soleil et nuit aéro</a></li>
+    <li><a href="#avions">Les avions</a></li>
+    <li><a href="#impression">PDF, ticket et historique</a></li>
+    <li><a href="#ecrans">Téléphone, tablette, ordinateur</a></li>
+    <li><a href="#faq">Questions fréquentes</a></li>
+    <li><a href="#limites">Limites</a></li>
+  </ol></div>
+</nav>
+
+<section class="card" id="quoi">
+  <h2>1 · Ce que fait l'application</h2>
+  <div class="in">
+    <ul class="check">
+      <li><strong>Performances au décollage et à l'atterrissage</strong> : distance requise, marge comprise, comparée à la TODA ou à la LDA de la piste.</li>
+      <li><strong>Tables des manuels de vol</strong> de chaque avion du club, interpolées pour la masse, l'altitude et la température exactes.</li>
+      <li><strong>Météo automatique</strong> : METAR au départ, METAR ou TAF à l'arrivée, avec le vent, la température et l'altitude du terrain.</li>
+      <li><strong>Pistes du terrain</strong> avec leur QFU, leurs distances et leur surface, en un appui. La piste la mieux orientée face au vent est repérée par une étoile.</li>
+      <li><strong>Bilan carburant réglementaire</strong> avec l'heure d'atterrissage maximale et l'heure de panne sèche.</li>
+      <li><strong>Coucher du soleil et nuit aéronautique</strong> au terrain, en heure locale.</li>
+      <li><strong>PDF A4 et ticket 80 mm</strong>, et un historique des 20 derniers calculs sur l'appareil.</li>
+    </ul>
+    <div class="callout warn"><strong>Aide à la préparation uniquement.</strong> L'outil ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable de ses décisions.</div>
+  </div>
+</section>
+
+<section class="card" id="deroule">
+  <h2>2 · Préparer un vol</h2>
+  <div class="in">
+    <p>L'application se remplit étape par étape, de haut en bas. Une seule étape est ouverte à la fois sur téléphone.</p>
+    <ol class="steps">
+      <li><strong>Avion</strong> : choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale), la marge de sécurité et les carénages. Ces réglages valent pour tout le vol.</li>
+      <li><strong>Départ</strong> : tapez le code OACI du terrain, par exemple <code>LFOB</code>, puis touchez <strong>METAR</strong>. Le vent, la température et l'altitude se remplissent, et les pistes s'affichent. Touchez une piste pour charger son QFU, sa distance et sa surface.</li>
+      <li><strong>Arrivée</strong> : même principe, avec <strong>METAR</strong> ou <strong>TAF</strong>. La masse à l'atterrissage reprend celle du décollage ; ajustez-la si vous aurez consommé du carburant.</li>
+      <li><strong>Carburant</strong> : la consommation et le réservoir sont préréglés selon l'avion. Saisissez les temps de vol.</li>
+      <li><strong>Fiche du vol</strong> : les verdicts s'affichent, avec les boutons <strong>Ticket</strong> et <strong>PDF</strong>.</li>
+    </ol>
+    <p>À chaque <strong>Valider</strong>, le calcul est fait, l'étape se replie en une ligne de résumé et la suivante s'ouvre. Touchez le crayon d'une étape repliée pour la rouvrir.</p>
+    <div class="callout tip"><strong>Modifier après coup.</strong> Une fois une étape validée, tout changement (masse, vent, piste, heure d'arrivée au TAF) relance le calcul automatiquement. Pas besoin de revalider.</div>
+    <div class="callout tip"><strong>Vol local.</strong> Dans l'étape Arrivée, le bouton « Même terrain qu'au départ » recopie le terrain, la piste et la météo du départ en un appui.</div>
+    <p class="note">Tout champ rempli automatiquement reste modifiable à la main : vent, température, altitude, QFU, distances.</p>
+  </div>
+</section>
+
+<section class="card" id="perimetre">
+  <h2>3 · Choisir ce qu'on calcule</h2>
+  <div class="in">
+    <p>En haut de l'écran, la ligne <strong>« Que prépares-tu ? »</strong> propose trois choix à cocher : <strong>Décollage</strong>, <strong>Atterrissage</strong> et <strong>Carburant</strong>. Seules les étapes cochées s'affichent, et le choix est gardé d'une fois sur l'autre.</p>
+    <table>
+      <thead><tr><th>Cas</th><th>Cochez</th><th>Étapes affichées</th></tr></thead>
+      <tbody>
+        <tr><td>Navigation complète</td><td>les trois</td><td>Avion, Départ, Arrivée, Carburant</td></tr>
+        <tr><td>Vérifier la piste de destination</td><td>Atterrissage</td><td>Avion, Arrivée</td></tr>
+        <tr><td>Tours de piste</td><td>Décollage et Atterrissage</td><td>Avion, Départ, Arrivée avec « Même terrain qu'au départ »</td></tr>
+        <tr><td>Juste le carburant</td><td>Carburant</td><td>Avion, Carburant</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Décocher un calcul déjà fait l'efface de la fiche. Les valeurs saisies restent : en le recochant, il suffit de revalider.</p>
+  </div>
+</section>
+
+<section class="card" id="resultat">
+  <h2>4 · Lire le résultat</h2>
+  <div class="in">
+    <div class="formula">Requis = distance du manuel × (1 + marge)</div>
+    <p>La distance du manuel est le <strong>passage des 15 m</strong>, pas le roulement seul. La marge par défaut est de 30 %, réglable dans l'étape Avion.</p>
+    <table>
+      <thead><tr><th>Verdict</th><th>Signification</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag yes">OK</span></td><td>La distance requise est inférieure ou égale à la distance disponible : TODA au décollage, LDA à l'atterrissage.</td></tr>
+        <tr><td><span class="tag no">Insuffisant</span></td><td>La piste est trop courte dans ces conditions. Le chiffre passe en rouge.</td></tr>
+      </tbody>
+    </table>
+    <p>Dans la fiche du vol, <strong>Détail du calcul</strong> montre le roulement et le passage des 15 m sans marge, le facteur vent, les carénages, la majoration de surface et le résultat sans marge.</p>
+    <h3>La barre du bas (téléphone)</h3>
+    <p>Pendant la préparation, elle affiche en direct les pastilles <strong>T/O</strong>, <strong>LDG</strong> et <strong>FUEL</strong>, vertes si c'est bon, rouges sinon. Une fois tout calculé, elle laisse place aux boutons <strong>Ticket</strong> et <strong>PDF A4</strong>.</p>
+    <ul>
+      <li><strong>Toucher</strong> une pastille : va à la fiche, ou ouvre l'étape si elle n'est pas encore faite.</li>
+      <li><strong>Double-toucher</strong> une pastille : efface ce calcul et son entrée d'historique. La masse et l'avion sont conservés.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="meteo">
+  <h2>5 · METAR, TAF et météo périmée</h2>
+  <div class="in">
+    <p>Les boutons <strong>METAR</strong> et <strong>TAF</strong> interrogent la météo officielle du terrain et remplissent le vent, la rafale, le secteur variable, la température et l'altitude. Charger une nouvelle météo remet à zéro les champs du terrain, mais pas la masse.</p>
+    <table>
+      <thead><tr><th>Situation</th><th>Ce que fait l'application</th></tr></thead>
+      <tbody>
+        <tr><td>Le terrain n'a pas de METAR</td><td>Elle prend celui de la station la plus proche et l'indique.</td></tr>
+        <tr><td>METAR de plus de 2 h</td><td>Il n'est <strong>pas utilisé</strong>. Le bouton « Utiliser le METAR valide le plus proche » cherche un report récent parmi les terrains voisins.</td></tr>
+        <tr><td>TAF expiré</td><td>Il n'est pas utilisé. Même bouton pour le TAF valide le plus proche.</td></tr>
+        <tr><td>TAF pas encore en vigueur</td><td>Il est affiché avec un avertissement et l'heure d'entrée en vigueur.</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Si rien n'est disponible, saisissez le vent et la température à la main.</p>
+  </div>
+</section>
+
+<section class="card" id="taf">
+  <h2>6 · Quelle période du TAF est retenue</h2>
+  <div class="in">
+    <p>Après chargement du TAF, choisissez votre <strong>heure d'arrivée prévue</strong> (affichée en heure locale, avec l'heure UTC entre parenthèses). Seules les périodes actives à cette heure sont comparées ; la plus pénalisante pour la distance d'atterrissage est appliquée et mise en évidence. Touchez une autre période pour l'appliquer à la main.</p>
+    <table>
+      <thead><tr><th>Groupe</th><th>Pris en compte ?</th></tr></thead>
+      <tbody>
+        <tr><td>FROM, BECMG, PROB40</td><td><span class="tag yes">Oui</span></td></tr>
+        <tr><td>TEMPO à phénomène durable (brouillard, pluie, neige, brume)</td><td><span class="tag yes">Oui</span></td></tr>
+        <tr><td>TEMPO à phénomène passager (orage, averse)</td><td><span class="tag no">Non</span></td></tr>
+        <tr><td>PROB30, PROB30 TEMPO, PROB40 TEMPO</td><td><span class="tag no">Non</span></td></tr>
+      </tbody>
+    </table>
+    <p><strong>BECMG</strong> : une dégradation s'applique dès le <em>début</em> de la transition, une amélioration seulement à sa <em>fin</em>.</p>
+    <div class="callout tip"><strong>Arrivée dans moins de 2 h.</strong> Si l'heure d'arrivée tombe dans la validité du METAR, l'application compare METAR et TAF et retient le plus restrictif.</div>
+  </div>
+</section>
+
+<section class="card" id="vent">
+  <h2>7 · Le vent</h2>
+  <div class="in">
+    <ul>
+      <li><strong>Composantes</strong> face, arrière et travers, calculées depuis le QFU et la direction du vent.</li>
+      <li><strong>Rafale</strong> : c'est toujours le maximum entre le vent moyen et la rafale qui est retenu.</li>
+      <li><strong>Vent variable avec secteur</strong> (ex. <code>350V060</code>) : la direction la plus défavorable du secteur est retenue. <strong>VRB sans secteur</strong> : traité comme du vent arrière pur.</li>
+      <li><strong>Vent de travers</strong> : la case passe en orange vers 18 kt et le calcul est <strong>bloqué</strong> à la limite de l'avion (22 kt DR400 et DR300, 15 kt Aquila).</li>
+    </ul>
+    <h3>Effet sur la distance</h3>
+    <p>Le vent de face réduit la distance, le vent arrière l'augmente de 10 % par tranche de 2 kt. Les coefficients de vent de face dépendent de l'avion :</p>
+    <table>
+      <thead><tr><th>Vent de face</th><th>DR400 120</th><th>DR400 160</th><th>DR400/140B</th></tr></thead>
+      <tbody>
+        <tr><td>10 kt</td><td class="num">×0,78</td><td class="num">×0,85</td><td class="num">×0,79</td></tr>
+        <tr><td>20 kt</td><td class="num">×0,63</td><td class="num">×0,65</td><td class="num">×0,64</td></tr>
+        <tr><td>30 kt</td><td class="num">×0,52</td><td class="num">×0,55</td><td class="num">×0,53</td></tr>
+      </tbody>
+    </table>
+    <h3>Options</h3>
+    <ul>
+      <li><strong>100 % réel / 50 % · 150 %</strong> : le second mode ne crédite que la moitié du vent de face et majore le vent arrière de moitié, comme en transport commercial. Réglable séparément au départ et à l'arrivée.</li>
+      <li><strong>Appliquer 5 kt de vent arrière</strong> : proposé quand le vent arrière calculé est inférieur à 5 kt, pour une hypothèse plus prudente.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="piste">
+  <h2>8 · Surface et état de piste</h2>
+  <div class="in">
+    <p>Au décollage, les tables DR400 distinguent piste <strong>revêtue</strong> et <strong>herbe</strong>. Toucher une piste règle la surface automatiquement.</p>
+    <table>
+      <thead><tr><th>État</th><th>Facteur</th></tr></thead>
+      <tbody>
+        <tr><td>Sèche</td><td class="num">×1,00</td></tr>
+        <tr><td>Mouillée</td><td class="num">×1,15</td></tr>
+        <tr><td>Herbe très courte mouillée</td><td class="num">×1,60</td></tr>
+        <tr><td>Sans carénages de roues</td><td class="num">+3 %</td></tr>
+      </tbody>
+    </table>
+    <p>À l'atterrissage, le mode <strong>« Sans freins (herbe) »</strong> utilise la colonne dédiée du manuel ; l'état « très courte mouillée » n'est proposé que dans ce mode.</p>
+    <p class="note">Particularité DR300 : le manuel ne donne qu'un roulement à l'atterrissage (280 m à 865 kg, freinage moyen), sans correction d'altitude ni de température. La valeur affichée est donc constante.</p>
+  </div>
+</section>
+
+<section class="card" id="carburant">
+  <h2>9 · Bilan carburant</h2>
+  <div class="in">
+    <p>La consommation, l'emport et le carburant inutilisable sont <strong>préréglés selon l'avion</strong> et restent modifiables. Utilisable = emport − inutilisable. Seule la réserve finale (30 min) est préremplie.</p>
+    <table>
+      <thead><tr><th>Poste</th><th>Contenu</th></tr></thead>
+      <tbody>
+        <tr><td>Mise en route</td><td>Démarrage, essai moteur, roulage</td></tr>
+        <tr><td>Trip fuel aller</td><td>Croisière jusqu'à destination, intégration comprise</td></tr>
+        <tr><td>Retour sans avitaillement</td><td>À activer s'il n'y a pas d'essence à destination ; recopie l'aller s'il est renseigné</td></tr>
+        <tr><td>Dégagement</td><td>Temps vers le terrain de déroutement</td></tr>
+        <tr><td>Extra</td><td>Marge pilote, facultative</td></tr>
+        <tr><td>Réserve finale</td><td>30 min par défaut</td></tr>
+      </tbody>
+    </table>
+    <p>Chaque poste est converti en litres à la consommation indiquée. Le verdict compare le total à l'utilisable : vert avec ce qui reste, rouge avec ce qui manque.</p>
+    <h3>Horaires limites</h3>
+    <p>Saisissez l'heure de mise en route ou touchez <strong>Maintenant</strong>. L'application affiche, en heure locale, l'<strong>atterrissage max</strong> (réserve finale intacte) et l'<strong>arrêt moteur</strong> (panne sèche), calculés sur l'emport utilisable.</p>
+  </div>
+</section>
+
+<section class="card" id="nuit">
+  <h2>10 · Coucher du soleil et nuit aéro</h2>
+  <div class="in">
+    <p>Dès que le METAR ou le TAF d'un terrain est chargé, l'application affiche son <strong>coucher du soleil</strong> et la <strong>nuit aéronautique</strong> (coucher + 30 min), en heure locale, pour la date du jour. La fiche du vol reprend ceux de l'arrivée.</p>
+    <p class="note">Source : sunrise-sunset.org, avec la position exacte du terrain. Si le service ne répond pas, un calcul local prend le relais et l'indique comme approximatif.</p>
+    <div class="callout warn"><strong>VFR de jour.</strong> La nuit aéronautique est votre heure limite d'atterrissage.</div>
+  </div>
+</section>
+
+<section class="card" id="avions">
+  <h2>11 · Les avions</h2>
+  <div class="in">
+    <table>
+      <thead><tr><th>Immat.</th><th>Type</th><th>Source des perfos</th></tr></thead>
+      <tbody>
+        <tr><td class="num">F-GCAL</td><td>DR400 120 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-BXEK</td><td>DR400 120 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-GOVB</td><td>DR400 120 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-BTBS</td><td>DR300 120 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-BTXS</td><td>DR300 120 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-GTPE</td><td>DR400 160 ch</td><td>Tables du manuel</td></tr>
+        <tr><td class="num">F-GYLC</td><td>DR400/140B</td><td>Abaque, valeurs approchées</td></tr>
+        <tr><td class="num">F-HATX</td><td>Aquila AT01</td><td>Modèle approché</td></tr>
+      </tbody>
+    </table>
+    <p>Chaque avion charge ses tables, sa plage de masse et son préréglage carburant. Un avertissement apparaît si la masse sort de la plage du manuel.</p>
+    <p class="note">Exemple F-GYLC : 160 L d'emport avec le réservoir supplémentaire, 1 L inutilisable, 39,3 L/h (75 % à 2700 tr/min, valeur la plus pénalisante du manuel).</p>
+    <div class="callout warn"><strong>F-GYLC et F-HATX.</strong> Leurs distances viennent d'abaques ou d'un modèle approché : recoupez-les avec le manuel de vol.</div>
+  </div>
+</section>
+
+<section class="card" id="impression">
+  <h2>12 · PDF, ticket et historique</h2>
+  <div class="in">
+    <ul>
+      <li><strong>PDF A4</strong> : la fiche complète avec les paramètres, le détail des calculs, le METAR ou le TAF utilisé et le bilan carburant. À archiver ou imprimer.</li>
+      <li><strong>Ticket 80 mm</strong> : la version courte pour une imprimante thermique, avec les verdicts, le carburant et la nuit aéro.</li>
+    </ul>
+    <p>Les deux ne reprennent que ce qui a été coché et calculé.</p>
+    <h3>Historique</h3>
+    <p>Chaque étape validée est <strong>sauvegardée automatiquement</strong> (20 dernières entrées). Le bouton horloge en haut de l'écran ouvre la liste ; toucher une entrée <strong>restaure tous les paramètres</strong> et relance les calculs, pratique pour comparer deux configurations.</p>
+    <p class="note">L'historique est stocké dans le navigateur : il reste sur cet appareil et n'est pas partagé.</p>
+  </div>
+</section>
+
+<section class="card" id="ecrans">
+  <h2>13 · Téléphone, tablette, ordinateur</h2>
+  <div class="in">
+    <ul>
+      <li><strong>Téléphone</strong> : une colonne, une étape ouverte à la fois, verdicts dans la barre du bas.</li>
+      <li><strong>Tablette à l'horizontale et ordinateur</strong> : toutes les étapes restent ouvertes, Départ et Arrivée côte à côte, et la fiche du vol reste visible à droite.</li>
+      <li><strong>Mode sombre</strong> : il suit le réglage du téléphone ; le bouton lune / soleil en haut le force dans un sens ou dans l'autre.</li>
+    </ul>
+    <div class="callout tip"><strong>Sur l'écran d'accueil.</strong> Dans le navigateur du téléphone, utilisez « Ajouter à l'écran d'accueil » pour ouvrir l'application comme une appli, en plein écran.</div>
+  </div>
+</section>
+
+<section class="card" id="faq">
+  <h2>14 · Questions fréquentes</h2>
+  <div class="in faq">
+    <div><h3>Le bouton Valider ne fait rien.</h3><p>Un message rouge au-dessus du bouton indique ce qui manque : avion, QFU, distance, masse, ou un vent de travers au-delà de la limite de l'avion.</p></div>
+    <div><h3>Les pistes ne s'affichent pas.</h3><p>Elles se chargent avec le METAR ou le TAF et demandent une connexion. À défaut, saisissez le QFU, la distance et l'altitude à la main.</p></div>
+    <div><h3>J'ai changé de piste et le résultat a changé tout seul.</h3><p>C'est normal : une étape validée se recalcule à chaque modification.</p></div>
+    <div><h3>Le METAR est refusé.</h3><p>Il a plus de 2 h. Utilisez le METAR valide le plus proche, ou saisissez le vent à la main.</p></div>
+    <div><h3>La masse a changé quand j'ai chargé la météo.</h3><p>Elle ne doit plus changer : seule la sélection d'un autre avion la remet à la masse maximale.</p></div>
+    <div><h3>Comment effacer un calcul ?</h3><p>Double-touchez sa pastille dans la barre du bas, ou décochez-le dans « Que prépares-tu ? ».</p></div>
+  </div>
+</section>
+
+<section class="card" id="limites">
+  <h2>15 · Limites</h2>
+  <div class="in">
+    <ul>
+      <li>Outil d'<strong>aide à la préparation</strong> : le manuel de vol et le jugement du commandant de bord restent la référence.</li>
+      <li>METAR, TAF, pistes et coucher du soleil demandent une <strong>connexion internet</strong> ; les calculs fonctionnent hors ligne.</li>
+      <li>Coucher du soleil calculé pour la <strong>date du jour</strong> uniquement.</li>
+    </ul>
+  </div>
+</section>
+
+<p class="foot">Perfs ACBT · © 2026 Hugo Deruelle</p>
+</main>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+  /* Thème : interrupteur clair / sombre, partagé avec l'application, suit le système tant qu'on n'y a pas touché. */
+  var sw=document.getElementById("theme"), mq=window.matchMedia("(prefers-color-scheme: dark)");
+  function isDark(){var t=root.getAttribute("data-theme");return t?t==="dark":mq.matches;}
+  function sync(){sw.setAttribute("aria-checked",String(isDark()));}
+  sw.addEventListener("click",function(){var t=isDark()?"light":"dark";root.setAttribute("data-theme",t);store("acbt-theme",t);sync();});
+  if(mq.addEventListener)mq.addEventListener("change",sync);
+  sync();
+})();
+</script>
+</body>
+</html>
