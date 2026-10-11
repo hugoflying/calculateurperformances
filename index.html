@@ -184,6 +184,12 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .btn-link{font:600 14px var(--body);color:var(--accent);padding:6px 0}
 .wx-alt-btn{display:none;width:100%;min-height:var(--ctl);padding:8px 12px;border-radius:var(--r-sm);background:var(--warn-bg);
   color:var(--warn);border:1px solid var(--warn-line);font:600 13.5px var(--body);text-align:left}
+.rwy-sum{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:var(--ctl);padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--field)}
+.rwy-sum > span{font:600 15px var(--body)}
+.rwy-sum .btn-link{flex-shrink:0;font-size:13.5px}
+.wx-more{align-self:flex-start;min-height:36px}
+.ac-note{color:var(--muted)}
+.ac-note strong{color:var(--ink)}
 .or{display:flex;align-items:center;gap:10px;color:var(--muted);font:500 13px var(--body)}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 
@@ -239,7 +245,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 
 /* Pistes */
 .runway-picker{display:none}
-.runway-picker-label{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.runway-picker-label{display:none!important;font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .rwy-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
 .rwy-btn{min-height:58px;padding:6px 4px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
@@ -429,7 +435,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   .step[data-step="ac"] .step-body > *{grid-column:span 1}
   .step[data-step="ac"] .step-body > .ac-sel,.step[data-step="ac"] .step-body > .ac-pilot,.step[data-step="ac"] .step-body > .spats{grid-column:span 2}
   .step[data-step="ac"] .step-body > .wide-hide{display:none}
-  .step[data-step="ac"] .step-body > .valid-msg{grid-column:1 / -1}
+  .step[data-step="ac"] .step-body > .valid-msg,.step[data-step="ac"] .step-body > .ac-note{grid-column:1 / -1}
   .fiche-actions{display:grid}
   .fiche{position:sticky;top:84px;margin-top:0;max-height:calc(100dvh - 104px);overflow:auto;padding-bottom:4px}
   .action-bar{display:none}
@@ -605,15 +611,15 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
           <span class="unit-in"><input id="depTow" class="inp" type="number" inputmode="numeric"/><span class="u">kg</span></span>
           <span id="depTowWarn" class="field-warn">Hors de la plage du manuel</span>
         </label>
-        <label class="f"><span class="lbl">Marge de sécurité</span>
-          <span class="unit-in"><input id="safety" class="inp" type="number" value="30" min="0" inputmode="numeric"/><span class="u">%</span></span>
-        </label>
-        <div class="f spats"><span class="lbl">Carénages de roues</span>
+        <input id="safety" type="hidden" value="30"/>
+        <div class="f spats" id="spatsWrap"><span class="lbl">Carénages de roues</span>
           <div class="toggle-group">
-            <button id="spatsWith" class="toggle-btn is-selected is-primary" type="button">Avec</button>
-            <button id="spatsWithout" class="toggle-btn" type="button">Sans (+3 %)</button>
+            <button id="spatsWith" class="toggle-btn is-selected is-primary" type="button">Montés</button>
+            <button id="spatsWithout" class="toggle-btn" type="button">Déposés</button>
           </div>
+          <span class="note" id="spatsNote" hidden>Sans carénages : +3 % sur la consommation (note Robin DR300 / DR400) et +3 % sur la distance de décollage.</span>
         </div>
+        <div class="note ac-note">Marge de sécurité du club : <strong>30 %</strong>, appliquée à toutes les distances.</div>
         <div id="acValidMsg" class="valid-msg is-hidden"></div>
         <button id="btnAcOk" class="btn pri big wide-hide" type="button">Valider l'avion</button>
       </div>
@@ -638,17 +644,14 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
           <span id="depAirportName" class="airport-name"></span>
           <div id="depMetarMsg" class="metar-box"></div>
           <button id="depMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('dep')">Utiliser le METAR valide le plus proche →</button>
-          <div class="sun-box">
-            <div class="sun-item"><span class="sun-lbl">Coucher</span><span class="sun-val" id="depSunset">—:—</span></div>
-            <div class="sun-item is-night"><span class="sun-lbl">Nuit aéro</span><span class="sun-val" id="depAeroNight">—:—</span></div>
-          </div>
-          <div class="sun-note" id="depSunNote">Chargez le METAR pour obtenir le coucher du soleil du terrain.</div>
+          <div hidden aria-hidden="true"><span id="depSunset">—:—</span><span id="depAeroNight">—:—</span><span id="depSunNote"></span></div>
         </div>
 
         <div class="grp">
           <span class="lbl">Piste</span>
           <div id="depRunwayPicker" class="runway-picker"></div>
-          <div class="g3">
+          <div class="rwy-sum" id="depRwySum" hidden><span id="depRwySumTxt"></span><button type="button" class="btn-link" data-rwyedit="dep">Saisie manuelle</button></div>
+          <div class="g3" id="depRwyFields">
             <label class="f"><span class="lbl">QFU</span><input id="depQfu" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">TODA (m)</span><input id="depToda" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">Élév. (ft)</span><input id="depAlt" class="inp c" type="number" inputmode="numeric"/></label>
@@ -673,7 +676,8 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <label class="f"><span class="lbl">Vent (kt)</span><input id="depWindKt" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">OAT (°C)</span><input id="depOat" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
-          <div class="g3">
+          <button type="button" class="btn-link wx-more" id="depWxMore" data-wxmore="dep">+ Rafale / vent variable</button>
+          <div class="g3" id="depWxExtra" hidden>
             <div class="f" style="grid-column:span 2"><span class="lbl">Secteur variable</span>
               <div class="vrb"><input id="depVrbFrom" class="inp" type="number" placeholder="—" aria-label="Secteur variable de" inputmode="numeric"/><span class="v">V</span><input id="depVrbTo" class="inp" type="number" placeholder="—" aria-label="Secteur variable à" inputmode="numeric"/></div>
             </div>
@@ -683,13 +687,6 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="depHwFace">—</div><div class="wc-unit">kt</div></div>
             <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="depTw">—</div><div class="wc-unit">kt</div></div>
             <div id="depXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="depXw">—</div><div class="wc-unit">kt</div><div class="wc-unit" id="depXwSub"></div></div>
-          </div>
-          <div class="f"><span class="lbl">Vent pris en compte</span>
-            <div class="toggle-group">
-              <button id="btnRegWindOff" class="toggle-btn is-selected is-primary" type="button">100 % réel</button>
-              <button id="btnRegWindOn" class="toggle-btn" type="button">50 % / 150 %</button>
-            </div>
-            <div id="depRegWindNote" class="regwind-note">100 % du vent réel pris en compte</div>
           </div>
           <div id="depTwAssumeWrap" class="tw-assume-wrap">
             <button id="depTwAssumeBtn" class="tw-assume-btn" type="button" onclick="toggleTwAssume('dep')">
@@ -752,7 +749,8 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <div class="grp">
           <span class="lbl">Piste</span>
           <div id="arrRunwayPicker" class="runway-picker"></div>
-          <div class="g3">
+          <div class="rwy-sum" id="arrRwySum" hidden><span id="arrRwySumTxt"></span><button type="button" class="btn-link" data-rwyedit="arr">Saisie manuelle</button></div>
+          <div class="g3" id="arrRwyFields">
             <label class="f"><span class="lbl">QFU</span><input id="arrQfu" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">LDA (m)</span><input id="arrLda" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">Élév. (ft)</span><input id="arrAlt" class="inp c" type="number" inputmode="numeric"/></label>
@@ -780,7 +778,8 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <label class="f"><span class="lbl">Vent (kt)</span><input id="arrWindKt" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">OAT (°C)</span><input id="arrOat" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
-          <div class="g3">
+          <button type="button" class="btn-link wx-more" id="arrWxMore" data-wxmore="arr">+ Rafale / vent variable</button>
+          <div class="g3" id="arrWxExtra" hidden>
             <div class="f" style="grid-column:span 2"><span class="lbl">Secteur variable</span>
               <div class="vrb"><input id="arrVrbFrom" class="inp" type="number" placeholder="—" aria-label="Secteur variable de" inputmode="numeric"/><span class="v">V</span><input id="arrVrbTo" class="inp" type="number" placeholder="—" aria-label="Secteur variable à" inputmode="numeric"/></div>
             </div>
@@ -790,13 +789,6 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <div class="wind-cell"><div class="wc-lbl">Face</div><div class="wc-val" id="arrHwFace">—</div><div class="wc-unit">kt</div></div>
             <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="arrTw">—</div><div class="wc-unit">kt</div></div>
             <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit">kt</div><div class="wc-unit" id="arrXwSub"></div></div>
-          </div>
-          <div class="f"><span class="lbl">Vent pris en compte</span>
-            <div class="toggle-group">
-              <button id="btnRegWindOffArr" class="toggle-btn is-selected is-primary" type="button" onclick="setRegWindArr(false)">100 % réel</button>
-              <button id="btnRegWindOnArr" class="toggle-btn" type="button" onclick="setRegWindArr(true)">50 % / 150 %</button>
-            </div>
-            <div id="arrRegWindNote" class="regwind-note">100 % du vent réel pris en compte</div>
           </div>
           <div id="arrTafTwSuggest" style="display:none"></div>
           <div id="arrTwAssumeWrap" class="tw-assume-wrap">
@@ -823,11 +815,18 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
       </div>
       <div class="step-body">
         <div class="grp">
-          <span class="lbl">Réservoir — préréglé selon l'avion, modifiable</span>
-          <div class="g3">
-            <label class="f"><span class="lbl">Conso (L/h)</span><input id="fuelConso" class="inp c" type="number" min="1" step="0.1" inputmode="decimal" oninput="computeFuel()"/></label>
-            <label class="f"><span class="lbl">Emport (L)</span><input id="fuelCap" class="inp c" type="number" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/></label>
-            <label class="f"><span class="lbl">Inutilis. (L)</span><input id="fuelUnusable" class="inp c" type="number" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/></label>
+          <span class="lbl">Carburant à bord</span>
+          <div class="toggle-group" id="fuelOnboardTg">
+            <button id="fuelFullBtn" class="toggle-btn" type="button">Plein · <span id="fuelFullL">—</span> L</button>
+            <button id="fuelOtherBtn" class="toggle-btn" type="button">Autre quantité</button>
+          </div>
+          <label class="f" id="fuelCapWrap" hidden><span class="lbl">Quantité réellement à bord (L)</span>
+            <span class="unit-in"><input id="fuelCap" class="inp" type="number" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/><span class="u">L</span></span>
+          </label>
+          <div class="rwy-sum" id="fuelAcSum"><span id="fuelAcSumTxt">—</span><button type="button" class="btn-link" id="fuelAcEdit">Modifier</button></div>
+          <div class="g2" id="fuelAcFields" hidden>
+            <label class="f"><span class="lbl">Consommation (L/h)</span><input id="fuelConso" class="inp c" type="number" min="1" step="0.1" inputmode="decimal" oninput="computeFuel()"/></label>
+            <label class="f"><span class="lbl">Inutilisable (L)</span><input id="fuelUnusable" class="inp c" type="number" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/></label>
           </div>
           <div class="fuel-kpis">
             <div class="fuel-kpi"><div class="fuel-kpi-lbl">Utilisable</div><div class="fuel-kpi-val"><span id="fuelUsable">0</span><span class="fuel-kpi-unit">L</span></div></div>
@@ -990,6 +989,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 
 <!-- Éléments de compatibilité avec le moteur (non affichés) -->
 <div hidden aria-hidden="true">
+  <button id="btnRegWindOff" type="button" tabindex="-1"></button><button id="btnRegWindOn" type="button" tabindex="-1"></button>
+  <button id="btnRegWindOffArr" type="button" tabindex="-1" onclick="setRegWindArr(false)"></button><button id="btnRegWindOnArr" type="button" tabindex="-1" onclick="setRegWindArr(true)"></button>
+  <span id="depRegWindNote"></span><span id="arrRegWindNote"></span>
   <button id="btnPrint" type="button" tabindex="-1"></button>
   <button id="btnTicket" type="button" tabindex="-1"></button>
   <select id="aircraftSelArr" tabindex="-1">
@@ -1146,7 +1148,7 @@ function clockAdd(depStr, addMin) {
 let fuelTouched = false;
 function fuelCompute() {
   const num = id => { const el = document.getElementById(id); if (!el) return 0; const v = parseFloat(el.value); return isNaN(v) ? 0 : v; };
-  const conso = num('fuelConso'), cap = num('fuelCap'), unusable = num('fuelUnusable');
+  const conso = +(num('fuelConso') * (window.__spatsFuelFactor ? window.__spatsFuelFactor() : 1)).toFixed(2), cap = num('fuelCap'), unusable = num('fuelUnusable');
   const usable = Math.max(0, cap - unusable);
   const startup = num('fuelStartup');
   const cruiseOut = num('fuelCruiseH') * 60 + num('fuelCruiseM');
@@ -1207,7 +1209,7 @@ function computeFuel() {
     const v = parseFloat(el.value);
     return isNaN(v) ? 0 : v;
   };
-  const conso    = num('fuelConso');          // L/h
+  const conso    = +(num('fuelConso') * (window.__spatsFuelFactor ? window.__spatsFuelFactor() : 1)).toFixed(2);          // L/h
   const cap      = num('fuelCap');            // L
   const unusable = num('fuelUnusable');       // L
   const usable   = Math.max(0, cap - unusable);
@@ -5136,7 +5138,8 @@ if ('serviceWorker' in navigator) {
   const saveScope = () => { try { localStorage.setItem(SCOPE_KEY, JSON.stringify(scope)); } catch (e) {} };
   const isComputed = side => side === 'dep' ? depComputed : arrComputed;
   const fuelTrip = () => (+val('fuelCruiseH') || 0) * 60 + (+val('fuelCruiseM') || 0) > 0;
-  const fuelOk = () => scope.fuel && typeof fuelReady === 'function' && fuelReady() && (validated.fuel || fuelTrip());
+  let fuelMode = null;   // 'full' | 'other' : carburant à bord choisi consciemment
+  const fuelOk = () => scope.fuel && !!fuelMode && typeof fuelReady === 'function' && fuelReady() && (validated.fuel || fuelTrip());
 
   /* ── Résumés des étapes repliées ── */
   const frNum = n => String(n).replace('.', ',');
@@ -5148,8 +5151,8 @@ if ('serviceWorker' in navigator) {
   function sumAc() {
     if (!val('aircraftSel')) return { s1: '', s2: [] };
     return { s1: val('aircraftSel'),
-      s2: [val('pilotName') || null, val('depTow') ? val('depTow') + ' kg' : null, 'marge ' + (val('safety') || '30') + ' %',
-           withSpats ? null : 'sans carénages'].filter(Boolean) };
+      s2: [val('pilotName') || null, val('depTow') ? val('depTow') + ' kg' : null,
+           withSpats ? null : 'carénages déposés'].filter(Boolean) };
   }
   function sumSide(side) {
     const icao = val(side + 'Icao').toUpperCase(), q = val(side + 'Qfu');
@@ -5311,7 +5314,7 @@ if ('serviceWorker' in navigator) {
         const cs = ($id(side + 'Sunset') || {}).textContent || '';
         return (scope[side] && cs && cs !== '—:—') ? { cs, n: $id(side + 'AeroNight').textContent } : null;
       };
-      const sun = pick('arr') || pick('dep');
+      const sun = pick('arr');
       $id('ficheSun').hidden = !sun;
       if (sun) {
         $id('ficheSunCs').textContent = 'Coucher du soleil ' + sun.cs;
@@ -5351,6 +5354,7 @@ if ('serviceWorker' in navigator) {
       }
 
       renderSteps();
+      if (typeof window.__refreshLight === 'function') window.__refreshLight();
     } finally {
       updating = false;
     }
@@ -5418,6 +5422,7 @@ if ('serviceWorker' in navigator) {
     const tow = val('depTow'), ldw = val('arrLdw');
     _origClear(side);
     if (side === 'fuel') {
+      fuelMode = null;
       fuelTouched = !!scope.fuel;
       if (typeof applyFuelPreset === 'function') applyFuelPreset();
       computeFuel();
@@ -5446,6 +5451,8 @@ if ('serviceWorker' in navigator) {
       scope = ns; saveScope(); applyScope();
     }
     _origRestore(idx);
+    $id('safety').value = '30';   // marge imposée par le club
+    if (val('fuelCap')) { const fc = fullCap(); fuelMode = (fc && +val('fuelCap') === +fc) ? 'full' : 'other'; }
     fuelTouched = !!scope.fuel;
     if (scope.fuel) computeFuel();
     validated.ac = !!val('aircraftSel');
@@ -5621,6 +5628,11 @@ if ('serviceWorker' in navigator) {
     const msg = $id('fuelValidMsg');
     fuelTouched = true;
     computeFuel();
+    if (!fuelMode || !(+val('fuelCap') > 0)) {
+      msg.textContent = '⚠ Indique le carburant à bord : plein ou autre quantité.';
+      msg.classList.remove('is-hidden');
+      return;
+    }
     if (!fuelReady() || !fuelTrip()) {
       msg.textContent = '⚠ Renseigne la consommation et au moins un temps de vol.';
       msg.classList.remove('is-hidden');
@@ -5647,6 +5659,104 @@ if ('serviceWorker' in navigator) {
     const p = e.target.closest('.pill');
     if (p) clearSectionFromBadge(p.dataset.side);
   });
+
+
+  /* ═══ Saisie allégée ═══ */
+  // Carénages : seulement pour DR300 / DR400 ; +3 % de consommation s'ils sont déposés (note Robin)
+  const hasSpatsOption = () => !!val('aircraftSel') && profile !== 'AT01';
+  window.__spatsFuelFactor = () => (hasSpatsOption() && !withSpats) ? 1.03 : 1;
+  ['spatsWith', 'spatsWithout'].forEach(id => $id(id).addEventListener('click', () => setTimeout(() => { computeFuel(); refreshLight(); }, 0)));
+
+  // Carburant à bord : plein ou autre quantité, choix obligatoire
+  function fullCap() {
+    const immat = val('aircraftSel');
+    const d = immat ? aircraftData[immat] : null;
+    const p = d && d.fuel ? d.fuel : (immat ? FUEL_PRESETS[profile] : null);
+    return p ? p.cap : null;
+  }
+  window.__fullCap = fullCap;
+  window.__fuelMode = () => fuelMode;
+  $id('fuelFullBtn').addEventListener('click', () => {
+    const fc = fullCap();
+    if (!fc) { $id('fuelValidMsg').textContent = '⚠ Choisis d\'abord un avion, ou indique une autre quantité.'; $id('fuelValidMsg').classList.remove('is-hidden'); return; }
+    fuelMode = 'full'; $id('fuelCap').value = fc; $id('fuelValidMsg').classList.add('is-hidden');
+    computeFuel(); refreshLight();
+  });
+  $id('fuelOtherBtn').addEventListener('click', () => {
+    if (fuelMode !== 'other') $id('fuelCap').value = '';
+    fuelMode = 'other'; $id('fuelValidMsg').classList.add('is-hidden');
+    computeFuel(); refreshLight();
+    setTimeout(() => { try { $id('fuelCap').focus(); } catch (e) {} }, 50);
+  });
+  let fuelAcOpen = false;
+  $id('fuelAcEdit').addEventListener('click', () => { fuelAcOpen = !fuelAcOpen; refreshLight(); });
+  $id('aircraftSel').addEventListener('change', () => { fuelMode = null; refreshLight(); });
+
+  // Piste : résumé compact quand une piste est choisie
+  const rwyManual = { dep: false, arr: false };
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-rwyedit]');
+    if (b) { rwyManual[b.dataset.rwyedit] = true; refreshLight(); return; }
+    const r = e.target.closest('.rwy-btn');
+    if (r) { const side = r.id.startsWith('rwy-dep') ? 'dep' : 'arr'; rwyManual[side] = false; setTimeout(refreshLight, 0); }
+    const w = e.target.closest('[data-wxmore]');
+    if (w) { wxOpen[w.dataset.wxmore] = true; refreshLight(); setTimeout(() => { try { $id(w.dataset.wxmore + 'WindGust').focus(); } catch (_) {} }, 50); }
+  });
+
+  // Rafale / vent variable : ouverts si renseignés, si demandés, ou si la météo n'a pas pu être utilisée
+  const wxOpen = { dep: false, arr: false };
+  const WX_FAIL = /indisponible|PÉRIMÉ|EXPIRÉ|Aucun|impossible|introuvable/i;
+  ['dep', 'arr'].forEach(side => {
+    new MutationObserver(() => {
+      if (WX_FAIL.test($id(side + 'MetarMsg').textContent || '')) wxOpen[side] = true;
+      setTimeout(refreshLight, 30);
+    }).observe($id(side + 'MetarMsg'), { childList: true, characterData: true, subtree: true });
+  });
+
+  function refreshLight() {
+    // carénages
+    const showSpats = hasSpatsOption();
+    $id('spatsWrap').hidden = !showSpats;
+    if (!showSpats && !withSpats) $id('spatsWith').click();
+    $id('spatsNote').hidden = !(showSpats && !withSpats);
+
+    // pistes
+    ['dep', 'arr'].forEach(side => {
+      const pk = $id(side + 'RunwayPicker');
+      const active = pk && pk.style.display !== 'none' && pk.querySelector('.rwy-btn.active');
+      const q = val(side + 'Qfu'), d = val(side === 'dep' ? 'depToda' : 'arrLda'), alt = val(side + 'Alt');
+      const compact = !!active && !!q && !!d && !rwyManual[side];
+      $id(side + 'RwySum').hidden = !compact;
+      $id(side + 'RwyFields').hidden = compact;
+      if (compact) $id(side + 'RwySumTxt').textContent =
+        'QFU ' + q + ' · ' + (side === 'dep' ? 'TODA ' : 'LDA ') + d + ' m' + (alt ? ' · ' + alt + ' ft' : '');
+      // rafale / secteur variable
+      const filled = (+val(side + 'WindGust') > 0) || !!val(side + 'VrbFrom') || !!val(side + 'VrbTo');
+      const open = filled || wxOpen[side];
+      $id(side + 'WxExtra').hidden = !open;
+      $id(side + 'WxMore').hidden = open;
+    });
+
+    // carburant à bord
+    const fc = fullCap();
+    $id('fuelFullL').textContent = fc != null ? fc : '—';
+    $id('fuelFullBtn').classList.toggle('is-selected', fuelMode === 'full');
+    $id('fuelOtherBtn').classList.toggle('is-selected', fuelMode === 'other');
+    $id('fuelCapWrap').hidden = fuelMode !== 'other';
+    const conso = val('fuelConso'), un = val('fuelUnusable');
+    const fac = window.__spatsFuelFactor();
+    $id('fuelAcSumTxt').textContent = conso
+      ? String(conso).replace('.', ',') + ' L/h' + (fac > 1 ? ' + 3 % (carénages déposés)' : '') + ' · ' + (un || '0') + ' L inutilisable'
+      : 'Consommation à renseigner';
+    $id('fuelAcFields').hidden = !(fuelAcOpen || !conso);
+    $id('fuelAcEdit').textContent = fuelAcOpen ? 'Fermer' : 'Modifier';
+    if (!fuelMode) {
+      const box = $id('fuelVerdict');
+      box.className = 'fuel-verdict is-neutral';
+      box.innerHTML = '<div class="fuel-verdict-title">Indique le carburant à bord</div><div class="fuel-verdict-sub">Choisis « Plein » ou « Autre quantité » pour obtenir le bilan.</div>';
+    }
+  }
+  window.__refreshLight = refreshLight;
 
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
@@ -5857,7 +5967,7 @@ if ('serviceWorker' in navigator) {
       ['Date et heure (locale)', fmtLocal(d.created)],
       ['Type', (d.aircraft && (d.aircraft.type || d.aircraft.label)) || '—'],
       ['Marge', (d.margin != null ? d.margin : '—') + ' %'],
-      ['Carénages', d.spats ? 'Avec' : 'Sans (+3 %)']
+      ['Carénages', d.spats ? 'Montés' : 'Déposés (+3 %)']
     ];
     pdf.rect(M, y, W, 34, { fill: C.soft, stroke: C.line });
     const cw = W / info.length;
@@ -5945,7 +6055,9 @@ if ('serviceWorker' in navigator) {
       ensure(120 + rows * 14);
       pdf.rect(M, y, W, 24, { fill: [0.48, 0.28, 0.02] });
       pdf.text(M + 9, y + 15.5, 'BILAN CARBURANT', { font: 'HB', size: 10.5, color: C.white });
-      pdf.text(M + W - 9, y + 15.5, 'Consommation ' + f.conso + ' L/h · utilisable ' + f.usable + ' L', { size: 8, color: [1, 0.92, 0.8], align: 'right' });
+      const fhead = (f.onboard ? 'À bord ' + f.onboard + ' L' + (f.full ? ' (plein)' : '') + ' · ' : '') +
+        'conso ' + String(f.conso).replace('.', ',') + ' L/h' + (f.spatsPenalty ? ' (+3 % carénages déposés)' : '') + ' · utilisable ' + f.usable + ' L';
+      pdf.text(M + W - 9, y + 15.5, fhead, { size: 8, color: [1, 0.92, 0.8], align: 'right' });
       y += 30;
       const vc = f.ok ? C.green : C.red;
       pdf.rect(M, y, W, 26, { fill: f.ok ? C.greenBg : C.redBg, stroke: vc, lw: 1 });
@@ -6121,6 +6233,8 @@ if ('serviceWorker' in navigator) {
     const f = fuelCompute();
     return {
       conso: f.conso, usable: f.usable, ok: f.ok,
+      onboard: +val('fuelCap') || 0, full: (window.__fuelMode && window.__fuelMode() === 'full'),
+      spatsPenalty: (window.__spatsFuelFactor && window.__spatsFuelFactor() > 1),
       totalL: frN(f.totL.toFixed(1)), remainingL: frN(Math.abs(f.remaining).toFixed(1)), totalTime: fmtHM(f.totMin),
       phases: f.phases.map(p => ({ ph: p.ph, time: fmtHM(p.min), L: frN(p.L.toFixed(1)) })),
       depTime: f.dep || '', maxLdg: f.dep ? f.maxLdg : '', engineStop: f.dep ? f.engineStop : ''
@@ -6153,7 +6267,7 @@ if ('serviceWorker' in navigator) {
       dep: s.dep && depComputed ? sideData('dep') : null,
       arr: s.arr && arrComputed ? sideData('arr') : null,
       fuel: flow.fuelOk() ? fuelData() : null,
-      sun: pickSun('arr') || pickSun('dep'),
+      sun: pickSun('arr'),
       snapshot: collectFullSnapshot()
     };
   }
