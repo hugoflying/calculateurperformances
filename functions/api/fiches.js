@@ -60,9 +60,9 @@ function sameOrigin(request) {
 }
 
 function checkPassword(request, env) {
-  const expected = env.ARCHIVE_PASSWORD || '';
+  const expected = String(env.ARCHIVE_PASSWORD || '').trim();
   const auth = request.headers.get('Authorization') || '';
-  const given = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  const given = (auth.startsWith('Bearer ') ? auth.slice(7) : '').trim();
   if (!expected || given.length !== expected.length) return false;
   let diff = 0;
   for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ given.charCodeAt(i);
