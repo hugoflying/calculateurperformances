@@ -572,7 +572,7 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
     }
   }
 
-  $('loginForm').addEventListener('submit', e => { e.preventDefault(); pw = $('pw').value; $('loginMsg').textContent = ''; enter(); });
+  $('loginForm').addEventListener('submit', e => { e.preventDefault(); pw = $('pw').value.trim(); $('loginMsg').textContent = ''; enter(); });
   $('logout').addEventListener('click', () => { try { sessionStorage.removeItem(KEY); } catch (e) {} location.reload(); });
   let t = null;
   $('q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => load($('q').value.trim()).catch(err => alert(err.message)), 300); });
