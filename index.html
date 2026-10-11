@@ -396,7 +396,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .arch-st.ok{color:var(--ok-text);background:var(--ok-bg)}
 .arch-st.wait{color:var(--warn);background:var(--warn-bg)}
 .arch-id{font:500 11px var(--body);color:var(--muted)}
-.arch-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.arch-actions{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px}
+.arch-actions .btn.del{color:var(--err-text)}
+.arch-actions .btn.del:hover{border-color:var(--err)}
 .arch-actions .btn{font:600 14px var(--body);letter-spacing:0;text-transform:none}
 .arch-empty{padding:28px 12px;text-align:center;color:var(--muted);font:500 14px/1.5 var(--body)}
 .hist-chip.ok{background:var(--ok-bg)!important;color:var(--ok-text)!important;border-color:var(--ok-line)}
@@ -6060,6 +6062,12 @@ if ('serviceWorker' in navigator) {
       r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
     })).catch(() => lsAll()).then(a => a.sort((x, y) => y.created.localeCompare(x.created)));
   }
+  function delRec(id) {
+    return db().then(d => new Promise((res, rej) => {
+      const t = d.transaction(ST, 'readwrite'); t.objectStore(ST).delete(id);
+      t.oncomplete = () => res(); t.onerror = () => rej(t.error);
+    })).catch(() => lsSave(lsAll().filter(r => r.id !== id)));
+  }
   let persistAsked = false;
   function requestPersist() {
     if (persistAsked) return; persistAsked = true;
@@ -6291,8 +6299,10 @@ if ('serviceWorker' in navigator) {
     const v = s.result ? s.result.verdict : (s.ok ? 'ok' : 'bad');
     return `<span class="hist-chip ${v === 'bad' ? 'bad' : 'ok'}">${esc(lbl)}${extra ? ' ' + esc(extra) : ''} · ${v === 'bad' ? 'KO' : 'OK'}</span>`;
   }
+  let listCache = [];
   function renderList() {
     allRecs().then(a => {
+      listCache = a;
       const list = $id('historyList');
       const pend = a.filter(r => !r.synced).length;
       $id('archStatus').textContent = a.length
@@ -6314,6 +6324,7 @@ if ('serviceWorker' in navigator) {
           <div class="arch-actions">
             <button type="button" class="btn" data-act="pdf" data-id="${esc(r.id)}">Ouvrir le PDF</button>
             <button type="button" class="btn" data-act="load" data-id="${esc(r.id)}">Reprendre</button>
+            <button type="button" class="btn del" data-act="del" data-id="${esc(r.id)}" aria-label="Supprimer la fiche ${esc(r.id)}">Supprimer</button>
           </div>
         </div>`;
       }).join('');
@@ -6331,15 +6342,23 @@ if ('serviceWorker' in navigator) {
   $id('historyList').addEventListener('click', e => {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
-    allRecs().then(a => {
-      const r = a.find(x => x.id === b.dataset.id);
-      if (!r) return;
-      if (b.dataset.act === 'pdf') {
-        shareOrDownload(F.renderFichePDF(r.data), fileName(r.data));
-      } else {
-        reprendre(r);
-      }
-    });
+    const r = listCache.find(x => x.id === b.dataset.id);   // en mémoire : le partage suit le toucher
+    if (!r) return;
+    if (b.dataset.act === 'pdf') {
+      shareOrDownload(F.renderFichePDF(r.data), fileName(r.data));
+    } else if (b.dataset.act === 'del') {
+      const msg = r.synced
+        ? 'Supprimer cette fiche de ton appareil ?\n\nLa copie déjà envoyée aux archives du club est conservée.'
+        : 'Supprimer cette fiche de ton appareil ?\n\nElle n\'a pas encore été envoyée au club : elle sera perdue définitivement.';
+      if (!confirm(msg)) return;
+      delRec(r.id).then(() => {
+        if (last && last.rec.id === r.id) { last = null; setSaved(false); }
+        renderList(); refreshBadge();
+        toast('Fiche supprimée de l\'appareil.', 'ok');
+      });
+    } else {
+      reprendre(r);
+    }
   });
   // Recharge les paramètres d'une fiche (via la restauration existante)
   function reprendre(r) {
