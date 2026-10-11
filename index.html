@@ -380,7 +380,28 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .pill.ok .p-l{color:var(--ok-text)} .pill.ok .p-v{color:var(--ink)}
 .pill.bad{border-color:var(--err);background:var(--err-bg)}
 .pill.bad .p-l,.pill.bad .p-v{color:var(--err-text)}
-.bar-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bar-actions{display:grid;grid-template-columns:1fr;gap:8px}
+.act-btn.done{background:var(--ok);border-color:var(--ok)}
+.fiche-actions{grid-template-columns:1fr!important}
+.icon-btn.has-pending::after{content:"";position:absolute;bottom:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 2px var(--card)}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:1500;max-width:calc(100% - 32px);
+  background:var(--ink);color:var(--bg);font:600 14px/1.35 var(--body);padding:11px 16px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:var(--err)}
+@media (min-width:1100px){.toast{bottom:24px}}
+.arch-card{cursor:default}
+.arch-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.arch-st{font:600 12px var(--body);padding:3px 8px;border-radius:4px}
+.arch-st.ok{color:var(--ok-text);background:var(--ok-bg)}
+.arch-st.wait{color:var(--warn);background:var(--warn-bg)}
+.arch-id{font:500 11px var(--body);color:var(--muted)}
+.arch-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.arch-actions .btn{font:600 14px var(--body);letter-spacing:0;text-transform:none}
+.arch-empty{padding:28px 12px;text-align:center;color:var(--muted);font:500 14px/1.5 var(--body)}
+.hist-chip.ok{background:var(--ok-bg)!important;color:var(--ok-text)!important;border-color:var(--ok-line)}
+.hist-foot{gap:10px;align-items:center;justify-content:space-between!important}
+.hist-foot .btn{font:600 15px var(--body);letter-spacing:0;text-transform:none}
 .bar-sum{display:flex;gap:5px}
 .bar-dot{font:700 11px var(--display);letter-spacing:.06em;padding:5px 7px;border-radius:4px;border:1px solid var(--ok);background:var(--ok-bg);color:var(--ok-text)}
 .bar-dot.bad{border-color:var(--err);background:var(--err-bg);color:var(--err-text)}
@@ -404,7 +425,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   .step .step-name{font-size:20px;color:var(--ink)!important}
   .step[data-step="ac"] .step-body{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end}
   .step[data-step="ac"] .step-body > *{grid-column:span 1}
-  .step[data-step="ac"] .step-body > .ac-sel,.step[data-step="ac"] .step-body > .spats{grid-column:span 2}
+  .step[data-step="ac"] .step-body > .ac-sel,.step[data-step="ac"] .step-body > .ac-pilot,.step[data-step="ac"] .step-body > .spats{grid-column:span 2}
   .step[data-step="ac"] .step-body > .wide-hide{display:none}
   .step[data-step="ac"] .step-body > .valid-msg{grid-column:1 / -1}
   .fiche-actions{display:grid}
@@ -533,7 +554,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     <a class="icon-btn" href="documentation.html" aria-label="Documentation" title="Documentation">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M19 17v4H6.5"/></svg>
     </a>
-    <button id="btnHistory" class="icon-btn" type="button" onclick="openHistory()" aria-label="Historique des calculs" title="Historique des calculs">
+    <button id="btnHistory" class="icon-btn" type="button" onclick="openHistory()" aria-label="Fiches enregistrées" title="Fiches enregistrées">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
     </button>
     <button id="btnDark" class="icon-btn" type="button" onclick="toggleDark()" aria-label="Changer de thème" title="Mode clair / sombre"></button>
@@ -562,6 +583,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <button class="step-edit" type="button" data-open="ac" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
       </div>
       <div class="step-body">
+        <label class="f ac-pilot"><span class="lbl">Pilote</span>
+          <input id="pilotName" class="inp" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" placeholder="Prénom Nom"/>
+        </label>
         <label class="f ac-sel"><span class="lbl">Avion</span>
           <select id="aircraftSel" class="inp">
             <option value="" selected>Choisir un avion</option>
@@ -931,8 +955,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     </div>
 
     <div class="fiche-actions">
-      <button id="ficheTicket" class="act-btn" type="button" onclick="printTicket()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>Ticket 80 mm</button>
-      <button id="fichePdf" class="act-btn pri" type="button" onclick="generatePDF()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6M9 15l3 3 3-3"/></svg>PDF A4</button>
+      <button id="ficheSave" class="act-btn pri" type="button" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg><span class="lbl-t">Enregistrer la fiche</span></button>
     </div>
   </section>
 </main>
@@ -944,8 +967,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   <div class="action-bar-in">
     <div class="pills" id="barPills"></div>
     <div class="bar-actions" id="barActions" hidden>
-      <button id="abTicket" class="act-btn" type="button" onclick="printTicket()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>Ticket 80 mm</button>
-      <button id="abPdf" class="act-btn pri" type="button" onclick="generatePDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6M9 15l3 3 3-3"/></svg>PDF A4</button>
+      <button id="abSave" class="act-btn pri" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg><span class="lbl-t">Enregistrer la fiche</span></button>
     </div>
   </div>
 </nav>
@@ -954,13 +976,13 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 <div id="historyModal" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
   <div id="historySheet" class="sheet">
     <div class="hist-head">
-      <h2 id="historyTitle" style="font-size:20px">Historique des calculs</h2>
+      <h2 id="historyTitle" style="font-size:20px">Fiches enregistrées</h2>
       <button class="icon-btn" type="button" onclick="closeHistory()" aria-label="Fermer">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
     <div id="historyList"></div>
-    <div class="hist-foot"><button class="btn" type="button" onclick="clearHistory()">Effacer l'historique</button></div>
+    <div class="hist-foot"><span id="archStatus" class="note"></span><button class="btn" type="button" onclick="__syncNow()">Envoyer au club</button></div>
   </div>
 </div>
 
@@ -978,6 +1000,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   </select>
 </div>
 
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="printView"></div>
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
 <script>
@@ -5123,7 +5146,7 @@ if ('serviceWorker' in navigator) {
   function sumAc() {
     if (!val('aircraftSel')) return { s1: '', s2: [] };
     return { s1: val('aircraftSel'),
-      s2: [val('depTow') ? val('depTow') + ' kg' : null, 'marge ' + (val('safety') || '30') + ' %',
+      s2: [val('pilotName') || null, val('depTow') ? val('depTow') + ' kg' : null, 'marge ' + (val('safety') || '30') + ' %',
            withSpats ? null : 'sans carénages'].filter(Boolean) };
   }
   function sumSide(side) {
@@ -5301,8 +5324,7 @@ if ('serviceWorker' in navigator) {
       // Fiche masquée tant qu'aucun calcul n'est fait
       $id('fiche').hidden = !any;
       document.querySelector('.app').classList.toggle('no-fiche', !any);
-      $id('ficheTicket').disabled = !any;
-      $id('fichePdf').disabled = !any;
+      $id('ficheSave').disabled = !any;
 
       // Barre du bas : verdicts en direct, puis Ticket / PDF quand tout est calculé
       const items = [];
@@ -5514,7 +5536,8 @@ if ('serviceWorker' in navigator) {
   $id('btnAcOk').addEventListener('click', () => {
     const msg = $id('acValidMsg');
     let err = '';
-    if (!val('aircraftSel')) err = 'Choisis un avion.';
+    if (!val('pilotName')) err = 'Indique ton nom de pilote.';
+    else if (!val('aircraftSel')) err = 'Choisis un avion.';
     else if (!(+val('depTow') > 0)) err = 'Indique la masse au décollage.';
     if (err) { msg.textContent = '⚠ ' + err; msg.classList.remove('is-hidden'); return; }
     msg.classList.add('is-hidden');
@@ -5623,12 +5646,719 @@ if ('serviceWorker' in navigator) {
     if (p) clearSectionFromBadge(p.dataset.side);
   });
 
+  /* Accès pour le module des fiches enregistrées */
+  window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
+
   /* ── Démarrage ── */
   if (val('aircraftSel')) validated.ac = true;
   openStep = validated.ac ? (visibleSteps().find(s => !validated[s]) || null) : 'ac';
   paintThemeBtn();
   applyScope();
   window.addEventListener('resize', () => { clearTimeout(window.__rz); window.__rz = setTimeout(updateUI, 150); });
+})();
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FICHE PDF — module autonome (aucune dépendance, fonctionne hors ligne)
+   Utilisé par l'application et par la page d'archives du club.
+   ═══════════════════════════════════════════════════════════════ */
+(function (global) {
+  'use strict';
+
+  /* ── JSON canonique (clés triées) : même résultat partout, pour l'empreinte ── */
+  function canon(v) {
+    if (v === null || typeof v !== 'object') return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+    return '{' + Object.keys(v).filter(k => v[k] !== undefined).sort()
+      .map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  }
+
+  /* ── SHA-256 synchrone (pour garder le geste utilisateur avant le partage) ── */
+  function sha256Hex(str) {
+    const bytes = new TextEncoder().encode(str);
+    const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    const l = bytes.length, nBlocks = ((l + 9 + 63) >> 6);
+    const m = new Uint8Array(nBlocks * 64);
+    m.set(bytes); m[l] = 0x80;
+    const bitLen = l * 8;
+    const dv = new DataView(m.buffer);
+    dv.setUint32(m.length - 4, bitLen >>> 0);
+    dv.setUint32(m.length - 8, Math.floor(bitLen / 0x100000000));
+    const w = new Uint32Array(64);
+    const r = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let b = 0; b < nBlocks; b++) {
+      for (let i = 0; i < 16; i++) w[i] = dv.getUint32(b * 64 + i * 4);
+      for (let i = 16; i < 64; i++) {
+        const s0 = r(w[i-15], 7) ^ r(w[i-15], 18) ^ (w[i-15] >>> 3);
+        const s1 = r(w[i-2], 17) ^ r(w[i-2], 19) ^ (w[i-2] >>> 10);
+        w[i] = (w[i-16] + s0 + w[i-7] + s1) >>> 0;
+      }
+      let [a, bb, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const S1 = r(e, 6) ^ r(e, 11) ^ r(e, 25);
+        const ch = (e & f) ^ (~e & g);
+        const t1 = (h + S1 + ch + K[i] + w[i]) >>> 0;
+        const S0 = r(a, 2) ^ r(a, 13) ^ r(a, 22);
+        const mj = (a & bb) ^ (a & c) ^ (bb & c);
+        const t2 = (S0 + mj) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+      }
+      H[0] = (H[0] + a) >>> 0; H[1] = (H[1] + bb) >>> 0; H[2] = (H[2] + c) >>> 0; H[3] = (H[3] + d) >>> 0;
+      H[4] = (H[4] + e) >>> 0; H[5] = (H[5] + f) >>> 0; H[6] = (H[6] + g) >>> 0; H[7] = (H[7] + h) >>> 0;
+    }
+    return H.map(x => x.toString(16).padStart(8, '0')).join('');
+  }
+
+  /* ── Mini-générateur PDF (polices standard Helvetica / Courier) ── */
+  const WID = {"Helvetica": [278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556, 1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556, 333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556, 556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584, 350, 556, 350, 222, 556, 333, 1000, 556, 556, 333, 1000, 667, 333, 1000, 350, 611, 350, 350, 222, 222, 333, 333, 350, 556, 1000, 333, 1000, 500, 333, 944, 350, 500, 667, 278, 333, 556, 556, 556, 556, 260, 556, 333, 737, 370, 556, 584, 333, 737, 333, 400, 584, 333, 333, 333, 556, 537, 278, 333, 333, 365, 556, 834, 834, 834, 611, 667, 667, 667, 667, 667, 667, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611, 556, 556, 556, 556, 556, 556, 889, 500, 556, 556, 556, 556, 278, 278, 278, 278, 556, 556, 556, 556, 556, 556, 556, 584, 611, 556, 556, 556, 556, 500, 556, 500], "Helvetica-Bold": [278, 333, 474, 556, 556, 889, 722, 238, 333, 333, 389, 584, 278, 333, 278, 278, 556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 333, 333, 584, 584, 584, 611, 975, 722, 722, 722, 722, 667, 611, 778, 722, 278, 556, 722, 611, 833, 722, 778, 667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 333, 278, 333, 584, 556, 333, 556, 611, 556, 611, 556, 333, 611, 611, 278, 278, 556, 278, 889, 611, 611, 611, 611, 389, 556, 333, 611, 556, 778, 556, 556, 500, 389, 280, 389, 584, 350, 556, 350, 278, 556, 500, 1000, 556, 556, 333, 1000, 667, 333, 1000, 350, 611, 350, 350, 278, 278, 500, 500, 350, 556, 1000, 333, 1000, 556, 333, 944, 350, 500, 667, 278, 333, 556, 556, 556, 556, 280, 556, 333, 737, 370, 556, 584, 333, 737, 333, 400, 584, 333, 333, 333, 611, 556, 278, 333, 333, 365, 556, 834, 834, 834, 611, 722, 722, 722, 722, 722, 722, 1000, 722, 667, 667, 667, 667, 278, 278, 278, 278, 722, 722, 778, 778, 778, 778, 778, 584, 778, 722, 722, 722, 722, 667, 667, 611, 556, 556, 556, 556, 556, 556, 889, 556, 556, 556, 556, 556, 278, 278, 278, 278, 611, 611, 611, 611, 611, 611, 611, 584, 611, 611, 611, 611, 611, 556, 611, 556]};
+  const FONTS = { H: 'Helvetica', HB: 'Helvetica-Bold', C: 'Courier' };
+  const CP1252 = { 0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F };
+  const SUBST = { '→':'->', '←':'<-', '✓':'OK', '✗':'X', '✕':'X', '≤':'<=', '≥':'>=', '⚠':'!', '★':'*', ' ':' ', ' ':' ' };
+  function toWin(str) {
+    str = String(str == null ? '' : str);
+    let out = '';
+    for (const ch of str) {
+      if (SUBST[ch] !== undefined) { out += SUBST[ch]; continue; }
+      const c = ch.codePointAt(0);
+      if (c === 10 || c === 13 || c === 9) { out += ' '; continue; }
+      if (c < 32) continue;
+      if (c < 128 || (c >= 0xA0 && c < 256)) out += String.fromCharCode(c);
+      else if (CP1252[c]) out += String.fromCharCode(CP1252[c]);
+      else out += '?';
+    }
+    return out;
+  }
+  function textWidth(str, font, size) {
+    const s = toWin(str);
+    if (font === 'C') return s.length * 0.6 * size;
+    const t = WID[FONTS[font]];
+    let w = 0;
+    for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); w += (c >= 32 && c < 256) ? t[c - 32] : 556; }
+    return w * size / 1000;
+  }
+  function wrap(str, font, size, maxW) {
+    const words = String(str || '').split(/\s+/).filter(Boolean);
+    const lines = []; let cur = '';
+    words.forEach(wd => {
+      const test = cur ? cur + ' ' + wd : wd;
+      if (textWidth(test, font, size) <= maxW || !cur) cur = test;
+      else { lines.push(cur); cur = wd; }
+    });
+    if (cur) lines.push(cur);
+    // mots trop longs (METAR) : coupe brute
+    const out = [];
+    lines.forEach(l => {
+      while (textWidth(l, font, size) > maxW && l.length > 1) {
+        let n = l.length;
+        while (n > 1 && textWidth(l.slice(0, n), font, size) > maxW) n--;
+        out.push(l.slice(0, n)); l = l.slice(n);
+      }
+      out.push(l);
+    });
+    return out;
+  }
+  const esc = s => s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+  const f2 = n => (Math.round(n * 100) / 100).toString();
+
+  function PDF() {
+    this.W = 595.28; this.H = 841.89;
+    this.pages = []; this.addPage();
+  }
+  PDF.prototype.addPage = function () { this.ops = []; this.pages.push(this.ops); };
+  PDF.prototype.color = function (c, stroke) { return c.map(f2).join(' ') + (stroke ? ' RG' : ' rg'); };
+  PDF.prototype.rect = function (x, y, w, h, o) {
+    o = o || {};
+    const Y = this.H - y - h;
+    let s = 'q ';
+    if (o.fill) s += this.color(o.fill) + ' ';
+    if (o.stroke) s += this.color(o.stroke, true) + ' ' + f2(o.lw || 0.6) + ' w ';
+    s += f2(x) + ' ' + f2(Y) + ' ' + f2(w) + ' ' + f2(h) + ' re ' + (o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S') + ' Q';
+    this.ops.push(s);
+  };
+  PDF.prototype.line = function (x1, y1, x2, y2, o) {
+    o = o || {};
+    this.ops.push('q ' + this.color(o.color || [0.85, 0.87, 0.9], true) + ' ' + f2(o.lw || 0.5) + ' w ' +
+      f2(x1) + ' ' + f2(this.H - y1) + ' m ' + f2(x2) + ' ' + f2(this.H - y2) + ' l S Q');
+  };
+  PDF.prototype.text = function (x, y, str, o) {
+    o = o || {};
+    const font = o.font || 'H', size = o.size || 9;
+    const s = toWin(str);
+    let X = x;
+    if (o.align === 'right') X = x - textWidth(s, font, size);
+    else if (o.align === 'center') X = x - textWidth(s, font, size) / 2;
+    const fid = font === 'H' ? 'F1' : font === 'HB' ? 'F2' : 'F3';
+    this.ops.push('BT ' + this.color(o.color || [0.08, 0.13, 0.17]) + ' /' + fid + ' ' + f2(size) + ' Tf ' +
+      f2(X) + ' ' + f2(this.H - y) + ' Td (' + esc(s) + ') Tj ET');
+  };
+  PDF.prototype.build = function (meta) {
+    const objs = [];
+    const add = s => { objs.push(s); return objs.length; };
+    const catalog = add(null), pagesId = add(null);
+    const f1 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+    const f2i = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+    const f3 = add('<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>');
+    const kids = [];
+    this.pages.forEach(ops => {
+      const content = ops.join('\n');
+      const cid = add('<< /Length ' + content.length + ' >>\nstream\n' + content + '\nendstream');
+      kids.push(add('<< /Type /Page /Parent ' + pagesId + ' 0 R /MediaBox [0 0 ' + f2(this.W) + ' ' + f2(this.H) +
+        '] /Resources << /Font << /F1 ' + f1 + ' 0 R /F2 ' + f2i + ' 0 R /F3 ' + f3 + ' 0 R >> >> /Contents ' + cid + ' 0 R >>'));
+    });
+    objs[catalog - 1] = '<< /Type /Catalog /Pages ' + pagesId + ' 0 R >>';
+    objs[pagesId - 1] = '<< /Type /Pages /Kids [' + kids.map(k => k + ' 0 R').join(' ') + '] /Count ' + kids.length + ' >>';
+    const info = add('<< /Title (' + esc(toWin(meta && meta.title || 'Fiche')) + ') /Producer (Perfs ACBT) /Creator (Perfs ACBT) >>');
+    let out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+    const offs = [];
+    objs.forEach((o, i) => { offs.push(out.length); out += (i + 1) + ' 0 obj\n' + o + '\nendobj\n'; });
+    const xref = out.length;
+    out += 'xref\n0 ' + (objs.length + 1) + '\n0000000000 65535 f \n' +
+      offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('');
+    out += 'trailer\n<< /Size ' + (objs.length + 1) + ' /Root ' + catalog + ' 0 R /Info ' + info + ' 0 R >>\nstartxref\n' + xref + '\n%%EOF';
+    const bytes = new Uint8Array(out.length);
+    for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
+    return bytes;
+  };
+
+  /* ── Mise en page de la fiche ── */
+  const C = {
+    ink: [0.08, 0.13, 0.17], muted: [0.36, 0.42, 0.47], line: [0.84, 0.86, 0.89], soft: [0.96, 0.97, 0.98],
+    blue: [0.12, 0.44, 0.82], navy: [0.10, 0.30, 0.57], green: [0.11, 0.54, 0.31], greenBg: [0.91, 0.96, 0.93],
+    red: [0.70, 0.15, 0.12], redBg: [0.99, 0.93, 0.92], amber: [0.54, 0.32, 0.0], amberBg: [1, 0.96, 0.9], white: [1, 1, 1]
+  };
+  function fmtLocal(iso) {
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2, '0');
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function renderFichePDF(d) {
+    const pdf = new PDF();
+    const M = 36, W = pdf.W - 2 * M, BOTTOM = pdf.H - 60;
+    let y = 0;
+    const ensure = (need, redraw) => {
+      if (y + need > BOTTOM) { footer(); pdf.addPage(); y = M; if (redraw) redraw(); }
+    };
+
+    // En-tête
+    pdf.rect(0, 0, pdf.W, 66, { fill: C.navy });
+    pdf.text(M, 30, 'FICHE DE PRÉPARATION DU VOL', { font: 'HB', size: 16, color: C.white });
+    pdf.text(M, 47, 'Aéroclub de Beauvais-Tillé · Calcul préparatoire au vol', { size: 8.5, color: [0.78, 0.86, 0.97] });
+    pdf.text(pdf.W - M, 31, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 18, color: C.white, align: 'right' });
+    pdf.text(pdf.W - M, 47, 'Fiche n° ' + d.id, { size: 8.5, color: [0.78, 0.86, 0.97], align: 'right' });
+    y = 80;
+
+    // Bandeau d'informations
+    const info = [
+      ['Pilote', d.pilot || '—'],
+      ['Date et heure (locale)', fmtLocal(d.created)],
+      ['Type', (d.aircraft && (d.aircraft.type || d.aircraft.label)) || '—'],
+      ['Marge', (d.margin != null ? d.margin : '—') + ' %'],
+      ['Carénages', d.spats ? 'Avec' : 'Sans (+3 %)']
+    ];
+    pdf.rect(M, y, W, 34, { fill: C.soft, stroke: C.line });
+    const cw = W / info.length;
+    info.forEach(([l, v], i) => {
+      const x = M + i * cw + 8;
+      if (i) pdf.line(M + i * cw, y + 6, M + i * cw, y + 28, { color: C.line });
+      pdf.text(x, y + 12, l.toUpperCase(), { size: 6.5, color: C.muted });
+      const lines = wrap(v, 'HB', 9, cw - 14);
+      pdf.text(x, y + 25, lines[0] + (lines.length > 1 ? '…' : ''), { font: 'HB', size: 9 });
+    });
+    y += 46;
+
+    // Colonne décollage / atterrissage
+    function block(x, y0, w, s, kind) {
+      let yy = y0;
+      const dep = kind === 'dep';
+      const head = dep ? C.navy : [0.02, 0.47, 0.34];
+      pdf.rect(x, yy, w, 24, { fill: head });
+      pdf.text(x + 9, yy + 15.5, (dep ? 'DÉCOLLAGE' : 'ATTERRISSAGE') + ' · ' + (s.icao || '—'), { font: 'HB', size: 10.5, color: C.white });
+      if (s.name) pdf.text(x + w - 9, yy + 15.5, wrap(s.name, 'H', 7.5, w * 0.45)[0], { size: 7.5, color: [0.85, 0.92, 0.97], align: 'right' });
+      yy += 30;
+      const ok = s.result && s.result.verdict === 'ok';
+      const bad = s.result && s.result.verdict === 'bad';
+      const vc = ok ? C.green : bad ? C.red : C.muted;
+      pdf.rect(x, yy, w, 40, { fill: ok ? C.greenBg : bad ? C.redBg : C.soft, stroke: vc, lw: 1 });
+      pdf.text(x + 10, yy + 16, ok ? (dep ? 'DÉCOLLAGE POSSIBLE' : 'ATTERRISSAGE POSSIBLE') : bad ? 'DISTANCE INSUFFISANTE' : 'NON VÉRIFIÉ',
+        { font: 'HB', size: 11.5, color: vc });
+      pdf.text(x + 10, yy + 31, 'Requis ' + s.result.required + ' (marge incluse) · ' + s.dist.label + ' ' + s.result.available,
+        { size: 8.5, color: C.ink });
+      yy += 50;
+      const sect = t => { pdf.text(x, yy + 8, t.toUpperCase(), { font: 'HB', size: 6.8, color: C.muted }); yy += 13; };
+      const row = (l, v) => {
+        const lines = wrap(v, 'HB', 8.3, w * 0.58);
+        pdf.text(x, yy + 8, l, { size: 8.3, color: C.muted });
+        lines.forEach((ln, i) => pdf.text(x + w, yy + 8 + i * 10, ln, { font: 'HB', size: 8.3, align: 'right' }));
+        yy += 6 + lines.length * 10;
+        pdf.line(x, yy - 1, x + w, yy - 1, { color: C.line, lw: 0.4 });
+      };
+      sect('Piste et conditions');
+      row('QFU', s.qfu ? s.qfu + '°' : '—');
+      row(s.dist.label, s.dist.value ? s.dist.value + ' m' : '—');
+      row('Élévation', (s.alt || '—') + ' ft');
+      row('Température (OAT)', (s.oat || '—') + ' °C');
+      row('Masse', (s.mass || '—') + ' kg');
+      row('Vent', s.windText || '—');
+      if (s.comps) row('Composantes', s.comps);
+      row(dep ? 'Surface' : 'Freinage / état', s.surface || '—');
+      row('Vent pris en compte', s.windRule || '—');
+      yy += 4;
+      sect('Détail du calcul (sans marge)');
+      (s.result.rows || []).forEach(([l, v]) => row(l, v));
+      if (s.note) {
+        wrap(s.note, 'H', 7.3, w).forEach(ln => { pdf.text(x, yy + 8, ln, { size: 7.3, color: C.muted }); yy += 9; });
+        yy += 2;
+      }
+      if (s.meteo && s.meteo.length) {
+        yy += 4;
+        s.meteo.forEach(m => {
+          sect(m.type);
+          const lines = wrap(m.raw, 'C', 7, w - 12);
+          pdf.rect(x, yy - 2, w, lines.length * 9 + 8, { fill: C.soft, stroke: C.line, lw: 0.4 });
+          lines.forEach((ln, i) => pdf.text(x + 6, yy + 7 + i * 9, ln, { font: 'C', size: 7, color: [0.25, 0.3, 0.35] }));
+          yy += lines.length * 9 + 12;
+        });
+      }
+      return yy;
+    }
+
+    const sides = [];
+    if (d.dep) sides.push(['dep', d.dep]);
+    if (d.arr) sides.push(['arr', d.arr]);
+    if (sides.length) {
+      ensure(260);
+      const gap = 16;
+      const colW = sides.length === 2 ? (W - gap) / 2 : W;
+      let maxY = y;
+      sides.forEach(([k, s], i) => { maxY = Math.max(maxY, block(M + i * (colW + gap), y, colW, s, k)); });
+      y = maxY + 10;
+    }
+
+    // Carburant
+    if (d.fuel) {
+      const f = d.fuel;
+      const rows = (f.phases || []).length;
+      ensure(120 + rows * 14);
+      pdf.rect(M, y, W, 24, { fill: [0.48, 0.28, 0.02] });
+      pdf.text(M + 9, y + 15.5, 'BILAN CARBURANT', { font: 'HB', size: 10.5, color: C.white });
+      pdf.text(M + W - 9, y + 15.5, 'Consommation ' + f.conso + ' L/h · utilisable ' + f.usable + ' L', { size: 8, color: [1, 0.92, 0.8], align: 'right' });
+      y += 30;
+      const vc = f.ok ? C.green : C.red;
+      pdf.rect(M, y, W, 26, { fill: f.ok ? C.greenBg : C.redBg, stroke: vc, lw: 1 });
+      pdf.text(M + 10, y + 16.5, f.ok ? 'CARBURANT SUFFISANT' : 'CARBURANT INSUFFISANT', { font: 'HB', size: 11, color: vc });
+      pdf.text(M + W - 10, y + 16.5, 'Requis ' + f.totalL + ' L · ' + (f.ok ? 'reste ' : 'manque ') + f.remainingL + ' L',
+        { font: 'HB', size: 9, align: 'right' });
+      y += 34;
+      const xT = M + W * 0.72, xL = M + W;
+      pdf.text(M, y + 8, 'POSTE', { font: 'HB', size: 6.8, color: C.muted });
+      pdf.text(xT, y + 8, 'DURÉE', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
+      pdf.text(xL, y + 8, 'LITRES', { font: 'HB', size: 6.8, color: C.muted, align: 'right' });
+      y += 13;
+      (f.phases || []).forEach(p => {
+        pdf.text(M, y + 8, p.ph, { size: 8.5 });
+        pdf.text(xT, y + 8, p.time, { size: 8.5, align: 'right', color: C.muted });
+        pdf.text(xL, y + 8, p.L + ' L', { font: 'HB', size: 8.5, align: 'right' });
+        y += 13; pdf.line(M, y - 1, M + W, y - 1, { color: C.line, lw: 0.4 });
+      });
+      pdf.line(M, y, M + W, y, { color: C.ink, lw: 1 });
+      pdf.text(M, y + 11, 'Carburant minimum requis', { font: 'HB', size: 9 });
+      pdf.text(xT, y + 11, f.totalTime, { font: 'HB', size: 9, align: 'right' });
+      pdf.text(xL, y + 11, f.totalL + ' L', { font: 'HB', size: 9, align: 'right' });
+      y += 20;
+      if (f.depTime) {
+        pdf.text(M, y + 8, 'Mise en route ' + f.depTime + ' · atterrissage max (réserve conservée) ' + f.maxLdg +
+          ' · arrêt moteur (panne sèche) ' + f.engineStop + ' — heure locale', { size: 8.3, color: C.ink });
+        y += 16;
+      }
+      y += 6;
+    }
+
+    // Nuit aéronautique
+    if (d.sun && d.sun.sunset) {
+      ensure(30);
+      pdf.rect(M, y, W, 22, { fill: C.amberBg, stroke: [0.94, 0.83, 0.6], lw: 0.6 });
+      pdf.text(M + 10, y + 14, 'Coucher du soleil ' + d.sun.sunset + ' · Nuit aéronautique ' + d.sun.night +
+        (d.sun.icao ? ' (' + d.sun.icao + ')' : '') + ' — heure locale, date du jour', { font: 'HB', size: 8.5, color: C.amber });
+      y += 30;
+    }
+
+    function footer() {
+      const fy = pdf.H - 46;
+      pdf.line(M, fy, M + W, fy, { color: C.line, lw: 0.6 });
+      pdf.text(M, fy + 12, 'Calcul préparatoire au vol : ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable de ses décisions.',
+        { size: 7, color: C.muted });
+      pdf.text(M, fy + 23, 'Fiche n° ' + d.id + ' · établie le ' + fmtLocal(d.created) + ' · Perfs ACBT ' + (d.app || ''),
+        { size: 7, color: C.muted });
+      if (d.hash) pdf.text(M, fy + 33, 'Empreinte SHA-256 : ' + d.hash, { font: 'C', size: 6.3, color: C.muted });
+    }
+    footer();
+    return pdf.build({ title: 'Fiche ' + d.id });
+  }
+
+  /* Empreinte d'une fiche : SHA-256 du JSON canonique, sans le champ hash */
+  function ficheHash(d) {
+    const c = Object.assign({}, d); delete c.hash;
+    return sha256Hex(canon(c));
+  }
+
+  global.FichePDF = { renderFichePDF, ficheHash, sha256Hex, canon, fmtLocal };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   FICHES ENREGISTRÉES — archive sur l'appareil + envoi au club
+   ═══════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+  const APP_VERSION = '2026.10';
+  const PILOT_KEY = 'acbt-pilot';
+  const API = '/api/fiches';
+  const $id = id => document.getElementById(id);
+  const val = id => (($id(id) && $id(id).value) || '').trim();
+  const txt = id => (($id(id) && $id(id).textContent) || '').trim();
+  const F = window.FichePDF;
+  const flow = window.__flow;
+  const frN = n => String(n).replace('.', ',');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* L'ancien historique automatique est remplacé par les fiches enregistrées */
+  window.saveToHistory = function () {};
+  window.saveFuelToHistory = function () {};
+
+  /* ── Nom du pilote, retenu sur l'appareil ── */
+  const pil = $id('pilotName');
+  try { pil.value = localStorage.getItem(PILOT_KEY) || ''; } catch (e) {}
+  pil.addEventListener('input', () => { try { localStorage.setItem(PILOT_KEY, pil.value.trim()); } catch (e) {} });
+
+  /* ── Stockage : IndexedDB (sinon localStorage) ── */
+  const DBN = 'acbt-archive', ST = 'fiches', LS_FALLBACK = 'acbt-archive-fallback';
+  let dbp = null;
+  function db() {
+    if (!dbp) dbp = new Promise((res, rej) => {
+      if (!('indexedDB' in window)) return rej(new Error('IndexedDB indisponible'));
+      const r = indexedDB.open(DBN, 1);
+      r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains(ST)) d.createObjectStore(ST, { keyPath: 'id' }); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  const lsAll = () => { try { return JSON.parse(localStorage.getItem(LS_FALLBACK) || '[]'); } catch (e) { return []; } };
+  const lsSave = arr => { try { localStorage.setItem(LS_FALLBACK, JSON.stringify(arr)); } catch (e) {} };
+  function putRec(rec) {
+    return db().then(d => new Promise((res, rej) => {
+      const t = d.transaction(ST, 'readwrite'); t.objectStore(ST).put(rec);
+      t.oncomplete = () => res(); t.onerror = () => rej(t.error);
+    })).catch(() => { const a = lsAll().filter(r => r.id !== rec.id); a.push(rec); lsSave(a); });
+  }
+  function allRecs() {
+    return db().then(d => new Promise((res, rej) => {
+      const r = d.transaction(ST).objectStore(ST).getAll();
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    })).catch(() => lsAll()).then(a => a.sort((x, y) => y.created.localeCompare(x.created)));
+  }
+  let persistAsked = false;
+  function requestPersist() {
+    if (persistAsked) return; persistAsked = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  }
+
+  /* ── Construction de la fiche à partir de l'écran ── */
+  const wetLbl = f => f >= 1.6 ? 'herbe très courte mouillée (×1,60)' : f > 1 ? 'mouillée (×1,15)' : 'sèche';
+  function sideData(side) {
+    const dep = side === 'dep';
+    const dir = val(side + 'WindDir').toUpperCase(), kt = val(side + 'WindKt'), g = val(side + 'WindGust');
+    const vf = val(side + 'VrbFrom'), vt = val(side + 'VrbTo');
+    let windText = (dir || kt) ? (dir || '—') + '/' + (kt || '0') + (g && +g > 0 ? 'G' + g : '') + ' kt' : '—';
+    if (vf && vt) windText += ' (variable ' + vf + 'V' + vt + ')';
+    const reg = dep ? useRegWindDep : useRegWindArr;
+    const ta = dep ? depAssumeTA : arrAssumeTA;
+    const chip = $id(dep ? 'toChip' : 'ldgChip');
+    const rows = dep
+      ? [['Roulement', txt('toBaseRoll')], ['Passage 15 m', txt('toBasePass')], ['Facteur vent', txt('toWindF')],
+         ['Carénages', txt('toSpat')], ['Majoration surface', txt('toExtra')], ['Résultat sans marge', txt('toRes')]]
+      : [['Roulement', txt('ldgBaseRoll')], ['Passage 15 m', txt('ldgBasePass')], ['Facteur vent', txt('ldgWindF')],
+         ['Majoration état piste', txt('ldgExtra')], ['Résultat sans marge', txt('ldgRes')]];
+    const meteo = [];
+    const msg = txt(side + 'MetarMsg');
+    if (dep) {
+      if (msg) meteo.push({ type: 'METAR', raw: msg });
+    } else {
+      const tafVis = $id('arrTafWrap').classList.contains('visible');
+      if (msg) meteo.push({ type: tafVis && msg.indexOf('TAF') >= 0 ? 'TAF' : 'METAR', raw: msg });
+      if (tafVis && lastArrTafPeriodDesc) meteo.push({ type: 'Période TAF retenue', raw: lastArrTafPeriodDesc });
+    }
+    const name = txt(side + 'AirportName');
+    return {
+      icao: val(side + 'Icao').toUpperCase(), name: name && name !== '—' ? name : '',
+      qfu: val(side + 'Qfu'), dist: { label: dep ? 'TODA' : 'LDA', value: val(dep ? 'depToda' : 'arrLda') },
+      alt: val(side + 'Alt'), oat: val(side + 'Oat'), mass: val(dep ? 'depTow' : 'arrLdw'),
+      windText,
+      comps: 'Face ' + txt(side + 'HwFace') + ' · Arrière ' + txt(side + 'Tw') + ' · Travers ' + txt(side + 'Xw') + ' kt',
+      surface: dep ? ((depSurface === 'grass' ? 'Herbe' : 'Revêtue') + ', ' + wetLbl(depWetFactor))
+                   : ((landingMode === 'nobrake_grass' ? 'Sans freins (herbe)' : 'Freinage normal') + ', ' + wetLbl(arrWetFactor)),
+      windRule: (reg ? '50 % face / 150 % arrière' : '100 % réel') + (ta ? ' + 5 kt arrière' : ''),
+      result: {
+        verdict: chip.classList.contains('is-ok-chip') ? 'ok' : chip.classList.contains('is-bad-chip') ? 'bad' : 'neutral',
+        required: txt(dep ? 'toKpiVal' : 'ldgKpiVal'), available: txt(dep ? 'todaMini' : 'ldaMini'), rows
+      },
+      note: txt(dep ? 'toExplain' : 'ldgExplain'),
+      meteo
+    };
+  }
+  function fuelData() {
+    const f = fuelCompute();
+    return {
+      conso: f.conso, usable: f.usable, ok: f.ok,
+      totalL: frN(f.totL.toFixed(1)), remainingL: frN(Math.abs(f.remaining).toFixed(1)), totalTime: fmtHM(f.totMin),
+      phases: f.phases.map(p => ({ ph: p.ph, time: fmtHM(p.min), L: frN(p.L.toFixed(1)) })),
+      depTime: f.dep || '', maxLdg: f.dep ? f.maxLdg : '', engineStop: f.dep ? f.engineStop : ''
+    };
+  }
+  function newId(d) {
+    const p = n => String(n).padStart(2, '0');
+    const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let r = '';
+    const rnd = new Uint32Array(4);
+    (window.crypto || {}).getRandomValues ? crypto.getRandomValues(rnd) : rnd.forEach((_, i) => { rnd[i] = Math.random() * 1e9; });
+    rnd.forEach(x => { r += abc[x % abc.length]; });
+    return 'ACBT-' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + '-' + r;
+  }
+  function collect() {
+    const now = new Date();
+    const s = flow.getScope();
+    const sel = $id('aircraftSel');
+    const label = sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.trim() : '';
+    const pickSun = side => {
+      const cs = txt(side + 'Sunset');
+      return (s[side] && cs && cs !== '—:—') ? { sunset: cs, night: txt(side + 'AeroNight'), icao: val(side + 'Icao').toUpperCase() } : null;
+    };
+    return {
+      v: 1, app: APP_VERSION, id: newId(now), created: now.toISOString(),
+      tz: (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '',
+      pilot: val('pilotName'),
+      aircraft: { immat: sel.value, type: label.split('—')[1] ? label.split('—')[1].trim() : label, label },
+      margin: +val('safety') || 0, spats: !!withSpats,
+      dep: s.dep && depComputed ? sideData('dep') : null,
+      arr: s.arr && arrComputed ? sideData('arr') : null,
+      fuel: flow.fuelOk() ? fuelData() : null,
+      sun: pickSun('arr') || pickSun('dep'),
+      snapshot: collectFullSnapshot()
+    };
+  }
+  // Signature du contenu (sans numéro ni date) pour ne pas créer deux fiches identiques
+  const sigOf = d => F.sha256Hex(F.canon({ p: d.pilot, a: d.aircraft, m: d.margin, s: d.spats, dep: d.dep, arr: d.arr, f: d.fuel }));
+
+  /* ── Partage ou téléchargement du PDF ── */
+  function fileName(d) {
+    const dt = new Date(d.created), p = n => String(n).padStart(2, '0');
+    return 'Fiche_' + (d.aircraft.immat || 'vol') + '_' + dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate()) +
+      '_' + p(dt.getHours()) + 'h' + p(dt.getMinutes()) + '.pdf';
+  }
+  function shareOrDownload(bytes, name) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    let file = null;
+    try { file = new File([blob], name, { type: 'application/pdf' }); } catch (e) {}
+    const mobile = window.matchMedia('(pointer:coarse)').matches;
+    if (file && mobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+      return navigator.share({ files: [file], title: name }).then(() => 'shared')
+        .catch(e => (e && e.name === 'AbortError') ? 'cancel' : download(blob, name));
+    }
+    return Promise.resolve(download(blob, name));
+  }
+  function download(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    return 'download';
+  }
+
+  /* ── Message bref en bas d'écran ── */
+  let toastT = null;
+  function toast(msg, kind) {
+    const t = $id('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind ? ' ' + kind : '');
+    clearTimeout(toastT);
+    toastT = setTimeout(() => { t.className = 'toast'; }, 4200);
+  }
+
+  /* ── Enregistrer la fiche ── */
+  let last = null;
+  function saveFiche() {
+    if (!val('pilotName')) {
+      flow.openStep('ac');
+      const m = $id('acValidMsg');
+      m.textContent = '⚠ Indique ton nom de pilote pour enregistrer la fiche.';
+      m.classList.remove('is-hidden');
+      setTimeout(() => { try { pil.focus(); } catch (e) {} }, 350);
+      return;
+    }
+    const data = collect();
+    if (!data.dep && !data.arr && !data.fuel) { toast('Aucun calcul à enregistrer.'); return; }
+    const sig = sigOf(data);
+    let rec, isNew = false;
+    if (last && last.sig === sig) {
+      rec = last.rec;
+    } else {
+      data.hash = F.ficheHash(data);
+      rec = { id: data.id, created: data.created, hash: data.hash, data, synced: false, syncedAt: null };
+      last = { sig, rec };
+      isNew = true;
+    }
+    // Le PDF est produit tout de suite (le partage doit suivre le toucher du bouton)
+    let bytes;
+    try { bytes = F.renderFichePDF(rec.data); }
+    catch (e) { console.error('[Fiche]', e); toast('Erreur lors de la création du PDF.', 'bad'); return; }
+    const sharing = shareOrDownload(bytes, fileName(rec.data));
+    const stored = isNew ? putRec(rec).then(() => { requestPersist(); refreshBadge(); }) : Promise.resolve();
+    Promise.all([sharing, stored]).then(([how]) => {
+      const where = how === 'download' ? 'PDF téléchargé' : how === 'shared' ? 'PDF partagé' : 'Partage annulé';
+      toast((isNew ? 'Fiche enregistrée sur l\'appareil · ' : 'Même fiche · ') + where + '.', 'ok');
+      setSaved(true);
+      syncPending();
+    }).catch(err => { console.error('[Fiche]', err); toast('Fiche créée, mais l\'enregistrement a échoué.', 'bad'); });
+  }
+  function setSaved(on) {
+    ['abSave', 'ficheSave'].forEach(id => {
+      const b = $id(id); if (!b) return;
+      b.querySelector('.lbl-t').textContent = on ? 'Fiche enregistrée' : 'Enregistrer la fiche';
+      b.classList.toggle('done', on);
+    });
+  }
+  // Toute modification après coup : le bouton redevient « Enregistrer la fiche »
+  ['input', 'change', 'click'].forEach(ev => $id('flow').addEventListener(ev, e => {
+    if (e.type === 'click' && !e.target.closest('button,.rwy-btn,.taf-period')) return;
+    if (last) setSaved(false);
+  }));
+  $id('abSave').addEventListener('click', saveFiche);
+  $id('ficheSave').addEventListener('click', saveFiche);
+
+  /* ── Envoi au club (dès que le réseau le permet) ── */
+  let syncBusy = false, syncOff = false;
+  async function syncPending(manual) {
+    if (syncBusy || (syncOff && !manual) || location.protocol === 'file:') return;
+    if (!navigator.onLine) { if (manual) toast('Pas de réseau : les fiches partiront au retour de la connexion.'); return; }
+    syncBusy = true;
+    let sent = 0, failed = false;
+    try {
+      const recs = (await allRecs()).filter(r => !r.synced);
+      for (const r of recs) {
+        let res;
+        try {
+          res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: r.id, created: r.created, hash: r.hash, data: r.data }) });
+        } catch (e) { failed = true; break; }
+        let j = null;
+        try { j = await res.json(); } catch (e) {}
+        if (!res.ok || !j || !j.ok) {
+          failed = true;
+          if (res.status === 404 || res.status === 405 || !j) syncOff = true;   // archive du club pas encore installée
+          break;
+        }
+        r.synced = true; r.syncedAt = j.received_at || new Date().toISOString();
+        await putRec(r); sent++;
+      }
+    } finally {
+      syncBusy = false;
+      refreshBadge();
+      if (listOpen) renderList();
+      if (manual) toast(failed ? (syncOff ? 'Archive du club non disponible pour le moment.' : 'Envoi impossible, nouvel essai plus tard.')
+        : sent ? sent + ' fiche' + (sent > 1 ? 's envoyées' : ' envoyée') + ' au club.' : 'Tout est déjà envoyé au club.', failed ? 'bad' : 'ok');
+    }
+  }
+  window.addEventListener('online', () => { syncOff = false; syncPending(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncPending(); });
+  setTimeout(() => syncPending(), 2500);
+
+  /* ── Liste des fiches (bouton horloge) ── */
+  let listOpen = false;
+  function refreshBadge() {
+    allRecs().then(a => {
+      updateHistoryBadge(a.length);
+      const pend = a.filter(r => !r.synced).length;
+      $id('btnHistory').classList.toggle('has-pending', pend > 0);
+      $id('btnHistory').title = 'Fiches enregistrées' + (pend ? ' · ' + pend + ' en attente d\'envoi' : '');
+    });
+  }
+  function verdictChip(lbl, s, extra) {
+    if (!s) return '';
+    const v = s.result ? s.result.verdict : (s.ok ? 'ok' : 'bad');
+    return `<span class="hist-chip ${v === 'bad' ? 'bad' : 'ok'}">${esc(lbl)}${extra ? ' ' + esc(extra) : ''} · ${v === 'bad' ? 'KO' : 'OK'}</span>`;
+  }
+  function renderList() {
+    allRecs().then(a => {
+      const list = $id('historyList');
+      const pend = a.filter(r => !r.synced).length;
+      $id('archStatus').textContent = a.length
+        ? a.length + ' fiche' + (a.length > 1 ? 's' : '') + (pend ? ' · ' + pend + ' en attente d\'envoi au club' : ' · toutes envoyées au club')
+        : '';
+      if (!a.length) {
+        list.innerHTML = '<div class="arch-empty">Aucune fiche enregistrée sur cet appareil.<br>Une fois les calculs faits, touche « Enregistrer la fiche ».</div>';
+        return;
+      }
+      list.innerHTML = a.map(r => {
+        const d = r.data;
+        return `<div class="hist-card arch-card">
+          <div class="hist-card-top"><div class="hist-card-ac">${esc(d.aircraft.immat)} <span>${esc(d.pilot)}</span></div><div class="hist-card-date">${esc(F.fmtLocal(d.created))}</div></div>
+          <div class="hist-card-rows">${verdictChip('T/O', d.dep, d.dep && d.dep.icao)}${verdictChip('LDG', d.arr, d.arr && d.arr.icao)}${verdictChip('FUEL', d.fuel)}</div>
+          <div class="arch-foot">
+            <span class="arch-st ${r.synced ? 'ok' : 'wait'}">${r.synced ? 'Envoyée au club' : 'En attente d\'envoi'}</span>
+            <span class="arch-id">${esc(r.id)}</span>
+          </div>
+          <div class="arch-actions">
+            <button type="button" class="btn" data-act="pdf" data-id="${esc(r.id)}">Ouvrir le PDF</button>
+            <button type="button" class="btn" data-act="load" data-id="${esc(r.id)}">Reprendre</button>
+          </div>
+        </div>`;
+      }).join('');
+    });
+  }
+  window.openHistory = function () {
+    $id('toast').className = 'toast';
+    $id('historyModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    listOpen = true;
+    renderList();
+  };
+  const _close = window.closeHistory;
+  window.closeHistory = function () { listOpen = false; _close(); };
+  $id('historyList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    allRecs().then(a => {
+      const r = a.find(x => x.id === b.dataset.id);
+      if (!r) return;
+      if (b.dataset.act === 'pdf') {
+        shareOrDownload(F.renderFichePDF(r.data), fileName(r.data));
+      } else {
+        reprendre(r);
+      }
+    });
+  });
+  // Recharge les paramètres d'une fiche (via la restauration existante)
+  function reprendre(r) {
+    const d = r.data;
+    const entry = {
+      snap: d.snapshot || {}, side: d.dep ? 'dep' : 'arr', kind: (!d.dep && !d.arr) ? 'fuel' : undefined,
+      flags: { dep: !!d.dep, arr: !!d.arr, fuel: !!d.fuel },
+      depMetar: d.dep && d.dep.meteo[0] ? d.dep.meteo[0].raw : '', arrMetar: d.arr && d.arr.meteo[0] ? d.arr.meteo[0].raw : ''
+    };
+    let saved = null;
+    try { saved = localStorage.getItem(HIST_KEY); localStorage.setItem(HIST_KEY, JSON.stringify([entry])); } catch (e) {}
+    try { restoreFromHistory(0); }
+    finally { try { if (saved === null) localStorage.removeItem(HIST_KEY); else localStorage.setItem(HIST_KEY, saved); } catch (e) {} }
+    listOpen = false;
+    toast('Paramètres de la fiche rechargés.', 'ok');
+  }
+  window.__syncNow = () => syncPending(true);
+
+  refreshBadge();
 })();
 </script>
 </body>
