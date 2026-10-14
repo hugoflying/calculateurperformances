@@ -6722,9 +6722,9 @@ if ('serviceWorker' in navigator) {
     if (p.wind) cells.push(['Wind', (p.wind.spd === 0 ? 'Calm' : (p.wind.dir === 'VRB' ? 'VRB' : p.wind.dir + '°') + ' / ' + p.wind.spd + ' kt') +
       (p.wind.gust ? ' <small>G' + p.wind.gust + '</small>' : '') + (p.vrb ? ' <small>' + p.vrb.replace('–', 'V') + '</small>' : '')]);
     if (p.cavok) cells.push(['Visibility', 'CAVOK']);
-    else if (p.vis != null) cells.push(['Visibility', p.vis >= 9999 ? '9999 <small>≥ 10 km</small>' : p.vis + ' m']);
+    else if (p.vis != null) cells.push(['Visibility', p.vis >= 9999 ? '> 10 km' : String(p.vis).padStart(4, '0')]);
     if (!p.cavok) {
-      if (p.clouds.length) cells.push(['Clouds', p.clouds.slice(0, 3).map(c => c.c + (c.h != null ? String(c.h / 100).padStart(3, '0') : '///') + c.t + ' <small>' + fmtFt(c.h) + '</small>').join(' · ')]);
+      if (p.clouds.length) cells.push(['Clouds', p.clouds.slice(0, 3).map(c => c.c + ' ' + (c.h != null ? fmtFt(c.h) : '///') + (c.t ? ' ' + c.t : '')).join(' · ')]);
       else if (p.nsc) cells.push(['Clouds', 'NSC']);
     }
     if (p.temp != null) cells.push(['Temp / Dew', p.temp + ' °C' + (p.dew != null ? ' <small>/ ' + p.dew + ' °C</small>' : '')]);
