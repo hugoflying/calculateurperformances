@@ -402,11 +402,13 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .near-msg{padding:0 4px}
 
 /* Catégories de vol */
-.fcat{display:inline-block;font:700 10.5px/1 var(--body);letter-spacing:.05em;padding:4px 6px;border-radius:4px;color:#fff;font-style:normal;white-space:nowrap}
-.fc-vfr{background:#1d8a4e}.fc-mvfr{background:#1f6fd1}.fc-ifr{background:#c62828}.fc-lifr{background:#c2189b}
-.fc-wait,.fc-none{background:var(--field);color:var(--muted);border:1px solid var(--line);padding:3px 6px}
+.fdot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;flex-shrink:0;box-shadow:0 0 0 2px var(--card)}
+.fc-vfr{background:#1d8a4e}.fc-mvfr{background:#1f6fd1}.fc-ifr{background:#d32f2f}.fc-lifr{background:#d0179b}
+.fc-none{background:transparent;border:1.5px solid var(--line);box-shadow:none}
+.fc-wait{background:var(--line);box-shadow:none;animation:fcpulse 1s ease-in-out infinite}
+@keyframes fcpulse{50%{opacity:.35}}
 .ad-row{grid-template-columns:52px minmax(0,1fr) auto auto}
-.ad-row .fslot{font-style:normal}
+.ad-row .fslot{font-style:normal;display:flex;align-items:center}
 
 /* ═══════════ Carburant ═══════════ */
 .res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -6538,8 +6540,8 @@ if ('serviceWorker' in navigator) {
   const fcCache = {};
   function fcCell(icao) {
     const e = fcCache[icao];
-    if (!e || Date.now() - e.t > 15 * 60000) return '<span class="fcat fc-wait">…</span>';
-    return e.cat ? fcBadge(e.cat) : '<span class="fcat fc-none" title="Pas de METAR récent">—</span>';
+    if (!e || Date.now() - e.t > 15 * 60000) return '<span class="fdot fc-wait" title="Recherche du METAR…"></span>';
+    return e.cat ? fcBadge(e.cat) : '<span class="fdot fc-none" role="img" aria-label="Pas de METAR récent" title="Pas de METAR récent"></span>';
   }
   async function fillCats(nb, icaos) {
     const todo = icaos.filter(i => !fcCache[i] || Date.now() - fcCache[i].t > 15 * 60000);
@@ -6818,7 +6820,8 @@ if ('serviceWorker' in navigator) {
     if (c <= 3000 || sm <= 5) return 'MVFR';
     return 'VFR';
   }
-  const fcBadge = cat => cat ? '<span class="fcat fc-' + cat.toLowerCase() + '" title="Catégorie de vol (plafond et visibilité)">' + cat + '</span>' : '';
+  const FC_TXT = { VFR: 'VFR', MVFR: 'MVFR', IFR: 'IFR', LIFR: 'LIFR' };
+  const fcBadge = cat => cat ? '<span class="fdot fc-' + cat.toLowerCase() + '" role="img" aria-label="' + FC_TXT[cat] + '" title="' + FC_TXT[cat] + '"></span>' : '';
   function banner(cls, html) { return '<div class="wx-ban ' + cls + '"><span class="ic">' + (cls === 'bad' ? '⛔' : '⚠') + '</span><span class="tx">' + html + '<span class="act-slot"></span></span></div>'; }
   const wxSig = {};
   function renderWx(side) {
