@@ -395,6 +395,12 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .wxc-taf .taf-period.is-current .tp-type-col,.wxc-taf .taf-period.is-applied .tp-type-col{background:none}
 .wxc-taf .taf-period.is-excluded .tp-apply{white-space:normal;text-align:right;max-width:150px}
 
+.near-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
+.near-me{display:inline-flex;align-items:center;gap:5px}
+.near-me svg{width:15px;height:15px}
+.near-msg:empty{display:none}
+.near-msg{padding:0 4px}
+
 /* Catégories de vol */
 .fcat{display:inline-block;font:700 10.5px/1 var(--body);letter-spacing:.05em;padding:4px 6px;border-radius:4px;color:#fff;font-style:normal;white-space:nowrap}
 .fc-vfr{background:#1d8a4e}.fc-mvfr{background:#1f6fd1}.fc-ifr{background:#c62828}.fc-lifr{background:#c2189b}
@@ -6430,8 +6436,8 @@ if ('serviceWorker' in navigator) {
   const nearOpen = { dep: false, arr: false };
 
   function coordsOf(side) {
-    // Centre de « Proches » : le départ pour l'arrivée, sinon le terrain de base, sinon le terrain saisi
-    const cands = side === 'arr' ? [val('depIcao'), ad.base && ad.base.icao, val('arrIcao')] : [ad.base && ad.base.icao, val('depIcao')];
+    // Centre de « Proches » : le terrain saisi dans cette étape ; sinon le départ (pour l'arrivée), sinon la base
+    const cands = side === 'arr' ? [val('arrIcao'), val('depIcao'), ad.base && ad.base.icao] : [val('depIcao'), ad.base && ad.base.icao];
     for (const c of cands) {
       const k = (c || '').toUpperCase(), r = AD_IDX[k];
       if (r) return { icao: k, lat: r[2], lon: r[3] };
@@ -6469,8 +6475,7 @@ if ('serviceWorker' in navigator) {
         '<button type="button" class="ad-chip' + (it.base ? ' base' : '') + (it.same ? ' same' : '') + (it.recent ? ' rec' : '') + (it.icao === cur ? ' on' : '') + '" ' +
         (it.same ? 'data-adsame="1" title="Même terrain qu\'au départ : piste et météo reprises"' : 'data-ad="' + escH(it.icao) + '" title="' + escH(adName(it.icao) || it.icao) + '"') + '>' +
         (it.same ? SAME : it.base ? STAR : '') + escH(it.icao) + '</button>').join('');
-      const c = coordsOf(side);
-      const nearBtn = c ? '<button type="button" class="ad-chip near' + (nearOpen[side] ? ' on' : '') + '" data-adnear="' + side + '">' + PIN + 'Proches</button>' : '';
+      const nearBtn = true ? '<button type="button" class="ad-chip near' + (nearOpen[side] ? ' on' : '') + '" data-adnear="' + side + '">' + PIN + 'Proches</button>' : '';
       box.innerHTML = chips + nearBtn;
       box.hidden = !chips && !nearBtn;
       fitChips(side);
@@ -6491,15 +6496,40 @@ if ('serviceWorker' in navigator) {
     for (let i = rec.length - 1; i >= 0 && !oneLine(); i--) rec[i].hidden = true;
   }
   window.addEventListener('resize', () => { clearTimeout(fitChips._t); fitChips._t = setTimeout(() => { fitChips('dep'); fitChips('arr'); }, 120); });
+  // « Autour de moi » : position de l'appareil (gardée 5 min)
+  const nearMode = { dep: 'ad', arr: 'ad' };
+  let myPos = null;
+  const LOC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>';
+  function locate(side) {
+    const nb = $id(side + 'AdNear');
+    if (myPos && Date.now() - myPos.t < 5 * 60000) { nearMode[side] = 'pos'; showNear(side); return; }
+    if (!navigator.geolocation) { nb.querySelector('.near-msg').textContent = 'Localisation non disponible sur cet appareil.'; return; }
+    nb.querySelector('.near-msg').textContent = 'Localisation en cours…';
+    navigator.geolocation.getCurrentPosition(pos => {
+      myPos = { lat: pos.coords.latitude, lon: pos.coords.longitude, t: Date.now() };
+      nearMode[side] = 'pos';
+      if (nearOpen[side]) showNear(side);
+    }, err => {
+      const m = nb.querySelector('.near-msg');
+      if (m) m.textContent = err && err.code === 1
+        ? 'Position refusée : autorise la localisation pour ce site dans les réglages du navigateur.'
+        : 'Position introuvable pour le moment. Réessaie à l\'extérieur ou avec le GPS activé.';
+    }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
+  }
   function showNear(side) {
     const nb = $id(side + 'AdNear');
-    const c = coordsOf(side);
-    if (!c) return;
     nb.hidden = false;
+    const ad0 = coordsOf(side);
+    const usePos = nearMode[side] === 'pos' && myPos;
+    const c = usePos ? { icao: null, lat: myPos.lat, lon: myPos.lon } : ad0;
+    const hd = '<div class="near-hd"><span class="sub">' + (c ? 'Autour de ' + (usePos ? 'ta position' : escH(c.icao)) : 'Terrains proches') + '</span>' +
+      (usePos ? (ad0 ? '<button type="button" class="btn-link sm" data-nearad>Autour de ' + escH(ad0.icao) + '</button>' : '')
+              : '<button type="button" class="btn-link sm near-me" data-nearpos>' + LOC + 'Autour de moi</button>') + '</div><span class="note near-msg"></span>';
+    if (!c) { nb.innerHTML = hd; nb.querySelector('.near-msg').textContent = 'Saisis un terrain, ou touche « Autour de moi ».'; return; }
     const list = AD_FR.filter(r => r[0] !== c.icao)
       .map(r => ({ icao: r[0], name: r[1], nm: distNm(c.lat, c.lon, r[2], r[3]) }))
       .filter(x => x.nm <= 60).sort((a, b) => a.nm - b.nm).slice(0, 10);
-    nb.innerHTML = '<span class="sub">Autour de ' + escH(c.icao) + '</span>' + (list.length ? list.map(x =>
+    nb.innerHTML = hd + (list.length ? list.map(x =>
       '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(x.name) + '</span><i class="fslot" data-fc="' + escH(x.icao) + '">' + fcCell(x.icao) + '</i><em>' + Math.round(x.nm) + ' NM</em></button>').join('')
       : '<span class="note">Aucun terrain à moins de 60 NM.</span>');
     fillCats(nb, list.map(x => x.icao));
@@ -6537,6 +6567,8 @@ if ('serviceWorker' in navigator) {
       if (same && stepEl(side).contains(same)) { nearOpen[side] = false; $id('btnSameAsDep').click(); setTimeout(renderAd, 0); return; }
       const chip = e.target.closest('[data-ad]');
       if (chip && stepEl(side).contains(chip)) { pickAd(side, chip.dataset.ad); return; }
+      if (e.target.closest('[data-nearpos]')) { locate(side); return; }
+      if (e.target.closest('[data-nearad]')) { nearMode[side] = 'ad'; showNear(side); return; }
       const nb = e.target.closest('[data-adnear]');
       if (nb) { nearOpen[side] = !nearOpen[side]; renderAd(); if (nearOpen[side]) showNear(side); return; }
       const sb = e.target.closest('#' + side + 'SetBase');
@@ -6552,7 +6584,7 @@ if ('serviceWorker' in navigator) {
         saveAd(); renderAd();
       }
     });
-    $id(side + 'Icao').addEventListener('input', () => setTimeout(renderAd, 0));
+    $id(side + 'Icao').addEventListener('input', () => setTimeout(() => { nearMode[side] = 'ad'; renderAd(); if (nearOpen[side]) showNear(side); }, 0));
   });
   // Terrain de base prérempli au départ
   if (ad.base && !val('depIcao')) $id('depIcao').value = ad.base.icao;
