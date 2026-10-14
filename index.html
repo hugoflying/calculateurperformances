@@ -292,6 +292,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .tp-extra[style*="#D97706"]{color:var(--warn)!important}
 .tp-extra[style*="#059669"]{color:var(--ok-text)!important}
 
+.wx-why{font:500 12.5px/1.45 var(--body);color:var(--muted);padding:7px 10px;border-left:3px solid var(--accent-line);background:var(--field);border-radius:0 6px 6px 0}
 /* ═══════════ Carburant ═══════════ */
 .fuel-time{display:flex;align-items:center;gap:6px}
 .fuel-time .inp{text-align:center}
@@ -870,6 +871,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         </div>
         <div class="blk">
           <div class="blk-h"><span class="bt"><i>4</i>Vent et température</span><span class="src" id="arrWxSrc" hidden></span></div>
+          <span class="wx-why" id="arrWxWhy" hidden></span>
           <div class="g3">
             <label class="f"><span class="lbl">Direction</span><input id="arrWindDir" class="inp c" type="text" list="dirOptions" autocapitalize="characters" autocomplete="off"/></label>
             <label class="f"><span class="lbl">Vent (kt)</span><input id="arrWindKt" class="inp c" type="number" inputmode="numeric"/></label>
@@ -3275,6 +3277,7 @@ function resetSideFields(side) {
     document.getElementById('arrEta').value = '';
     lastArrMetarRaw  = '—';
     lastArrMetarTime = null;
+    lastArrMetarData = null;
     lastArrTafRaw    = '—';
     lastArrTafPeriodDesc = null;
   } else {
@@ -3822,12 +3825,9 @@ function renderTafPicker(tafData) {
 
   function checkMetarVsTaf(etaHour, curPeriod) {
     if (etaHour === '' || etaHour == null || !lastArrMetarTime || !lastArrMetarData) return null;
-    const h = parseInt(etaHour, 10);
-    if (isNaN(h)) return null;
-
-    const now = new Date();
-    let etaDt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, 0, 0));
-    if (etaDt < lastArrMetarTime) etaDt = new Date(etaDt.getTime() + 86400000);
+    const _etaOpt = document.getElementById('arrEta')?.selectedOptions?.[0];
+    if (!_etaOpt || !_etaOpt.dataset || !_etaOpt.dataset.ts) return null;
+    const etaDt = new Date(parseInt(_etaOpt.dataset.ts, 10));
 
     const metarExpiry = new Date(lastArrMetarTime.getTime() + 2 * 3600000);
     if (etaDt > metarExpiry) return null; // ETA hors fenêtre METAR → TAF fait foi
@@ -3835,26 +3835,20 @@ function renderTafPicker(tafData) {
     const qfu = normQFU(document.getElementById('arrQfu').value);
     if (!qfu || !curPeriod?.wind) return null; // pas assez d'info pour comparer
 
-    // Score METAR
-    const mDir = lastArrMetarData.wind_direction?.value ?? 0;
-    const mKt  = Math.max(
-      lastArrMetarData.wind_speed?.value ?? 0,
-      lastArrMetarData.wind_gust?.value  ?? 0
-    );
-    const metarComps = compsFrom(qfu, mDir, mKt);
-    if (!metarComps) return null;
+    // Composante de face la plus défavorable (vent moyen ou rafale ; VRB = tout en arrière)
+    const worstHead = (isVrb, dir, spd, gst) => {
+      const ks = [spd || 0, gst || 0].filter(k => k > 0);
+      if (!ks.length) return 0;
+      if (isVrb || dir == null) return -Math.max(...ks);
+      return Math.min(...ks.map(k => { const c = compsFrom(qfu, dir, k); return c ? c.face - c.tail : 0; }));
+    };
+    const metarHW = worstHead((lastArrMetarData.wind_direction?.repr || '').toUpperCase() === 'VRB',
+      lastArrMetarData.wind_direction?.value ?? null, lastArrMetarData.wind_speed?.value, lastArrMetarData.wind_gust?.value);
+    const tafHW = worstHead((curPeriod.wind.dir || '').toUpperCase() === 'VRB',
+      curPeriod.wind.dirValue ?? null, curPeriod.wind.speed, curPeriod.wind.gust);
 
-    // Score TAF période active
-    const tafDir   = curPeriod.wind.dirValue ?? 0;
-    const tafKt    = Math.max(curPeriod.wind.speed || 0, curPeriod.wind.gust || 0);
-    const tafComps = compsFrom(qfu, tafDir, tafKt);
-    if (!tafComps) return null;
-
-    // Comparer par vraie distance LDG
+    // Comparer par le facteur de distance d'atterrissage
     const distForWind = (hw) => windDistanceFactor(hw);
-    const metarHW = metarComps.hwSigned ?? 0;
-    const tafHW   = tafComps.hwSigned   ?? 0;
-
     const metarIsMoreRestrictive = distForWind(metarHW) > distForWind(tafHW);
 
     return metarIsMoreRestrictive ? 'metar' : 'taf';
@@ -3985,7 +3979,7 @@ function renderTafPicker(tafData) {
     const hasEta = etaHour !== '' && etaHour != null;
 
     // Auto-appliquer si une seule période comparable active
-    if (hasEta && compareablePeriods.length === 1) {
+    if (hasEta && compareablePeriods.length === 1 && metarVsTaf !== 'metar') {
       const { i: autoIdx } = compareablePeriods[0];
       // Seulement si pas déjà appliqué
       const alreadyApplied = periodsEl.querySelectorAll?.('.is-applied').length > 0;
@@ -4231,6 +4225,7 @@ async function loadTafFor(side) {
       const m = metarResult.value;
       lastArrMetarRaw  = m.raw || '—';
       lastArrMetarTime = m.time?.dt ? new Date(m.time.dt) : null;
+      lastArrMetarData = m;
     }
 
     let taf;
@@ -5999,16 +5994,40 @@ if ('serviceWorker' in navigator) {
       const t = zTime(side === 'dep' ? lastDepMetarTime : lastArrMetarTime);
       const near = /^⚠ Station/.test(msg);
       wxSrc[side] = { txt: (near ? 'METAR station proche' : 'METAR') + (t ? ' ' + t : ''), cls: near ? 'warn' : '' };
+      if (side === 'arr') $id('arrWxWhy').hidden = true;
     }
     paintSrc(side);
   }
   function srcFromTaf() {
     const sel = $id('arrEta'), o = sel && sel.options[sel.selectedIndex];
+    const slot = o && o.value ? o.textContent.trim().replace(/\s+/g, ' ').replace(/\s*\(.*\)$/, '') : '';
     const msg = ($id('arrMetarMsg').textContent || '').trim();
-    if (WX_FAIL.test(msg) && !(o && o.value)) wxSrc.arr = null;
-    else wxSrc.arr = { txt: 'TAF' + (o && o.value ? ' · ' + o.textContent.trim().replace(/\s+/g, ' ').slice(0, 22) : ''), cls: '' };
+    const why = $id('arrWxWhy');
+    why.hidden = true; why.textContent = '';
+    if (WX_FAIL.test(msg) && !slot) { wxSrc.arr = null; paintSrc('arr'); return; }
+    const r = typeof lastMetarVsTafResult !== 'undefined' ? lastMetarVsTafResult : null;
+    const manual = !!window._tafManualOverride;
+    const mt = typeof lastArrMetarTime !== 'undefined' ? lastArrMetarTime : null;
+    const till = mt instanceof Date ? zTime(new Date(mt.getTime() + 2 * 3600000)) : '';
+    if (slot && r === 'metar' && !manual) {
+      wxSrc.arr = { txt: 'METAR ' + zTime(mt) + ' · plus restrictif', cls: 'warn', pdf: 'METAR ' + zTime(mt) + ' (plus restrictif)' };
+      why.textContent = 'Arrivée prévue pendant la validité du METAR (jusqu\'à ' + till + ') : le plus restrictif des deux est retenu, ici le METAR.';
+    } else if (slot && r === 'metar' && manual) {
+      wxSrc.arr = { txt: 'TAF · choisi à la main', cls: 'warn', pdf: 'TAF choisi à la main' };
+      why.textContent = 'Le METAR est plus restrictif, mais une période du TAF a été choisie à la main.';
+    } else if (slot && r === 'taf') {
+      wxSrc.arr = { txt: 'TAF · plus restrictif', cls: '', pdf: 'TAF ' + slot + ' (plus restrictif)' };
+      why.textContent = 'Arrivée prévue pendant la validité du METAR (jusqu\'à ' + till + ') : le plus restrictif des deux est retenu, ici le TAF.';
+    } else {
+      if (/ETA dans fenêtre METAR/.test(msg) && typeof lastArrTafRaw !== 'undefined' && lastArrTafRaw && lastArrTafRaw !== '—') setMetarMsg($id('arrMetarMsg'), lastArrTafRaw);
+      wxSrc.arr = { txt: 'TAF' + (slot ? ' · ' + slot : ''), cls: '', pdf: 'TAF' + (slot ? ' ' + slot : '') };
+      if (slot && mt instanceof Date) why.textContent = 'Arrivée prévue après la validité du METAR (' + till + ') : le TAF fait foi.';
+      else if (!slot) why.textContent = 'Choisis l\'heure d\'arrivée prévue dans le TAF.';
+    }
+    why.hidden = !why.textContent;
     paintSrc('arr');
   }
+  window.__wxSrcLabel = side => { const v = wxSrc[side]; return v ? (v.pdf || v.txt) : ''; };
   const wrapAsync = (name, after) => {
     const orig = window[name];
     if (typeof orig !== 'function') return;
@@ -6022,16 +6041,17 @@ if ('serviceWorker' in navigator) {
   wrapAsync('loadTafFor', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
-  $id('arrEta').addEventListener('change', () => setTimeout(srcFromTaf, 0));
+  $id('arrEta').addEventListener('change', () => { setTimeout(srcFromTaf, 0); setTimeout(() => { srcFromTaf(); preview('arr'); }, 120); });
   ['dep', 'arr'].forEach(side => {
     ['WindDir', 'WindKt', 'WindGust', 'Oat', 'VrbFrom', 'VrbTo'].forEach(k => $id(side + k).addEventListener('input', e => {
       if (!e.isTrusted) return;
       wxSrc[side] = { txt: 'saisi à la main', cls: 'man' };
       paintSrc(side);
+      if (side === 'arr') $id('arrWxWhy').hidden = true;
     }));
   });
   const _rsf = window.resetSideFields;
-  window.resetSideFields = function (side) { _rsf(side); wxSrc[side] = null; paintSrc(side); };
+  window.resetSideFields = function (side) { _rsf(side); wxSrc[side] = null; paintSrc(side); if (side === 'arr') $id('arrWxWhy').hidden = true; };
   $id('btnSameAsDep').addEventListener('click', () => { if (val('depIcao')) { wxSrc.arr = wxSrc.dep ? Object.assign({}, wxSrc.dep) : null; paintSrc('arr'); preview('arr'); } });
 
   // « Très courte mouillée » : toujours visible, grisée hors freinage « sans freins »
@@ -6468,6 +6488,7 @@ if ('serviceWorker' in navigator) {
       row('Température (OAT)', (s.oat || '—') + ' °C');
       row('Masse', (s.mass || '—') + ' kg');
       row('Vent', s.windText || '—');
+      if (s.windSrc) row('Vent retenu', s.windSrc);
       if (s.comps) row('Composantes', s.comps);
       row(dep ? 'Surface' : 'Freinage / état', s.surface || '—');
       if (s.windRule && s.windRule.indexOf('+') >= 0) row('Vent pris en compte', s.windRule);
@@ -6661,6 +6682,7 @@ if ('serviceWorker' in navigator) {
       icao: val(side + 'Icao').toUpperCase(), name: name && name !== '—' ? name : '',
       qfu: val(side + 'Qfu'), dist: { label: dep ? 'TODA' : 'LDA', value: val(dep ? 'depToda' : 'arrLda') },
       alt: val(side + 'Alt'), oat: val(side + 'Oat'), mass: val(dep ? 'depTow' : 'arrLdw'),
+      windSrc: (window.__wxSrcLabel && window.__wxSrcLabel(side)) || '',
       windText,
       comps: 'Face ' + txt(side + 'HwFace') + ' · Arrière ' + txt(side + 'Tw') + ' · Travers ' + txt(side + 'Xw') + ' kt',
       surface: dep ? ((depSurface === 'grass' ? 'Herbe' : 'Revêtue') + ', ' + wetLbl(depWetFactor))
