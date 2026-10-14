@@ -198,8 +198,15 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
     <p>L'application se remplit étape par étape, de haut en bas. Une seule étape est ouverte à la fois sur téléphone.</p>
     <ol class="steps">
       <li><strong>Avion</strong> : saisissez votre nom (une seule fois, il est retenu sur votre appareil), choisissez l'immatriculation, puis vérifiez la masse au décollage (préremplie à la masse maximale) et, sur DR300 et DR400, si l'avion vole avec ou sans carénages de roues. Ces réglages valent pour tout le vol.</li>
-      <li><strong>Départ</strong> : tapez le code OACI du terrain, par exemple <code>LFOB</code>, puis touchez <strong>METAR</strong>. Le vent, la température et l'altitude se remplissent, et les pistes s'affichent. Touchez une piste : son QFU, sa distance et sa surface se chargent et s'affichent sur une ligne de résumé (« Saisie manuelle » pour les modifier).</li>
-      <li><strong>Arrivée</strong> : même principe, avec <strong>METAR</strong> ou <strong>TAF</strong>. La masse à l'atterrissage reprend celle du décollage ; ajustez-la si vous aurez consommé du carburant.</li>
+      <li><strong>Départ</strong> : la section suit toujours 4 blocs numérotés.
+        <ol>
+          <li><strong>Terrain</strong> : tapez le code OACI, par exemple <code>LFOB</code>, puis touchez <strong>Charger la météo</strong>.</li>
+          <li><strong>Piste</strong> : les pistes du terrain s'affichent en cartes (numéro, longueur, surface, QFU). La piste face au vent est signalée. Touchez-en une : son QFU et sa distance sont repris, rappelés sous les cartes. « Saisie manuelle » permet de les modifier.</li>
+          <li><strong>État de la piste</strong> : Revêtue ou Herbe, réglé d'après la piste choisie (« selon la piste »). Sur herbe : sèche, mouillée ou très courte mouillée.</li>
+          <li><strong>Vent et température</strong> : remplis par la météo. L'étiquette indique leur source : « METAR 12h20Z », « TAF » ou « saisi à la main ».</li>
+        </ol>
+        Dès que tout est renseigné, le <strong>résultat s'affiche en direct</strong> en bas de la section : distance requise (marge club incluse), barre sur la distance disponible, OK ou Insuffisant.</li>
+      <li><strong>Arrivée</strong> : mêmes 4 blocs. Choisissez la météo <strong>Actuelle (METAR)</strong> ou <strong>Prévue à l'arrivée (TAF)</strong> avant de la charger. L'état de la piste comporte le freinage (normal ou sans freins sur herbe) et la surface ; « très courte mouillée » n'est possible qu'en « sans freins ». La masse à l'atterrissage reprend celle du décollage ; ajustez-la si vous aurez consommé du carburant. Le coucher du soleil s'affiche sous le résultat.</li>
       <li><strong>Carburant</strong> : indiquez le carburant à bord (« Plein », ou « Plein entamé » avec le temps de vol depuis le dernier plein), puis les temps de vol. La consommation est préréglée selon l'avion.</li>
       <li><strong>Fiche du vol</strong> : les verdicts s'affichent. Touchez <strong>Enregistrer la fiche</strong> pour garder la trace de votre préparation.</li>
     </ol>
@@ -252,7 +259,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 <section class="card" id="meteo">
   <h2>5 · METAR, TAF et météo périmée</h2>
   <div class="in">
-    <p>Les boutons <strong>METAR</strong> et <strong>TAF</strong> interrogent la météo officielle du terrain et remplissent le vent, la rafale, le secteur variable, la température et l'altitude. Charger une nouvelle météo remet à zéro les champs du terrain, mais pas la masse.</p>
+    <p>Le bouton <strong>Charger la météo</strong> (METAR au départ ; METAR ou TAF à l'arrivée, selon le choix « Actuelle » / « Prévue à l'arrivée ») interroge la météo officielle du terrain et remplit le vent, la rafale, le secteur variable, la température et l'altitude. Charger une nouvelle météo remet à zéro les champs du terrain, mais pas la masse.</p>
     <table>
       <thead><tr><th>Situation</th><th>Ce que fait l'application</th></tr></thead>
       <tbody>
@@ -351,7 +358,7 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 <section class="card" id="nuit">
   <h2>10 · Coucher du soleil et nuit aéro</h2>
   <div class="in">
-    <p>Dès que le METAR ou le TAF du terrain d'arrivée est chargé, l'application affiche son <strong>coucher du soleil</strong> et la <strong>nuit aéronautique</strong> (coucher + 30 min), en heure locale, pour la date du jour. Ils figurent aussi sur la fiche du vol.</p>
+    <p>Dès que le METAR ou le TAF du terrain d'arrivée est chargé, l'application affiche son <strong>coucher du soleil</strong> et la <strong>nuit aéronautique</strong> (coucher + 30 min), en heure locale, pour la date du jour. Ils figurent aussi sur la fiche du vol. Si l'étape Carburant donne l'heure de mise en route et le temps de vol aller, l'heure d'arrivée estimée est comparée au coucher et à la nuit aéro (« ✓ Arrivée 15:30, avant la nuit »).</p>
     <p class="note">Source : sunrise-sunset.org, avec la position exacte du terrain. Si le service ne répond pas, un calcul local prend le relais et l'indique comme approximatif.</p>
     <div class="callout warn"><strong>VFR de jour.</strong> La nuit aéronautique est votre heure limite d'atterrissage.</div>
   </div>
