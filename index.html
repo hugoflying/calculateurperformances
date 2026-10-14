@@ -312,6 +312,22 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .ad-base{align-self:flex-start;color:var(--muted)}
 .ad-base u{color:var(--accent);text-decoration:none}
 
+/* Paramètres */
+.set-sheet{padding:0;display:flex;flex-direction:column;max-height:92dvh}
+.set-body{padding:16px 20px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+.set-save{width:100%;height:48px;font:600 16px var(--body);letter-spacing:0;text-transform:none}
+
+.fleet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.fleet-it{display:grid;grid-template-columns:20px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--muted)}
+.fleet-it b{font:700 14px var(--body);letter-spacing:.03em;color:var(--muted)}
+.fleet-it span:last-child{grid-column:2;font:500 12px var(--body)}
+.fleet-box{grid-row:1/3;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center}
+.fleet-it.on{border-color:var(--accent-line);background:var(--accent-soft)}
+.fleet-it.on b{color:var(--ink)}
+.fleet-it.on .fleet-box{background:var(--accent);border-color:var(--accent)}
+.fleet-it.on .fleet-box::after{content:"";width:5px;height:9px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+
 /* ═══════════ Carburant ═══════════ */
 .res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .res-tg{flex:0 0 190px}
@@ -672,6 +688,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 <header class="topbar">
   <div class="topbar-in">
     <h1 class="brand">Perfs <span>ACBT</span><small>LFOB</small></h1>
+    <button id="btnSettings" class="icon-btn" type="button" aria-label="Paramètres" title="Paramètres"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     <a class="icon-btn" href="documentation.html" aria-label="Documentation" title="Documentation">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M19 17v4H6.5"/></svg>
     </a>
@@ -1145,6 +1162,33 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
     </div>
     <div id="historyList"></div>
     <div class="hist-foot"><span id="archStatus" class="note"></span><button class="btn" type="button" onclick="__syncNow()">Envoyer au club</button></div>
+  </div>
+</div>
+
+<!-- PARAMÈTRES -->
+<div id="settingsModal" class="overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="sheet set-sheet">
+    <div class="hist-head">
+      <h2 id="settingsTitle" style="font-size:20px">Paramètres</h2>
+      <button class="icon-btn" type="button" id="setClose" aria-label="Fermer">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="set-body">
+      <label class="f"><span class="lbl">Nom du pilote</span><input id="setPilot" class="inp" type="text" autocomplete="name" placeholder="Prénom Nom"/></label>
+      <div class="f"><span class="lbl">Avions affichés</span>
+        <div class="fleet" id="setFleet"></div>
+        <span class="note" id="setFleetNote">Seuls les avions cochés apparaissent dans la liste.</span></div>
+      <label class="f"><span class="lbl">Avion par défaut</span><select id="setAircraft" class="inp"></select>
+        <span class="note">Présélectionné à l'ouverture de l'application.</span></label>
+      <div class="f"><span class="lbl">Terrain de base</span>
+        <input id="setBase" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="OACI, ex. LFOB" aria-label="Terrain de base"/>
+        <span class="note" id="setBaseName">Prérempli au départ, en tête des terrains proposés.</span></div>
+      <div class="f"><span class="lbl">Réserve finale par défaut</span>
+        <div class="toggle-group"><button id="setRes30" class="toggle-btn" type="button" data-res="30">30 min</button><button id="setRes45" class="toggle-btn" type="button" data-res="45">45 min</button></div></div>
+      <span class="note">Ces réglages restent sur cet appareil.</span>
+    </div>
+    <div class="hist-foot"><button class="btn pri set-save" type="button" id="setSave">Enregistrer</button></div>
   </div>
 </div>
 
@@ -5577,7 +5621,7 @@ if ('serviceWorker' in navigator) {
     const tow = val('depTow'), ldw = val('arrLdw');
     _origClear(side);
     if (side === 'fuel') {
-      $id('fuelReserve').value = '45';   // réserve du club
+      $id('fuelReserve').value = window.__defaultReserve ? window.__defaultReserve() : '45';   // réserve par défaut
       fuelMode = null;
       fuelTouched = !!scope.fuel;
       if (typeof applyFuelPreset === 'function') applyFuelPreset();
@@ -5606,7 +5650,9 @@ if ('serviceWorker' in navigator) {
       if (e.kind === 'fuel') ns.fuel = true; else if (e.side === 'dep' || e.side === 'arr') ns[e.side] = true;
       scope = ns; saveScope(); applyScope();
     }
+    if (window.__applyFleet) window.__applyFleet(true);   // une fiche peut porter sur un avion masqué
     _origRestore(idx);
+    if (window.__applyFleet) window.__applyFleet();
     $id('safety').value = '30';   // marge imposée par le club
     if (val('fuelCap')) { const fc = fullCap(); fuelMode = (fc && +val('fuelCap') === +fc) ? 'full' : 'liters'; }
     fuelTouched = !!scope.fuel;
@@ -5986,11 +6032,14 @@ if ('serviceWorker' in navigator) {
     const windDir = parseInt(val(side + 'WindDir') || '0', 10) || 0;
     const windKt = +(val(side + 'WindKt') || 0);
     const head = r => { const d = ((windDir - r.qfu + 180 + 360) % 360) - 180; return Math.cos(d * Math.PI / 180) * windKt; };
-    let best = -Infinity;
-    if (windKt > 0) runways.forEach(r => { best = Math.max(best, head(r)); });
+    // « Face au vent » seulement si une piste est vraiment meilleure : au moins 1 kt de face
+    // et 1 kt de mieux que la moins bonne (vent calme ou plein travers : pas de piste conseillée)
+    let best = -Infinity, worst = Infinity;
+    if (windKt > 0) runways.forEach(r => { const h = head(r); best = Math.max(best, h); worst = Math.min(worst, h); });
+    const hasPref = windKt > 0 && !/VRB/i.test(val(side + 'WindDir')) && best >= 1 && best - worst >= 1;
     wrap.innerHTML = '<div class="rwy-list">' + runways.map((r, i) => {
       const grass = r.surfaceType === 'grass';
-      const pref = windKt > 0 && Math.abs(head(r) - best) < 1;
+      const pref = hasPref && Math.abs(head(r) - best) < 1;
       const len = side === 'dep' ? r.toraM : r.ldaM;
       return '<button type="button" class="rwy-btn' + (grass ? ' grass-surface' : '') + (pref ? ' rwy-preferred' : '') + (i === prevActive ? ' active' : '') +
         '" id="rwy-' + side + '-' + i + '" onclick="applyRunway(\'' + side + '\',' + i + ')">' +
@@ -6274,16 +6323,25 @@ if ('serviceWorker' in navigator) {
   try { const o = JSON.parse(localStorage.getItem(AD_KEY) || 'null'); if (o && typeof o === 'object') ad = Object.assign(ad, o); } catch (e) {}
   const saveAd = () => { try { localStorage.setItem(AD_KEY, JSON.stringify(ad)); } catch (e) {} };
   const isIcao = t => /^[A-Z0-9]{4}$/.test(t || '');
-  const adName = icao => (window._airportNamesFallback && window._airportNamesFallback[icao]) || '';
+  // Aérodromes français (code OACI, nom, position) : embarqués, donc disponibles hors connexion
+  const AD_FR = [["LF50","Soucelles",47.5804,-0.4123],["LF51","Plan-de-Dieu",44.18,4.9189],["LF52","Chambley",49.0255,5.8761],["LFAB","St Aubin",49.8825,1.0853],["LFAC","Calais-Dunkerque",50.9621,1.9548],["LFAD","Compiegne Margny",49.4344,2.8061],["LFAE","Eu Mers Le Treport",50.0692,1.4267],["LFAF","Laon - Chambry",49.5958,3.6317],["LFAG","Peronne-Saint-Quentin",49.8685,3.0296],["LFAH","Soissons-Cuffies",49.4,3.317],["LFAI","Nangis-Les Loges",48.5962,3.0068],["LFAJ","Argentan",48.7106,0.0039],["LFAK","Dunkerque Les Moeres",51.0406,2.5503],["LFAL","La Fleche Thoree Les Pins",47.6942,0.0033],["LFAM","Berck sur Mer",50.4231,1.5919],["LFAN","Conde/Noireau",48.8917,-0.5019],["LFAO","Bagnoles-de-l'Orne-Couterne",48.5458,-0.3874],["LFAP","Rethel",49.4819,4.3647],["LFAQ","Albert-Bray",49.9715,2.6977],["LFAR","Montdidier",49.6731,2.5692],["LFAS","Falaise",48.9272,-0.1447],["LFAT","Le Touquet-Cote d'Opale",50.5174,1.6206],["LFAU","Vauville",49.6242,-1.8292],["LFAV","Valenciennes-Denain",50.3258,3.4613],["LFAW","Villerupt",49.4114,5.8906],["LFAX","Mortagne Au Perche",48.5403,0.5339],["LFAY","Amiens-Glisy",49.873,2.3871],["LFBA","Agen-La Garenne",44.1747,0.5906],["LFBC","Cazaux (BA 120)",44.5333,-1.125],["LFBD","Bordeaux-Merignac (BA 106)",44.8283,-0.7156],["LFBE","Bergerac-Roumaniere",44.8253,0.5186],["LFBF","Toulouse-Francazal (BA 101)",43.5456,1.3675],["LFBG","Cognac-Chateaubernard (BA 709)",45.6583,-0.3175],["LFBH","La Rochelle-Ile de Re",46.1792,-1.1953],["LFBI","Poitiers-Biard",46.5877,0.3067],["LFBJ","St Junien",45.9033,0.92],["LFBK","Montlucon-Gueret",46.2226,2.364],["LFBL","Limoges",45.8628,1.1794],["LFBM","Mont-de-Marsan (BA 118)",43.9117,-0.5075],["LFBN","Niort-Souche",46.3113,-0.4015],["LFBO","Toulouse-Blagnac",43.6291,1.3638],["LFBP","Pau Pyrenees",43.38,-0.4186],["LFBR","Muret-Lherm",43.4489,1.2633],["LFBS","Biscarrosse Parentis",44.3694,-1.1306],["LFBT","Tarbes-Lourdes-Pyrenees",43.1787,-0.0064],["LFBU","Angouleme-Brie-Champniers",45.7292,0.2215],["LFBX","Perigueux-Bassillac",45.1981,0.8156],["LFBY","Dax Seyresse",43.6892,-1.0689],["LFBZ","Biarritz-Anglet-Bayonne",43.4684,-1.5233],["LFCA","Chatellerault",46.7814,0.5519],["LFCB","Bagneres De Luchon",42.8,0.6],["LFCC","Cahors-Lalbenque",44.3514,1.4753],["LFCD","Andernos Les Bains",44.7561,-1.0633],["LFCE","Gueret St Laurent",46.1792,1.9583],["LFCF","Figeac Livernon",44.6733,1.7892],["LFCG","Saint-Girons-Antichan",43.0078,1.1032],["LFCH","Arcachon-La Teste-de-Buch",44.5964,-1.1108],["LFCI","Albi-Le Sequestre",43.9139,2.1131],["LFCJ","Jonzac Neulles",45.4842,-0.4214],["LFCK","Castres-Mazamet",43.5563,2.2892],["LFCL","Toulouse-Lasbordes",43.5861,1.4992],["LFCM","Millau-Larzac",43.9893,3.183],["LFCN","Nogaro",43.7697,-0.0328],["LFCO","Oloron Herrere",43.1647,-0.5603],["LFCP","Pons Avy",45.57,-0.515],["LFCQ","Graulhet-Montdragon",43.7711,2.0108],["LFCR","Rodez-Marcillac",44.4079,2.4827],["LFCS","Bordeaux Leognan Saucats",44.7003,-0.5956],["LFCT","Thouars",46.9619,-0.1528],["LFCU","Ussel-Thalamy",45.5347,2.4239],["LFCV","Villefranche De Rouergue",44.37,2.0281],["LFCW","Villeneuve-sur-Lot",44.3969,0.7589],["LFCX","Castelsarrasin Moissac",44.0869,1.1283],["LFCY","Royan-Medis",45.6281,-0.9725],["LFCZ","Mimizan",44.1461,-1.1744],["LFDA","Aire-sur-l'Adour",43.7094,-0.2453],["LFDB","Montauban",44.0257,1.378],["LFDC","Montendre Marcillac",45.2744,-0.4522],["LFDE","Egletons",45.4214,2.0689],["LFDF","Ste Foy La Grande",44.8536,0.1767],["LFDG","Gaillac Lisle Sur Tarn",43.8839,1.8756],["LFDH","Auch-Lamothe",43.6878,0.6017],["LFDI","Libourne-Artigues-de-Lussac",44.9825,-0.1347],["LFDJ","Pamiers-Les Pujols",43.0906,1.6958],["LFDK","Soulac Sur Mer",45.495,-1.0822],["LFDL","Loudun",47.0372,0.1014],["LFDM","Marmande-Virazeil",44.4989,0.2005],["LFDN","Rochefort-Saint-Agnant (BA 721)",45.8878,-0.9831],["LFDO","Bordeaux Souge",44.85,-0.8],["LFDP","St Pierre D'oleron",45.9592,-1.3161],["LFDQ","Castelnau Magnoac",43.2794,0.5217],["LFDR","La Reole Floudes",44.5681,-0.0561],["LFDS","Sarlat Domme",44.7933,1.2447],["LFDT","Tarbes Laloubere",43.2161,0.0786],["LFDU","Lesparre St Laurent Medoc",45.1978,-0.8822],["LFDV","Couhe Verac",46.2728,0.1906],["LFDW","Chauvigny",46.5836,0.6425],["LFDX","Fumel Montayral",44.4636,1.0078],["LFDY","Bordeaux Yvrac",44.8772,-0.4792],["LFDZ","Condat-Sur-Vezere",45.1,1.217],["LFEA","Belle Ile",47.3267,-3.1983],["LFEB","Dinan - Trelivan",48.4444,-2.1014],["LFEC","Ouessant",48.4632,-5.0636],["LFED","Pontivy",48.0585,-2.9218],["LFEF","Amboise Dierre",47.3414,0.9425],["LFEG","Argenton Sur Creuse",46.5969,1.6025],["LFEH","Aubigny-sur-Nere",47.4742,2.3931],["LFEI","Briare Chatillon",47.6144,2.7819],["LFEJ","Chateauroux Villers",46.8419,1.6211],["LFEK","Issoudun Le Fay",46.8886,2.0414],["LFEL","Le Blanc",46.6208,1.0875],["LFEM","Montargis Vimory",47.9606,2.6858],["LFEN","Tours Sorigny",47.2675,0.7011],["LFEO","St Malo St Serva",48.6136,-1.9736],["LFEP","Pouilly Maconge",47.2214,4.5611],["LFEQ","Quiberon",47.4822,-3.1],["LFER","Redon Bains-sur-Oust",47.6994,-2.0367],["LFES","Guiscriff Scaer",48.0525,-3.6647],["LFET","Til Chatel",47.5475,5.2119],["LFEU","Bar Le Duc",48.8683,5.1858],["LFEV","Gray St Adrien",47.4333,5.6228],["LFEW","Saulieu Liernais",47.2394,4.2658],["LFEX","Nancy Azelot",48.5928,6.2411],["LFEY","Ile d'Yeu",46.7186,-2.3911],["LFEZ","Nancy Malzeville",48.7244,6.2078],["LFFB","Buno Bonnevaux",48.3511,2.4256],["LFFC","Mantes Cherence",49.0789,1.6897],["LFFD","St Andre De L'eure",48.8986,1.2506],["LFFE","Enghien Moisselles",49.0464,2.3531],["LFFG","La Ferte Gaucher",48.7558,3.2767],["LFFH","Chateau-Thierry - Belleau",49.0672,3.3569],["LFFI","Ancenis",47.4081,-1.1775],["LFFJ","Joinville Mussey",48.3861,5.145],["LFFK","Fontenay Le Comte",46.4414,-0.7928],["LFFL","Bailleau Armenonville",48.5158,1.64],["LFFM","Lamotte Beuvron",47.6567,1.9892],["LFFN","Brienne-le-Chateau",48.4298,4.4822],["LFFP","Pithiviers",48.1572,2.1925],["LFFQ","La Ferte Alais",48.4978,2.3433],["LFFR","Bar Sur Seine",48.0669,4.4136],["LFFT","Neufchateau",48.3625,5.7214],["LFFU","Chateauneuf Sur Cher",46.8711,2.3769],["LFFV","Vierzon Mereau",47.1947,2.0667],["LFFW","Montaigu St Georges",46.9331,-1.3256],["LFFX","Tournus Cuisery",46.5628,4.9767],["LFFY","Etrepagny",49.3061,1.6386],["LFFZ","Sezanne St Remy",48.7106,3.7642],["LFGA","Colmar-Houssen",48.1099,7.359],["LFGB","Mulhouse-Habsheim",47.7413,7.4322],["LFGC","Strasbourg Neuhof",48.5544,7.7781],["LFGD","Arbois",46.92,5.76],["LFGE","Avallon",47.5031,3.8994],["LFGF","Beaune-Challanges",47.0059,4.8934],["LFGG","Belfort Chaux",47.7022,6.8325],["LFGH","Cosne Sur Loire",47.3606,2.9194],["LFGI","Dijon Darois",47.3869,4.9481],["LFGJ","Dole-Tavaux",47.039,5.4272],["LFGK","Joigny",47.9922,3.3922],["LFGL","Lons Le Saulnier Courlaoux",46.6761,5.4711],["LFGM","Montceau Les Mines",46.6042,4.3339],["LFGN","Paray Le Monial",46.4678,4.135],["LFGO","Pont Sur Yonne",48.2906,3.2508],["LFGP","St Florentin Cheu",47.9822,3.7783],["LFGQ","Semur En Auxois",47.4819,4.3442],["LFGR","Doncourt Les Conflans",49.1528,5.9328],["LFGS","Longuyon Villette",49.4844,5.5728],["LFGT","Sarrebourg Buhl",48.7189,7.0794],["LFGU","Sarreguemines Neunkirch",49.1281,7.1083],["LFGV","Thionville Yutz",49.3547,6.2014],["LFGW","Verdun-Le Rozelier",49.1224,5.4691],["LFGX","Champagnole Crotenay",46.7644,5.8208],["LFGY","St Die Remomeix",48.2672,7.0086],["LFGZ","Nuits St Georges",47.1431,4.9692],["LFHA","Issoire Le Broc",45.515,3.2675],["LFHC","Perouges - Meximieux",45.8697,5.1872],["LFHD","Pierrelatte",44.3989,4.7181],["LFHE","Romans - Saint-Paul",45.0661,5.1033],["LFHF","Ruoms",44.4453,4.3339],["LFHG","St Chamond L'horme",45.4931,4.5356],["LFHH","Vienne Reventin",45.4642,4.8294],["LFHI","Morestel",45.6878,5.4536],["LFHJ","Lyon Corbas",45.6542,4.9136],["LFHL","Langogne - Lesperon",44.7064,3.8883],["LFHM","Megeve",45.8208,6.6522],["LFHN","Bellegarde-Vouvray",46.1242,5.8061],["LFHO","Aubenas-Ardeche Meridional",44.5442,4.3722],["LFHP","Le Puy-Loudes",45.0807,3.7629],["LFHQ","Saint-Flour-Coltines",45.0764,2.9936],["LFHR","Brioude Beaumont",45.325,3.3592],["LFHS","Bourg-Ceyzeriat",46.2009,5.292],["LFHT","Ambert Le Poyet",45.5169,3.7464],["LFHU","L'alpe D'huez",45.0883,6.0847],["LFHV","Villefranche-Tarare",45.92,4.6349],["LFHW","Belleville Villie Morgon",46.1428,4.7147],["LFHX","Lapalisse - Perigny",46.2539,3.5886],["LFHY","Moulins-Montbeugny",46.5346,3.4237],["LFHZ","Sallanches",45.9539,6.6392],["LFIB","Belves St Pardoux",44.7825,0.9589],["LFID","Condom Valence Sur Baise",43.9103,0.3872],["LFIF","Saint-Affrique-Belmont",43.8233,2.7453],["LFIG","Cassagnes-Begonhes",44.1778,2.515],["LFIH","Chalais",45.2681,0.0169],["LFIK","Riberac St Aulaye",45.2403,0.2669],["LFIL","Rion Des Landes",43.9158,-0.9492],["LFIM","St Gaudens Montrejeau",43.1086,0.6203],["LFIP","Peyresourde Balestas",42.7969,0.4356],["LFIR","Revel Montgey",43.4814,1.98],["LFIT","Toulouse Bourg St Bernard",43.6122,1.7253],["LFIV","Vendays Montalivet",45.3806,-1.1158],["LFIX","Itxassou",43.3375,-1.4222],["LFIY","St Jean D'angely",45.9664,-0.5253],["LFJA","Chaumont-Semoutiers",48.0863,5.049],["LFJB","Mauleon",46.9028,-0.6978],["LFJC","Clamecy",47.4383,3.5086],["LFJD","Corlier",46.0397,5.4969],["LFJE","La Motte Chalancon",44.4958,5.4028],["LFJF","Aubenasson",44.6945,5.1511],["LFJH","Cazeres Palaminy",43.2022,1.0511],["LFJI","Marennes Le Bournet",45.825,-1.0767],["LFJL","Metz-Nancy-Lorraine",48.9821,6.2513],["LFJM","Chailley",48.0807,3.7142],["LFJR","Angers-Loire",47.5603,-0.3122],["LFJS","Soissons - Courmelles",49.3458,3.2842],["LFJT","Tours Le Louroux",47.15,0.7128],["LFJU","Lurcy-Levis",46.7136,2.9459],["LFKA","Albertville",45.6272,6.3297],["LFKB","Bastia-Poretta",42.5527,9.4837],["LFKC","Calvi-Sainte-Catherine",42.5308,8.7932],["LFKD","Sollieres Sardieres",45.2564,6.8014],["LFKE","Saint-Jean-en-Royans",45.0278,5.31],["LFKF","Figari Sud-Corse",41.5006,9.0978],["LFKG","Ghisonaccia Alzitone",42.055,9.4019],["LFKH","St Jean D'Avelanne",45.5167,5.6806],["LFKJ","Ajaccio-Napoleon Bonaparte",41.9236,8.8029],["LFKL","Lyon Brindas",45.7117,4.6978],["LFKM","St Galmier",45.6072,4.3058],["LFKO","Propriano",41.6606,8.8897],["LFKP","La Tour Du Pin",45.56,5.3847],["LFKS","Solenzara (BA 126)",41.9244,9.406],["LFKT","Corte",42.2936,9.1931],["LFKX","Meribel",45.4069,6.5806],["LFKY","Belley - Peyrieu",45.695,5.6928],["LFKZ","St Claude Pratz",46.3889,5.7722],["LFLA","Auxerre-Branches",47.8502,3.4971],["LFLB","Chambery-Savoie",45.6381,5.8802],["LFLC","Clermont-Ferrand Auvergne",45.7867,3.1692],["LFLD","Bourges",47.0581,2.3703],["LFLE","Chambery-Challes-les-Eaux",45.5611,5.9758],["LFLG","Grenoble Le Versoud",45.2192,5.8497],["LFLH","Chalon-Champforgeuil",46.8261,4.8176],["LFLI","Annemasse",46.192,6.2684],["LFLJ","Courchevel",45.3967,6.6347],["LFLK","Oyonnax-Arbent",46.2792,5.6675],["LFLL","Lyon Saint-Exupery",45.7264,5.0908],["LFLM","Macon-Charnay",46.2951,4.7958],["LFLN","Saint-Yan",46.4125,4.0133],["LFLO","Roanne-Renaison",46.0583,4.0014],["LFLP","Annecy-Haute-Savoie-Mont Blanc",45.9292,6.0988],["LFLQ","Montelimar - Ancone",44.5836,4.7406],["LFLR","Saint-Rambert-d'Albon",45.2561,4.8258],["LFLS","Grenoble-Isere",45.3629,5.3294],["LFLT","Montlucon-Domerat",46.3525,2.5705],["LFLU","Valence-Chabeuil",44.9216,4.9699],["LFLV","Vichy-Charmeil",46.1697,3.4037],["LFLW","Aurillac",44.8914,2.4219],["LFLX","Chateauroux-Deols Marcel Dassault",46.8622,1.7307],["LFLY","Lyon-Bron",45.7272,4.9443],["LFLZ","Feurs Chambeon",45.7036,4.2011],["LFMA","Aix-en-Provence (BA 114)",43.5056,5.3678],["LFMC","Le Luc-Le Cannet",43.3847,6.3871],["LFMD","Cannes-Mandelieu",43.542,6.9535],["LFME","Nimes Courbessac",43.8539,4.4136],["LFMF","Fayence",43.6089,6.7028],["LFMG","Montagne Noire",43.4075,1.9903],["LFMH","Saint-Etienne-Boutheon",45.5406,4.2964],["LFMI","Istres Le Tube/Istres Air Base (BA 125)",43.5227,4.9238],["LFMK","Carcassonne",43.216,2.3063],["LFML","Marseille Provence",43.4393,5.2214],["LFMN","Nice-Cote d'Azur",43.6584,7.2159],["LFMO","Orange-Caritat (BA 115)",44.1405,4.8667],["LFMP","Perpignan-Rivesaltes (Llabanere)",42.7404,2.8707],["LFMQ","Le Castellet",43.2525,5.7852],["LFMR","Barcelonnette - Saint-Pons",44.3883,6.6103],["LFMS","Alès Cevennes",44.0697,4.1421],["LFMT","Montpellier-Mediterranee",43.5762,3.963],["LFMU","Beziers-Vias",43.3235,3.3539],["LFMV","Avignon-Caumont",43.9073,4.9018],["LFMW","Castelnaudary Villeneuve",43.3122,1.9211],["LFMX","Chateau-Arnoux-Saint-Auban",44.06,5.9914],["LFMY","Salon-de-Provence (BA 701)",43.6064,5.1093],["LFMZ","Lezignan-Corbieres",43.1758,2.7342],["LFNA","Gap - Tallard",44.455,6.0378],["LFNB","Mende-Brenoux",44.5021,3.5328],["LFNC","Mont-Dauphin - St-Crepin",44.7017,6.6003],["LFND","Pont St Esprit",44.2694,4.6533],["LFNE","Salon Eyguieres",43.6583,5.0136],["LFNF","Vinon Sur Verdon",43.7378,5.7842],["LFNG","Montpellier Candillargues",43.6103,4.0703],["LFNH","Carpentras",44.0298,5.0781],["LFNJ","Aspres-sur-Buech",44.5189,5.7375],["LFNL","St Martin De Londres",43.8008,3.7825],["LFNO","Florac Ste Enimie",44.2864,3.4667],["LFNP","Pezenas Nizas",43.5058,3.4136],["LFNQ","Mont Louis La Quillane",42.5436,2.12],["LFNR","Berre La Fare",43.5378,5.1783],["LFNS","Sisteron - Theze",44.2875,5.9303],["LFNT","Avignon Pujaut",43.9969,4.7556],["LFNU","Uzes",44.0847,4.3953],["LFNV","Valreas Visan",44.3369,4.9081],["LFNW","Puivert",42.9114,2.0561],["LFNX","Bedarieux La Tour",43.6408,3.1456],["LFNY","St Etienne En Devoluy",44.6689,5.9061],["LFNZ","Le Mazet De Romanin",43.7689,4.8936],["LFOA","Avord (BA 702)",47.0533,2.6325],["LFOB","Paris Beauvais Tille",49.4544,2.1128],["LFOC","Chateaudun (BA 279)",48.0581,1.3766],["LFOD","Saumur-Saint-Florent",47.2568,-0.1151],["LFOE","Evreux-Fauville (BA 105)",49.0287,1.2199],["LFOF","Alencon Valframbert",48.4475,0.1092],["LFOG","Flers Saint Paul",48.7525,-0.5894],["LFOH","Le Havre Octeville",49.5339,0.0881],["LFOI","Abbeville-Buigny-Saint-Maclou",50.1435,1.8319],["LFOJ","Orleans-Bricy (BA 123)",47.9878,1.7606],["LFOK","Chalons-Vatry",48.7761,4.1845],["LFOL","L'aigle St Michel",48.7597,0.6592],["LFOM","Lessay",49.2031,-1.5067],["LFON","Dreux Vernouillet",48.7067,1.3628],["LFOO","Les Sables-d'Olonne Talmont",46.4769,-1.7228],["LFOP","Rouen",49.3842,1.1748],["LFOQ","Blois-Le Breuil",47.6785,1.2088],["LFOR","Chartres Champhol",48.4589,1.5239],["LFOS","St Valery Vittefleur",49.8361,0.655],["LFOT","Tours-Val-de-Loire",47.4322,0.7276],["LFOU","Cholet Le Pontreau",47.0821,-0.8771],["LFOV","Laval-Entrammes",48.0314,-0.743],["LFOW","Saint-Quentin - Roupy",49.8169,3.2067],["LFOX","Etampes Mondesir",48.3819,2.0753],["LFOY","Le Havre St Romain",49.5447,0.3611],["LFOZ","Orleans-Saint-Denis-de-l'Hotel",47.8969,2.1633],["LFPA","Persan Beaumont",49.1658,2.3131],["LFPB","Paris-Le Bourget",48.9694,2.4414],["LFPC","Creil",49.2535,2.5191],["LFPD","Bernay St Martin",49.1028,0.5667],["LFPE","Meaux Esbly",48.9278,2.8353],["LFPF","Beynes Thiverval",48.8436,1.9089],["LFPG","Charles de Gaulle International",49.0128,2.55],["LFPH","Chelles le Pin",48.8978,2.6075],["LFPK","Coulommiers-Voisins",48.8377,3.0161],["LFPL","Lognes Emerainville",48.8231,2.6239],["LFPM","Melun-Villaroche",48.6047,2.6711],["LFPN","Toussus-le-Noble",48.7519,2.1062],["LFPO","Paris-Orly",48.7253,2.3594],["LFPP","Le Plessis Belleville",49.11,2.7381],["LFPQ","Fontenay Tresigny",48.7072,2.9044],["LFPT","Pontoise - Cormeilles-en-Vexin",49.0966,2.0408],["LFPU","Moret Episy",48.3419,2.7994],["LFPV","Villacoublay-Velizy (BA 107)",48.7744,2.2015],["LFPX","Chavenay Villepreux",48.8436,1.9822],["LFPY","Bretigny sur Orge",48.5961,2.3322],["LFPZ","Saint-Cyr-l'Ecole",48.8114,2.0747],["LFQA","Reims-Prunay",49.2087,4.1566],["LFQB","Troyes-Barberey",48.3221,4.0167],["LFQC","Luneville-Croismare",48.5933,6.5435],["LFQD","Arras Roclincourt",50.3239,2.8028],["LFQE","Etain-Rouvres",49.2269,5.6722],["LFQF","Autun-Bellevue",46.9673,4.2606],["LFQG","Nevers-Fourchambault",47.0026,3.1133],["LFQH","Chatillon Sur Seine",47.8464,4.5806],["LFQJ","Maubeuge-Elesmes",50.3105,4.0331],["LFQK","Chalons Ecury Sur Coole",48.9061,4.3542],["LFQL","Lens Benifontaine",50.4664,2.8197],["LFQM","Besancon-La Veze",47.2066,6.0837],["LFQN","Saint Omer Wizernes",50.7294,2.2358],["LFQO","Lille/Marcq-en-Baroeul",50.6872,3.0756],["LFQP","Phalsbourg-Bourscheid",48.7663,7.2005],["LFQQ","Lille-Lesquin",50.5619,3.0894],["LFQR","Romilly Sur Seine",48.5006,3.7633],["LFQS","Vitry en Artois",50.3383,2.9933],["LFQT","Merville-Calonne",50.6184,2.6422],["LFQU","Sarre Union",48.9514,7.0778],["LFQV","Charleville-Mezieres",49.7839,4.6471],["LFQW","Vesoul",47.6376,6.2039],["LFQX","Juvancourt",48.115,4.8208],["LFQY","Saverne Steinbourg",48.7542,7.4264],["LFQZ","Dieuze Gueblange",48.7753,6.7153],["LFRA","Angers Avrille",47.4992,-0.5728],["LFRB","Brest Bretagne",48.4479,-4.4185],["LFRC","Cherbourg-Maupertus",49.6501,-1.4703],["LFRD","Dinard-Pleurtuit-Saint-Malo",48.5877,-2.08],["LFRE","La Baule-Escoublac",47.2894,-2.3464],["LFRF","Granville",48.8831,-1.5642],["LFRG","Deauville-Saint-Gatien",49.3653,0.1543],["LFRH","Lorient South Brittany (Bretagne Sud)",47.7606,-3.44],["LFRI","La Roche-sur-Yon",46.7019,-1.3786],["LFRJ","Landivisiau",48.5303,-4.1516],["LFRK","Caen-Carpiquet",49.1733,-0.45],["LFRL","Lanveoc-Poulmic",48.2817,-4.445],["LFRM","Le Mans-Arnage",47.9486,0.2017],["LFRN","Rennes-Saint-Jacques",48.0695,-1.7348],["LFRO","Lannion-Cote de Granit",48.7544,-3.4717],["LFRP","Ploermel Loyat",48.0028,-2.3772],["LFRQ","Quimper-Cornouaille",47.975,-4.1678],["LFRS","Nantes Atlantique",47.1532,-1.6107],["LFRT","Saint-Brieuc-Armor",48.5378,-2.8544],["LFRU","Morlaix-Ploujean",48.6032,-3.8158],["LFRV","Vannes-Meucon",47.7233,-2.7186],["LFRW","Avranches Le Val St Pere",48.6617,-1.4044],["LFRZ","Saint-Nazaire-Montoir",47.3122,-2.1492],["LFSA","Besancon Thise",47.2747,6.0842],["LFSB","EuroAirport Basel-Mulhouse-Freiburg",47.5896,7.5299],["LFSC","Colmar-Meyenheim",47.922,7.3997],["LFSD","Dijon-Bourgogne",47.2689,5.09],["LFSE","Epinal Dogneville",48.2119,6.4492],["LFSF","Metz-Frescaty (BA 128)",49.0717,6.1317],["LFSG","Epinal-Mirecourt",48.325,6.07],["LFSH","Haguenau",48.7943,7.8176],["LFSI","Saint-Dizier-Robinson (BA 113)",48.636,4.8994],["LFSJ","Sedan Douzy",49.6597,5.0378],["LFSK","Vitry Le Francois Vauclerc",48.7033,4.6844],["LFSL","Brive Souillac",45.0397,1.4855],["LFSM","Montbeliard-Courcelles",47.487,6.7905],["LFSN","Nancy-Essey",48.6921,6.2305],["LFSO","Nancy-Ochey (BA 133)",48.5831,5.955],["LFSP","Pontarlier",46.904,6.3274],["LFSR","Reims-Champagne (BA 112)",49.31,4.05],["LFST","Strasbourg",48.5383,7.6282],["LFSU","Langres Rolampont",47.9656,5.295],["LFSV","Pont St Vincent",48.6014,6.0578],["LFSW","Epernay Plivot",49.0053,4.0869],["LFSX","Luxeuil-Saint-Sauveur (BA 116)",47.7831,6.3641],["LFSY","Chaumont",48.0769,5.1514],["LFSZ","Vittel Champ De Course",48.2239,5.9353],["LFTF","Cuers-Pierrefeu",43.2478,6.1267],["LFTH","Toulon-Hyeres",43.0973,6.146],["LFTM","Serres - La Batie-Montsaleon",44.4583,5.7283],["LFTN","La Grand'combe",44.2444,4.0122],["LFTP","Puimoisson",43.8703,6.1647],["LFTQ","Chateaubriant Pouance",47.7406,-1.1881],["LFTR","Toulo(St Mandrier Navy)",43.0827,5.9338],["LFTU","Frejus",43.4147,6.7456],["LFTW","Nimes-Arles-Camargue",43.7574,4.4164],["LFTZ","La Mole",43.2054,6.482],["LFVM","Miquelon",47.0955,-56.3803],["LFVP","St Pierre",46.7629,-56.1731],["LFXA","Amberieu Airport (BA 278)",45.9873,5.3284],["LFXB","Saintes Thenac",45.7019,-0.6361],["LFXC","Vittel (Auzainvilliers)",48.2286,5.843],["LFXG","Bitche",49.0667,7.45],["LFXH","Le Valdahon",47.1667,6.35],["LFXI","Apt St Christol",44.0533,5.495],["LFXM","Mourmelon",49.1114,4.3669],["LFXQ","Coetquidan",47.9466,-2.1923],["LFXR","Rochefort Soubise",45.9308,-0.9953],["LFXU","Les Mureaux",48.9983,1.9428],["LFYD","Damblain",48.0863,5.6641],["LFYG","Cambrai Niergnies",50.1425,3.265],["LFYH","Broye Les Pesmes",47.3167,5.5167],["LFYK","Marville Montmedy",49.4592,5.4025],["LFYL","Lure Malbouhans",47.7047,6.5458],["LFYM","Marigny Le Grand",48.66,3.8339],["LFYR","Romorantin Pruniers",47.3208,1.6889],["LFYS","Ste Leocadie",42.4472,2.0108],["LFYT","Saint-Simon - Clastres",49.75,3.2167]];
+  const AD_IDX = {}; AD_FR.forEach(r => { AD_IDX[r[0]] = r; });
+  const adName = icao => (AD_IDX[icao] && AD_IDX[icao][1]) || (window._airportNamesFallback && window._airportNamesFallback[icao]) || '';
+  const distNm = (la1, lo1, la2, lo2) => {
+    const r = Math.PI / 180, a = Math.sin((la2 - la1) * r / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin((lo2 - lo1) * r / 2) ** 2;
+    return 2 * Math.asin(Math.sqrt(a)) * 3440.065;
+  };
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
   const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
   const nearOpen = { dep: false, arr: false };
 
   function coordsOf(side) {
-    // Position de référence pour « proches » : le départ pour l'arrivée, sinon le terrain de base
-    if (side === 'arr' && typeof lastDepStationLat === 'number' && val('depIcao')) return { icao: val('depIcao').toUpperCase(), lat: lastDepStationLat, lon: lastDepStationLon };
-    if (ad.base && typeof ad.base.lat === 'number') return { icao: ad.base.icao, lat: ad.base.lat, lon: ad.base.lon };
-    if (typeof lastDepStationLat === 'number' && val('depIcao')) return { icao: val('depIcao').toUpperCase(), lat: lastDepStationLat, lon: lastDepStationLon };
+    // Centre de « Proches » : le départ pour l'arrivée, sinon le terrain de base, sinon le terrain saisi
+    const cands = side === 'arr' ? [val('depIcao'), ad.base && ad.base.icao, val('arrIcao')] : [ad.base && ad.base.icao, val('depIcao')];
+    for (const c of cands) {
+      const k = (c || '').toUpperCase(), r = AD_IDX[k];
+      if (r) return { icao: k, lat: r[2], lon: r[3] };
+    }
     return null;
   }
   function rememberAd(side) {
@@ -6317,40 +6375,22 @@ if ('serviceWorker' in navigator) {
       box.innerHTML = chips + nearBtn;
       box.hidden = !chips && !nearBtn;
       // Terrain de base
-      const sb = $id(side + 'SetBase');
-      if (isIcao(cur) && (!ad.base || ad.base.icao !== cur)) { sb.hidden = false; sb.innerHTML = '☆ Faire de ' + escH(cur) + ' mon terrain de base'; sb.dataset.mode = 'set'; }
-      else if (ad.base && ad.base.icao === cur) { sb.hidden = false; sb.innerHTML = '★ ' + escH(cur) + ' est ton terrain de base · <u>Retirer</u>'; sb.dataset.mode = 'unset'; }
-      else sb.hidden = true;
+      $id(side + 'SetBase').hidden = true;
       const nb = $id(side + 'AdNear');
       nb.hidden = !nearOpen[side];
     });
   }
-  async function showNear(side) {
+  function showNear(side) {
     const nb = $id(side + 'AdNear');
     const c = coordsOf(side);
     if (!c) return;
     nb.hidden = false;
-    const key = c.icao;
-    const cached = ad.near && ad.near[key];
-    let list = cached && Date.now() - cached.t < 30 * 86400000 ? cached.list : null;
-    if (!list) {
-      nb.innerHTML = '<span class="note">Recherche des terrains autour de ' + escH(key) + '…</span>';
-      try {
-        const r = await fetchJson('https://avwx.rest/api/station/near/' + c.lat.toFixed(4) + ',' + c.lon.toFixed(4) + '?n=12&airport=true&reporting=false&maxdist=60');
-        list = (Array.isArray(r) ? r : []).map(x => {
-          const st = x.station || x;
-          return { icao: st.icao || st.gps || '', name: st.name || '', nm: Math.round(x.nautical_miles != null ? x.nautical_miles : (x.kilometers || 0) / 1.852) };
-        }).filter(x => isIcao(x.icao) && x.icao !== key).slice(0, 10);
-        ad.near = ad.near || {}; ad.near[key] = { t: Date.now(), list }; saveAd();
-      } catch (e) {
-        nb.innerHTML = '<span class="note">Liste des terrains proches indisponible (connexion ou service météo).</span>';
-        return;
-      }
-    }
-    if (!nearOpen[side]) return;
-    nb.innerHTML = '<span class="sub">Autour de ' + escH(key) + '</span>' + (list.length ? list.map(x =>
-      '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(adName(x.icao) || x.name) + '</span><em>' + x.nm + ' NM</em></button>').join('')
-      : '<span class="note">Aucun terrain trouvé.</span>');
+    const list = AD_FR.filter(r => r[0] !== c.icao)
+      .map(r => ({ icao: r[0], name: r[1], nm: distNm(c.lat, c.lon, r[2], r[3]) }))
+      .filter(x => x.nm <= 60).sort((a, b) => a.nm - b.nm).slice(0, 10);
+    nb.innerHTML = '<span class="sub">Autour de ' + escH(c.icao) + '</span>' + (list.length ? list.map(x =>
+      '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(x.name) + '</span><em>' + Math.round(x.nm) + ' NM</em></button>').join('')
+      : '<span class="note">Aucun terrain à moins de 60 NM.</span>');
   }
   ['dep', 'arr'].forEach(side => {
     stepEl(side).addEventListener('click', e => {
@@ -6377,11 +6417,113 @@ if ('serviceWorker' in navigator) {
   if (ad.base && !val('depIcao')) $id('depIcao').value = ad.base.icao;
   renderAd();
 
+
+  /* ═══ Paramètres (roue crantée) : pilote, avion par défaut, terrain de base, réserve ═══ */
+  const SET_KEY = 'acbt-settings';
+  let settings = { aircraft: '', reserve: 45, fleet: null };
+  try { const o = JSON.parse(localStorage.getItem(SET_KEY) || 'null'); if (o && typeof o === 'object') settings = Object.assign(settings, o); } catch (e) {}
+
+  // Avions affichés dans la liste (tous par défaut). L'avion en cours reste toujours visible.
+  const acSel = $id('aircraftSel');
+  const AC_ALL = [...acSel.options].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent }));
+  const AC_PH = (acSel.options[0] && !acSel.options[0].value) ? acSel.options[0].textContent : 'Choisir un avion';
+  const shown = v => !Array.isArray(settings.fleet) || settings.fleet.includes(v);
+  function applyFleet(all) {
+    const cur = acSel.value;
+    const list = AC_ALL.filter(a => all || shown(a.v) || a.v === cur);
+    acSel.innerHTML = '<option value="">' + escH(AC_PH) + '</option>' + list.map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    acSel.value = cur;
+  }
+  window.__applyFleet = applyFleet;
+  applyFleet();
+  let fleetDraft = null;
+  function paintFleet() {
+    $id('setFleet').innerHTML = AC_ALL.map(a => {
+      const on = fleetDraft.includes(a.v), parts = a.t.split(' — ');
+      return '<button type="button" class="fleet-it' + (on ? ' on' : '') + '" data-fleet="' + escH(a.v) + '" aria-pressed="' + on + '">' +
+        '<span class="fleet-box"></span><b>' + escH(parts[0]) + '</b><span>' + escH(parts[1] || '') + '</span></button>';
+    }).join('');
+    $id('setFleetNote').textContent = fleetDraft.length === AC_ALL.length ? 'Tous les avions sont affichés.' : fleetDraft.length + ' avion' + (fleetDraft.length > 1 ? 's' : '') + ' sur ' + AC_ALL.length + ' affiché' + (fleetDraft.length > 1 ? 's' : '') + ' dans la liste.';
+    const dst = $id('setAircraft'), keep = dst.value;
+    dst.innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.filter(a => fleetDraft.includes(a.v)).map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    dst.value = fleetDraft.includes(keep) ? keep : '';
+  }
+  $id('setFleet').addEventListener('click', e => {
+    const b = e.target.closest('[data-fleet]');
+    if (!b) return;
+    const v = b.dataset.fleet;
+    if (fleetDraft.includes(v)) { if (fleetDraft.length > 1) fleetDraft = fleetDraft.filter(x => x !== v); }
+    else fleetDraft = AC_ALL.map(a => a.v).filter(x => x === v || fleetDraft.includes(x));
+    paintFleet();
+  });
+  const saveSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch (e) {} };
+  window.__defaultReserve = () => String(settings.reserve === 30 ? 30 : 45);
+  let setRes = 45;
+  const paintSetRes = () => { $id('setRes30').classList.toggle('is-selected', setRes === 30); $id('setRes45').classList.toggle('is-selected', setRes === 45); };
+  ['setRes30', 'setRes45'].forEach(id => $id(id).addEventListener('click', () => { setRes = +$id(id).dataset.res; paintSetRes(); }));
+  const paintBaseName = () => {
+    const k = val('setBase').toUpperCase();
+    $id('setBaseName').textContent = !k ? 'Prérempli au départ, en tête des terrains proposés.'
+      : isIcao(k) ? (adName(k) ? '★ ' + adName(k) : 'Terrain hors de la liste française : il sera tout de même proposé.') : 'Code OACI à 4 caractères.';
+  };
+  $id('setBase').addEventListener('input', paintBaseName);
+  function openSettings() {
+    $id('setPilot').value = val('pilotName');
+    fleetDraft = AC_ALL.map(a => a.v).filter(shown);
+    $id('setAircraft').innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    $id('setAircraft').value = settings.aircraft || '';
+    paintFleet();
+    $id('setBase').value = ad.base ? ad.base.icao : '';
+    paintBaseName();
+    setRes = settings.reserve === 30 ? 30 : 45; paintSetRes();
+    $id('settingsModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSettings() { $id('settingsModal').style.display = 'none'; document.body.style.overflow = ''; }
+  $id('btnSettings').addEventListener('click', openSettings);
+  $id('setClose').addEventListener('click', closeSettings);
+  $id('settingsModal').addEventListener('click', e => { if (e.target === $id('settingsModal')) closeSettings(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $id('settingsModal').style.display !== 'none') closeSettings(); });
+  $id('setSave').addEventListener('click', () => {
+    const base = val('setBase').toUpperCase();
+    if (base && !isIcao(base)) { $id('setBaseName').textContent = '⚠ Code OACI à 4 caractères.'; return; }
+    // Pilote
+    const pil = val('setPilot');
+    if (pil !== val('pilotName')) { $id('pilotName').value = pil; $id('pilotName').dispatchEvent(new Event('input', { bubbles: true })); }
+    // Avions affichés
+    settings.fleet = fleetDraft.length === AC_ALL.length ? null : fleetDraft.slice();
+    applyFleet();
+    // Avion par défaut : appliqué tout de suite si aucun avion n'est choisi
+    settings.aircraft = $id('setAircraft').value;
+    if (settings.aircraft && !val('aircraftSel')) { $id('aircraftSel').value = settings.aircraft; $id('aircraftSel').dispatchEvent(new Event('change', { bubbles: true })); }
+    // Réserve par défaut : appliquée si la réserve n'avait pas été changée
+    const oldRes = window.__defaultReserve();
+    settings.reserve = setRes;
+    if (val('fuelReserve') === oldRes) { $id('fuelReserve').value = String(setRes); computeFuel(); }
+    // Terrain de base
+    const oldBase = ad.base ? ad.base.icao : '';
+    if (!base) ad.base = null;
+    else if (base !== oldBase) {
+      const r = AD_IDX[base];
+      ad.base = { icao: base, name: adName(base) };
+      if (r) { ad.base.lat = r[2]; ad.base.lon = r[3]; }
+    }
+    if (base !== oldBase && (!val('depIcao') || val('depIcao').toUpperCase() === oldBase)) $id('depIcao').value = base;
+    saveSettings(); saveAd(); renderAd(); closeSettings(); updateUI();
+  });
+  // Au démarrage : avion par défaut et réserve du club
+  if (settings.aircraft && !val('aircraftSel') && [...$id('aircraftSel').options].some(o => o.value === settings.aircraft)) {
+    $id('aircraftSel').value = settings.aircraft;
+    $id('aircraftSel').dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  $id('fuelReserve').value = window.__defaultReserve();
+
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
 
   /* ── Démarrage ── */
-  if (val('aircraftSel')) validated.ac = true;
+  let storedPilot = ''; try { storedPilot = localStorage.getItem('acbt-pilot') || ''; } catch (e) {}
+  if (val('aircraftSel') && (val('pilotName') || storedPilot)) validated.ac = true;
   openStep = validated.ac ? (visibleSteps().find(s => !validated[s]) || null) : 'ac';
   paintThemeBtn();
   applyScope();
