@@ -293,7 +293,28 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .tp-extra[style*="#059669"]{color:var(--ok-text)!important}
 
 .wx-why{font:500 12.5px/1.45 var(--body);color:var(--muted);padding:7px 10px;border-left:3px solid var(--accent-line);background:var(--field);border-radius:0 6px 6px 0}
+/* Terrains : base, récents, proches */
+.ad-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ad-chip{display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:4px 11px;border:1px solid var(--line);border-radius:17px;background:var(--card);
+  font:700 13.5px var(--body);letter-spacing:.04em;color:var(--ink)}
+.ad-chip svg{width:14px;height:14px}
+.ad-chip.base{color:var(--warn);border-color:var(--warn-line);background:var(--warn-bg)}
+.ad-chip.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ad-chip.near{font-weight:600;letter-spacing:0;color:var(--accent-text);border-style:dashed;border-color:var(--accent-line)}
+.ad-chip.near.on{background:var(--accent-soft)}
+.ad-near{display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--field)}
+.ad-near[hidden]{display:none}
+.ad-row{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:8px;min-height:38px;padding:4px 8px;border-radius:6px;text-align:left;font:500 13.5px var(--body);color:var(--muted)}
+.ad-row:hover{background:var(--card)}
+.ad-row b{font:700 14px var(--body);letter-spacing:.04em;color:var(--ink)}
+.ad-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ad-row em{font-style:normal;font-weight:600}
+.ad-base{align-self:flex-start;color:var(--muted)}
+.ad-base u{color:var(--accent);text-decoration:none}
+
 /* ═══════════ Carburant ═══════════ */
+.res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.res-tg{flex:0 0 190px}
 .fuel-time{display:flex;align-items:center;gap:6px}
 .fuel-time .inp{text-align:center}
 .fuel-suffix{font:600 12px var(--body);color:var(--muted)}
@@ -734,6 +755,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             </label>
             <button id="btnDepMetar" class="btn pri wx-load" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Charger la météo</button>
           </div>
+          <div class="ad-chips" id="depAdChips"></div>
+          <div class="ad-near" id="depAdNear" hidden></div>
+          <button type="button" class="btn-link sm ad-base" id="depSetBase" hidden></button>
           <span id="depAirportName" class="airport-name"></span>
           <div id="depMetarMsg" class="metar-box"></div>
           <button id="depMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('dep')">Utiliser le METAR valide le plus proche →</button>
@@ -829,6 +853,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <button id="arrWxFcst" class="toggle-btn" type="button">Prévue à l'arrivée<small>TAF</small></button>
           </div>
           <div hidden><button id="btnArrMetar" type="button">METAR</button><button id="btnArrTaf" type="button">TAF</button></div>
+          <div class="ad-chips" id="arrAdChips"></div>
+          <div class="ad-near" id="arrAdNear" hidden></div>
+          <button type="button" class="btn-link sm ad-base" id="arrSetBase" hidden></button>
           <span id="arrAirportName" class="airport-name"></span>
           <div id="arrMetarMsg" class="metar-box"></div>
           <button id="arrMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('arr')">Utiliser le METAR valide le plus proche →</button>
@@ -982,13 +1009,21 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
               </div>
             </div>
           </div>
-          <div class="ac-line"><span id="fuelResTxt">Réserve finale 30 min</span><button type="button" class="btn-link sm" id="fuelResEdit">Modifier</button></div>
+          <div class="res-row">
+            <span class="sub">Réserve finale</span>
+            <div class="toggle-group res-tg" role="group" aria-label="Réserve finale">
+              <button id="fuelRes30" class="toggle-btn" type="button" data-res="30">30 min</button>
+              <button id="fuelRes45" class="toggle-btn" type="button" data-res="45">45 min</button>
+            </div>
+          </div>
+          <span class="note" id="fuelResTxt"></span>
+          <button type="button" id="fuelResEdit" hidden></button>
           <button type="button" class="btn-link wx-more" id="fuelMoreLink">+ Mise en route, dégagement, extra fuel</button>
           <div class="g3" id="fuelMore" hidden>
             <label class="f"><span class="lbl">Mise en route</span><span class="unit-in"><input id="fuelStartup" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
             <label class="f"><span class="lbl">Dégagement</span><span class="unit-in"><input id="fuelAlt" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
             <label class="f"><span class="lbl">Extra fuel</span><span class="unit-in"><input id="fuelExtra" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
-            <label class="f" id="fuelResWrap"><span class="lbl">Réserve</span><span class="unit-in"><input id="fuelReserve" class="inp c" type="number" value="30" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
+            <input id="fuelReserve" type="hidden" value="45"/>
           </div>
         </div>
 
@@ -5542,6 +5577,7 @@ if ('serviceWorker' in navigator) {
     const tow = val('depTow'), ldw = val('arrLdw');
     _origClear(side);
     if (side === 'fuel') {
+      $id('fuelReserve').value = '45';   // réserve du club
       fuelMode = null;
       fuelTouched = !!scope.fuel;
       if (typeof applyFuelPreset === 'function') applyFuelPreset();
@@ -6070,9 +6106,9 @@ if ('serviceWorker' in navigator) {
       finally { try { after.apply(this, arguments); } catch (e) { console.warn(e); } }
     };
   };
-  wrapAsync('loadMetarFor', side => { srcFromMetar(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
+  wrapAsync('loadMetarFor', side => { srcFromMetar(side); if (wxSrc[side]) rememberAd(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
   wrapAsync('useNearestValidMetar', side => { srcFromMetar(side); preview(side); });
-  wrapAsync('loadTafFor', () => { srcFromTaf(); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
+  wrapAsync('loadTafFor', () => { srcFromTaf(); if (!WX_FAIL.test($id('arrMetarMsg').textContent || '')) rememberAd('arr'); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
   wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
   $id('arrEta').addEventListener('change', () => { setTimeout(srcFromTaf, 0); setTimeout(() => { srcFromTaf(); preview('arr'); }, 120); });
@@ -6085,7 +6121,9 @@ if ('serviceWorker' in navigator) {
     }));
   });
   const _rsf = window.resetSideFields;
-  window.resetSideFields = function (side) { _rsf(side); wxSrc[side] = null; paintSrc(side); if (side === 'arr') $id('arrWxWhy').hidden = true; };
+  window.resetSideFields = function (side) {
+    if (side === 'dep') { lastDepStationLat = null; lastDepStationLon = null; } else { lastArrStationLat = null; lastArrStationLon = null; }
+    _rsf(side); wxSrc[side] = null; paintSrc(side); if (side === 'arr') $id('arrWxWhy').hidden = true; };
   $id('btnSameAsDep').addEventListener('click', () => { if (val('depIcao')) { wxSrc.arr = wxSrc.dep ? Object.assign({}, wxSrc.dep) : null; paintSrc('arr'); preview('arr'); } });
 
   // « Très courte mouillée » : toujours visible, grisée hors freinage « sans freins »
@@ -6162,12 +6200,13 @@ if ('serviceWorker' in navigator) {
 
   /* ═══ Carburant : à bord, le vol, heure de mise en route, résultat en direct ═══ */
   let fuelMoreOpen = false;
-  const fuelMoreUsed = () => !!val('fuelStartup') || !!val('fuelAlt') || !!val('fuelExtra') || (val('fuelReserve') !== '30');
+  const fuelMoreUsed = () => !!val('fuelStartup') || !!val('fuelAlt') || !!val('fuelExtra') || false;
   $id('fuelMoreLink').addEventListener('click', () => { fuelMoreOpen = true; refreshLight(); });
-  $id('fuelResEdit').addEventListener('click', () => {
-    fuelMoreOpen = true; refreshLight();
-    if (fuelMoreOpen) setTimeout(() => { try { $id('fuelReserve').focus(); $id('fuelReserve').select(); } catch (e) {} }, 50);
-  });
+  // Réserve finale : 45 min au club, 30 min possible
+  ['fuelRes30', 'fuelRes45'].forEach(id => $id(id).addEventListener('click', () => {
+    $id('fuelReserve').value = $id(id).dataset.res;
+    computeFuel(); refreshLight();
+  }));
   // Virgules décimales dans le détail du bilan
   const _cf = window.computeFuel;
   if (typeof _cf === 'function') window.computeFuel = function () {
@@ -6182,11 +6221,12 @@ if ('serviceWorker' in navigator) {
   function renderFuel() {
     // Réserve, options repliées
     const res = +val('fuelReserve') || 0, conso = (+val('fuelConso') || 0) * window.__spatsFuelFactor();
-    $id('fuelResTxt').textContent = 'Réserve finale ' + res + ' min' + (conso > 0 ? ' · ' + f1(conso * res / 60) + ' L' : '');
+    $id('fuelRes30').classList.toggle('is-selected', res === 30);
+    $id('fuelRes45').classList.toggle('is-selected', res === 45);
+    $id('fuelResTxt').textContent = (res !== 30 && res !== 45 ? 'Réserve ' + res + ' min · ' : '') + (conso > 0 ? 'soit ' + f1(conso * res / 60) + ' L à ' + frNum(Math.round(conso * 10) / 10) + ' L/h' : '');
     const open = fuelMoreOpen || fuelMoreUsed();
     $id('fuelMore').hidden = !open;
     $id('fuelMoreLink').hidden = open;
-    $id('fuelResEdit').hidden = open;
 
     // Ligne « à bord »
     const cap = +val('fuelCap') || 0, un = +val('fuelUnusable') || 0;
@@ -6226,6 +6266,116 @@ if ('serviceWorker' in navigator) {
     $id('fuelLiveClocks').hidden = !hasClock;
     if (hasClock) $id('fuelLiveClocks').innerHTML = 'À poser avant <b>' + escH(f.maxLdg) + '</b> <span>(réserve conservée)</span> · panne sèche <b class="stop">' + escH(f.engineStop) + '</b>';
   }
+
+
+  /* ═══ Terrains : terrain de base, récents, proches ═══ */
+  const AD_KEY = 'acbt-ad';
+  let ad = { base: null, recent: [], near: {} };
+  try { const o = JSON.parse(localStorage.getItem(AD_KEY) || 'null'); if (o && typeof o === 'object') ad = Object.assign(ad, o); } catch (e) {}
+  const saveAd = () => { try { localStorage.setItem(AD_KEY, JSON.stringify(ad)); } catch (e) {} };
+  const isIcao = t => /^[A-Z0-9]{4}$/.test(t || '');
+  const adName = icao => (window._airportNamesFallback && window._airportNamesFallback[icao]) || '';
+  const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
+  const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+  const nearOpen = { dep: false, arr: false };
+
+  function coordsOf(side) {
+    // Position de référence pour « proches » : le départ pour l'arrivée, sinon le terrain de base
+    if (side === 'arr' && typeof lastDepStationLat === 'number' && val('depIcao')) return { icao: val('depIcao').toUpperCase(), lat: lastDepStationLat, lon: lastDepStationLon };
+    if (ad.base && typeof ad.base.lat === 'number') return { icao: ad.base.icao, lat: ad.base.lat, lon: ad.base.lon };
+    if (typeof lastDepStationLat === 'number' && val('depIcao')) return { icao: val('depIcao').toUpperCase(), lat: lastDepStationLat, lon: lastDepStationLon };
+    return null;
+  }
+  function rememberAd(side) {
+    const icao = val(side + 'Icao').toUpperCase();
+    if (!isIcao(icao)) return;
+    const lat = side === 'dep' ? lastDepStationLat : lastArrStationLat, lon = side === 'dep' ? lastDepStationLon : lastArrStationLon;
+    const e = { icao, name: adName(icao) };
+    if (typeof lat === 'number') { e.lat = lat; e.lon = lon; }
+    ad.recent = [e].concat((ad.recent || []).filter(r => r.icao !== icao)).slice(0, 8);
+    if (ad.base && ad.base.icao === icao && typeof e.lat === 'number') { ad.base.lat = e.lat; ad.base.lon = e.lon; }
+    saveAd(); renderAd();
+  }
+  function pickAd(side, icao) {
+    $id(side + 'Icao').value = icao;
+    nearOpen[side] = false;
+    renderAd();
+    if (side === 'dep') $id('btnDepMetar').click(); else loadArrWx();
+  }
+  function renderAd() {
+    ['dep', 'arr'].forEach(side => {
+      const cur = val(side + 'Icao').toUpperCase();
+      const box = $id(side + 'AdChips');
+      const items = [];
+      if (ad.base) items.push({ icao: ad.base.icao, base: true });
+      (ad.recent || []).forEach(r => { if (!ad.base || r.icao !== ad.base.icao) items.push({ icao: r.icao }); });
+      const chips = items.slice(0, 5).map(it =>
+        '<button type="button" class="ad-chip' + (it.base ? ' base' : '') + (it.icao === cur ? ' on' : '') + '" data-ad="' + escH(it.icao) + '" title="' + escH(adName(it.icao) || it.icao) + '">' +
+        (it.base ? STAR : '') + escH(it.icao) + '</button>').join('');
+      const c = coordsOf(side);
+      const nearBtn = c ? '<button type="button" class="ad-chip near' + (nearOpen[side] ? ' on' : '') + '" data-adnear="' + side + '">' + PIN + 'Proches</button>' : '';
+      box.innerHTML = chips + nearBtn;
+      box.hidden = !chips && !nearBtn;
+      // Terrain de base
+      const sb = $id(side + 'SetBase');
+      if (isIcao(cur) && (!ad.base || ad.base.icao !== cur)) { sb.hidden = false; sb.innerHTML = '☆ Faire de ' + escH(cur) + ' mon terrain de base'; sb.dataset.mode = 'set'; }
+      else if (ad.base && ad.base.icao === cur) { sb.hidden = false; sb.innerHTML = '★ ' + escH(cur) + ' est ton terrain de base · <u>Retirer</u>'; sb.dataset.mode = 'unset'; }
+      else sb.hidden = true;
+      const nb = $id(side + 'AdNear');
+      nb.hidden = !nearOpen[side];
+    });
+  }
+  async function showNear(side) {
+    const nb = $id(side + 'AdNear');
+    const c = coordsOf(side);
+    if (!c) return;
+    nb.hidden = false;
+    const key = c.icao;
+    const cached = ad.near && ad.near[key];
+    let list = cached && Date.now() - cached.t < 30 * 86400000 ? cached.list : null;
+    if (!list) {
+      nb.innerHTML = '<span class="note">Recherche des terrains autour de ' + escH(key) + '…</span>';
+      try {
+        const r = await fetchJson('https://avwx.rest/api/station/near/' + c.lat.toFixed(4) + ',' + c.lon.toFixed(4) + '?n=12&airport=true&reporting=false&maxdist=60');
+        list = (Array.isArray(r) ? r : []).map(x => {
+          const st = x.station || x;
+          return { icao: st.icao || st.gps || '', name: st.name || '', nm: Math.round(x.nautical_miles != null ? x.nautical_miles : (x.kilometers || 0) / 1.852) };
+        }).filter(x => isIcao(x.icao) && x.icao !== key).slice(0, 10);
+        ad.near = ad.near || {}; ad.near[key] = { t: Date.now(), list }; saveAd();
+      } catch (e) {
+        nb.innerHTML = '<span class="note">Liste des terrains proches indisponible (connexion ou service météo).</span>';
+        return;
+      }
+    }
+    if (!nearOpen[side]) return;
+    nb.innerHTML = '<span class="sub">Autour de ' + escH(key) + '</span>' + (list.length ? list.map(x =>
+      '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(adName(x.icao) || x.name) + '</span><em>' + x.nm + ' NM</em></button>').join('')
+      : '<span class="note">Aucun terrain trouvé.</span>');
+  }
+  ['dep', 'arr'].forEach(side => {
+    stepEl(side).addEventListener('click', e => {
+      const chip = e.target.closest('[data-ad]');
+      if (chip && stepEl(side).contains(chip)) { pickAd(side, chip.dataset.ad); return; }
+      const nb = e.target.closest('[data-adnear]');
+      if (nb) { nearOpen[side] = !nearOpen[side]; renderAd(); if (nearOpen[side]) showNear(side); return; }
+      const sb = e.target.closest('#' + side + 'SetBase');
+      if (sb) {
+        const icao = val(side + 'Icao').toUpperCase();
+        if (sb.dataset.mode === 'unset') ad.base = null;
+        else {
+          const r = (ad.recent || []).find(x => x.icao === icao) || {};
+          ad.base = { icao, name: adName(icao) || r.name || '' };
+          if (typeof r.lat === 'number') { ad.base.lat = r.lat; ad.base.lon = r.lon; }
+          else if (side === 'dep' && typeof lastDepStationLat === 'number') { ad.base.lat = lastDepStationLat; ad.base.lon = lastDepStationLon; }
+        }
+        saveAd(); renderAd();
+      }
+    });
+    $id(side + 'Icao').addEventListener('input', () => setTimeout(renderAd, 0));
+  });
+  // Terrain de base prérempli au départ
+  if (ad.base && !val('depIcao')) $id('depIcao').value = ad.base.icao;
+  renderAd();
 
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
