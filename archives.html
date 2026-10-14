@@ -415,6 +415,7 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
       row('Température (OAT)', (s.oat || '—') + ' °C');
       row('Masse', (s.mass || '—') + ' kg');
       row('Vent', s.windText || '—');
+      if (s.windSrc) row('Vent retenu', s.windSrc);
       if (s.comps) row('Composantes', s.comps);
       row(dep ? 'Surface' : 'Freinage / état', s.surface || '—');
       if (s.windRule && s.windRule.indexOf('+') >= 0) row('Vent pris en compte', s.windRule);
