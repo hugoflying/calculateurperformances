@@ -6533,7 +6533,9 @@ if ('serviceWorker' in navigator) {
   const acSel = $id('aircraftSel');
   const AC_ALL = [...acSel.options].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent }));
   const AC_PH = (acSel.options[0] && !acSel.options[0].value) ? acSel.options[0].textContent : 'Choisir un avion';
-  const shown = v => !Array.isArray(settings.fleet) || settings.fleet.includes(v);
+  // Avions désactivés pour tout le club (indisponibles) : retirer un code de cette liste pour les réactiver
+  const AC_OFF = ['F-GYLC', 'F-HATX'];
+  const shown = v => !AC_OFF.includes(v) && (!Array.isArray(settings.fleet) || settings.fleet.includes(v));
   function applyFleet(all) {
     const cur = acSel.value;
     const list = AC_ALL.filter(a => all || shown(a.v) || a.v === cur);
@@ -6544,12 +6546,13 @@ if ('serviceWorker' in navigator) {
   applyFleet();
   let fleetDraft = null;
   function paintFleet() {
-    $id('setFleet').innerHTML = AC_ALL.map(a => {
+    $id('setFleet').innerHTML = AC_ALL.filter(a => !AC_OFF.includes(a.v)).map(a => {
       const on = fleetDraft.includes(a.v), parts = a.t.split(' — ');
       return '<button type="button" class="fleet-it' + (on ? ' on' : '') + '" data-fleet="' + escH(a.v) + '" aria-pressed="' + on + '">' +
         '<span class="fleet-box"></span><b>' + escH(parts[0]) + '</b><span>' + escH(parts[1] || '') + '</span></button>';
     }).join('');
-    $id('setFleetNote').textContent = fleetDraft.length === AC_ALL.length ? 'Tous les avions sont affichés.' : fleetDraft.length + ' avion' + (fleetDraft.length > 1 ? 's' : '') + ' sur ' + AC_ALL.length + ' affiché' + (fleetDraft.length > 1 ? 's' : '') + ' dans la liste.';
+    const nOn = AC_ALL.filter(a => !AC_OFF.includes(a.v)).length;
+    $id('setFleetNote').textContent = fleetDraft.length === nOn ? 'Tous les avions sont affichés.' : fleetDraft.length + ' avion' + (fleetDraft.length > 1 ? 's' : '') + ' sur ' + nOn + ' affiché' + (fleetDraft.length > 1 ? 's' : '') + ' dans la liste.';
     const dst = $id('setAircraft'), keep = dst.value;
     dst.innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.filter(a => fleetDraft.includes(a.v)).map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
     dst.value = fleetDraft.includes(keep) ? keep : '';
@@ -6559,7 +6562,7 @@ if ('serviceWorker' in navigator) {
     if (!b) return;
     const v = b.dataset.fleet;
     if (fleetDraft.includes(v)) { if (fleetDraft.length > 1) fleetDraft = fleetDraft.filter(x => x !== v); }
-    else fleetDraft = AC_ALL.map(a => a.v).filter(x => x === v || fleetDraft.includes(x));
+    else fleetDraft = AC_ALL.map(a => a.v).filter(x => !AC_OFF.includes(x) && (x === v || fleetDraft.includes(x)));
     paintFleet();
   });
   const saveSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch (e) {} };
@@ -6580,7 +6583,8 @@ if ('serviceWorker' in navigator) {
   function openSettings() {
     $id('setPilot').value = val('pilotName');
     fleetDraft = AC_ALL.map(a => a.v).filter(shown);
-    $id('setAircraft').innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    if (!fleetDraft.length) fleetDraft = AC_ALL.map(a => a.v).filter(v => !AC_OFF.includes(v)).slice(0, 1);
+    $id('setAircraft').innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.filter(a => !AC_OFF.includes(a.v)).map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
     $id('setAircraft').value = settings.aircraft || '';
     paintFleet();
     $id('setBase').value = ad.base ? ad.base.icao : '';
@@ -6602,7 +6606,7 @@ if ('serviceWorker' in navigator) {
     const pil = val('setPilot');
     if (pil !== val('pilotName')) { $id('pilotName').value = pil; $id('pilotName').dispatchEvent(new Event('input', { bubbles: true })); }
     // Avions affichés
-    settings.fleet = fleetDraft.length === AC_ALL.length ? null : fleetDraft.slice();
+    settings.fleet = fleetDraft.length === AC_ALL.filter(a => !AC_OFF.includes(a.v)).length ? null : fleetDraft.slice();
     applyFleet();
     // Avion par défaut : appliqué tout de suite si aucun avion n'est choisi
     settings.aircraft = $id('setAircraft').value;
@@ -6625,7 +6629,7 @@ if ('serviceWorker' in navigator) {
     ['dep', 'arr'].forEach(sd => { wxSig[sd] = null; renderWx(sd); });
   });
   // Au démarrage : avion par défaut et réserve du club
-  if (settings.aircraft && !val('aircraftSel') && [...$id('aircraftSel').options].some(o => o.value === settings.aircraft)) {
+  if (settings.aircraft && !AC_OFF.includes(settings.aircraft) && !val('aircraftSel') && [...$id('aircraftSel').options].some(o => o.value === settings.aircraft)) {
     $id('aircraftSel').value = settings.aircraft;
     $id('aircraftSel').dispatchEvent(new Event('change', { bubbles: true }));
   }
