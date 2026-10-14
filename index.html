@@ -5966,6 +5966,7 @@ if ('serviceWorker' in navigator) {
     }).join('') + '</div>';
     wrap.style.display = 'block';
     wrap._runways = runways;
+    if (side === 'arr' && rwyKeep.arr && rwyKeep.arr.desig) setTimeout(() => restoreRwy('arr'), 0);
     refreshLight();
   };
 
@@ -5975,9 +5976,42 @@ if ('serviceWorker' in navigator) {
     $id('arrWxNow').classList.toggle('is-selected', arrWxKind === 'now');
     $id('arrWxFcst').classList.toggle('is-selected', arrWxKind === 'fcst');
   };
-  $id('arrWxNow').addEventListener('click', () => { arrWxKind = 'now'; paintWxKind(); });
-  $id('arrWxFcst').addEventListener('click', () => { arrWxKind = 'fcst'; paintWxKind(); });
-  $id('btnArrWx').addEventListener('click', () => $id(arrWxKind === 'fcst' ? 'btnArrTaf' : 'btnArrMetar').click());
+  // Changer « Actuelle / Prévue » recharge aussitôt la météo du terrain saisi (sinon l'écran resterait sur l'autre)
+  const rwyKeep = { arr: null };
+  function loadArrWx() {
+    const icao = val('arrIcao').toUpperCase();
+    const pk = $id('arrRunwayPicker');
+    const act = pk && pk.querySelector('.rwy-btn.active');
+    const r = act && pk._runways ? pk._runways[[...pk.querySelectorAll('.rwy-btn')].indexOf(act)] : null;
+    rwyKeep.arr = icao && (r || val('arrQfu')) ? { icao, desig: r ? r.designator : null, qfu: val('arrQfu'), lda: val('arrLda') } : null;
+    $id(arrWxKind === 'fcst' ? 'btnArrTaf' : 'btnArrMetar').click();
+  }
+  function setWxKind(k) {
+    if (arrWxKind === k) return;
+    arrWxKind = k; paintWxKind();
+    if (/^[A-Z0-9]{4}$/i.test(val('arrIcao'))) loadArrWx();
+  }
+  $id('arrWxNow').addEventListener('click', () => setWxKind('now'));
+  $id('arrWxFcst').addEventListener('click', () => setWxKind('fcst'));
+  $id('btnArrWx').addEventListener('click', loadArrWx);
+  // Après rechargement : remettre la piste qui était choisie
+  function restoreRwy(side) {
+    const k = rwyKeep[side];
+    if (!k || val(side + 'Icao').toUpperCase() !== k.icao) return false;
+    const pk = $id(side + 'RunwayPicker');
+    if (k.desig && pk && pk._runways && pk._runways.length) {
+      const i = pk._runways.findIndex(r => r.designator === k.desig);
+      rwyKeep[side] = null;
+      if (i >= 0) { applyRunway(side, i); preview(side); return true; }
+      return false;
+    }
+    const noRwys = !(pk && pk._runways && pk._runways.length);
+    if ((!k.desig || noRwys) && !val(side + 'Qfu') && k.qfu) {
+      $id(side + 'Qfu').value = k.qfu; $id(side === 'dep' ? 'depToda' : 'arrLda').value = k.lda;
+      rwyKeep[side] = null; updateWindDisplay(side); preview(side); return true;
+    }
+    return false;
+  }
 
   // Source du vent et de la température
   const wxSrc = { dep: null, arr: null };
@@ -6036,9 +6070,9 @@ if ('serviceWorker' in navigator) {
       finally { try { after.apply(this, arguments); } catch (e) { console.warn(e); } }
     };
   };
-  wrapAsync('loadMetarFor', side => { srcFromMetar(side); preview(side); });
+  wrapAsync('loadMetarFor', side => { srcFromMetar(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
   wrapAsync('useNearestValidMetar', side => { srcFromMetar(side); preview(side); });
-  wrapAsync('loadTafFor', () => { srcFromTaf(); preview('arr'); });
+  wrapAsync('loadTafFor', () => { srcFromTaf(); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
   wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
   $id('arrEta').addEventListener('change', () => { setTimeout(srcFromTaf, 0); setTimeout(() => { srcFromTaf(); preview('arr'); }, 120); });
@@ -6061,6 +6095,7 @@ if ('serviceWorker' in navigator) {
   // Résultat en direct dans l'étape (le calcul est celui du moteur, sans changement)
   const ready = side => {
     const len = side === 'dep' ? 'depToda' : 'arrLda', m = side === 'dep' ? 'depTow' : 'arrLdw';
+    if (side === 'arr' && $id('arrTafWrap').classList.contains('visible') && !val('arrEta')) return false;  // TAF : attendre l'heure d'arrivée
     return !!val('aircraftSel') && !!val(side + 'Qfu') && +val(len) > 0 && val(side + 'Alt') !== '' && val(side + 'Oat') !== '' && +val(m) > 0;
   };
   const pvT = {};
