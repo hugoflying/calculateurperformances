@@ -494,6 +494,81 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .readme-section ul,.readme-section ol{padding-left:18px;margin:0 0 6px}
 .app-footer{text-align:center;padding:14px 16px 20px;font:500 12px var(--body);color:var(--muted)}
 
+/* ═══════════ Départ / Arrivée : 4 blocs identiques ═══════════ */
+.step-body > .blk + .blk{padding-top:14px;border-top:1px solid var(--line)}
+.blk{display:flex;flex-direction:column;gap:8px}
+.blk-h{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
+.bt{display:flex;align-items:center;gap:8px;font:700 12.5px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.bt i{font-style:normal;width:19px;height:19px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font:700 10.5px/1 var(--body);letter-spacing:0}
+.src{font:600 11.5px/1 var(--body);color:var(--accent-text);background:var(--accent-soft);border:1px solid var(--accent-line);padding:4px 8px;border-radius:10px;white-space:nowrap}
+.src.man{color:var(--muted);background:var(--field);border-color:var(--line)}
+.src.warn{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-line)}
+.sub{font:600 12px var(--body);color:var(--muted);margin-top:2px}
+.toggle-btn small{display:block;font:500 11px/1.2 var(--body);color:var(--muted);margin-top:1px}
+.toggle-btn:disabled{opacity:.42;cursor:not-allowed}
+.lbl.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.row > .f.icao-f{flex:0 0 104px}
+.wx-load{flex:1;font:700 15px var(--body);letter-spacing:0;text-transform:none}
+.wx-load .ico{width:17px;height:17px}
+.same-chip{align-self:flex-start;display:flex;align-items:center;gap:7px;min-height:36px;padding:6px 13px;border:1px dashed var(--accent-line);
+  border-radius:18px;background:var(--accent-soft);color:var(--accent-text);font:600 14px var(--body)}
+.same-chip .ico{width:15px;height:15px}
+.btn-link.sm{font-size:13.5px;padding:2px 0}
+.rwy-facts{font:500 13.5px var(--body);color:var(--muted)}
+.rwy-facts b{color:var(--ink);font-weight:600}
+.mass-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.mass-row .bt{white-space:nowrap}
+.mass-row .unit-in{flex:0 0 120px}
+
+/* Cartes de piste */
+.rwy-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rwy-btn{position:relative;min-height:0;padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;background:var(--card);
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:2px;text-align:left}
+.rwy-btn.rwy-preferred{border-color:var(--line)}
+.rwy-btn.active{border:1.5px solid var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.rwy-desig{font:700 26px/1 var(--display);letter-spacing:.02em}
+.rwy-len{font:600 14.5px var(--body);color:var(--ink);margin-top:2px}
+.rwy-surf{display:flex;align-items:center;gap:5px;font:500 12.5px var(--body);color:var(--muted)}
+.rwy-surf b{width:9px;height:9px;border-radius:2px;background:#64748b;flex-shrink:0}
+.rwy-btn.grass-surface .rwy-surf b{background:#2f8f4e}
+.rwy-top{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;flex-wrap:wrap}
+.rwy-tag{font:700 10px/1 var(--body);letter-spacing:.04em;text-transform:uppercase;color:var(--ok-text);
+  background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:8px;padding:3px 6px}
+.rwy-chk{position:absolute;right:9px;bottom:9px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:none;place-items:center}
+.rwy-chk svg{width:12px;height:12px}
+.rwy-btn.active .rwy-chk{display:grid}
+
+/* Vent arrière supposé : plus discret */
+.tw-assume-btn{min-height:44px;padding:6px 10px;background:transparent;border-color:var(--line)}
+.tw-assume-btn .assume-title{font-size:13.5px;color:var(--ink)}
+.tw-assume-btn.active{background:var(--warn-bg);border-color:var(--warn-line)}
+.tw-assume-btn.active .assume-title{color:var(--warn)}
+.wx-more{min-height:30px;padding:2px 0}
+
+/* Résultat en direct */
+.live{border:1.5px solid var(--ok-line);background:var(--ok-bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.live-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.live-big{font:600 14px var(--body);color:var(--ok-text)}
+.live-big b{font:700 30px/1 var(--body);margin-right:2px}
+.live-pill{font:700 12px/1 var(--body);letter-spacing:.05em;text-transform:uppercase;color:#fff;background:var(--ok);border-radius:10px;padding:5px 9px}
+.live-bar{position:relative;height:10px;border-radius:5px;background:var(--card);border:1px solid var(--ok-line);overflow:hidden}
+.live-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ok);border-radius:5px;transition:width .25s}
+.live-cap{display:flex;justify-content:space-between;gap:10px;font:500 12.5px var(--body);color:var(--ok-text)}
+.live.bad{border-color:var(--err-line);background:var(--err-bg)}
+.live.bad .live-big,.live.bad .live-cap{color:var(--err-text)}
+.live.bad .live-pill,.live.bad .live-bar i{background:var(--err)}
+.live.bad .live-bar{border-color:var(--err-line)}
+.live.bad .live-bar i{width:100%!important}
+
+/* Coucher du soleil (arrivée) */
+.sun-band{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:10px;
+  background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);font:500 13.5px var(--body)}
+.sun-band b{font:700 15px var(--body)}
+.sun-band .sun-lbl{font:600 12.5px var(--body);letter-spacing:0;text-transform:none;color:var(--warn)}
+.sun-verdict{font:700 13px var(--body);white-space:nowrap}
+.sun-verdict.ok{color:var(--ok-text)}
+.sun-verdict.bad{color:var(--err-text)}
+
 /* ═══════════ Impression (fiche PDF A4 — inchangée) ═══════════ */
 .step,.fiche{scroll-margin-top:80px}
 #printView{display:none}
@@ -634,49 +709,51 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <button class="step-edit" type="button" data-open="dep" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
       </div>
       <div class="step-body">
-        <div class="grp">
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>1</i>Terrain</span></div>
           <div class="row">
-            <label class="f"><span class="lbl">Terrain de départ (OACI)</span>
-              <input id="depIcao" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="LFOB"/>
+            <label class="f icao-f"><span class="lbl sr">Terrain de départ (OACI)</span>
+              <input id="depIcao" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="OACI" aria-label="Terrain de départ (OACI)"/>
             </label>
-            <button id="btnDepMetar" class="btn pri" type="button">METAR</button>
+            <button id="btnDepMetar" class="btn pri wx-load" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Charger la météo</button>
           </div>
           <span id="depAirportName" class="airport-name"></span>
           <div id="depMetarMsg" class="metar-box"></div>
           <button id="depMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('dep')">Utiliser le METAR valide le plus proche →</button>
           <div hidden aria-hidden="true"><span id="depSunset">—:—</span><span id="depAeroNight">—:—</span><span id="depSunNote"></span></div>
         </div>
-
-        <div class="grp">
-          <span class="lbl">Piste</span>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>2</i>Piste</span><button type="button" class="btn-link sm" id="depRwyEdit" data-rwyedit="dep" hidden>Saisie manuelle</button></div>
           <div id="depRunwayPicker" class="runway-picker"></div>
-          <div class="rwy-sum" id="depRwySum" hidden><span id="depRwySumTxt"></span><button type="button" class="btn-link" data-rwyedit="dep">Saisie manuelle</button></div>
+          <div class="rwy-facts" id="depRwySum" hidden><span id="depRwySumTxt"></span></div>
           <div class="g3" id="depRwyFields">
             <label class="f"><span class="lbl">QFU</span><input id="depQfu" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">TODA (m)</span><input id="depToda" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">Élév. (ft)</span><input id="depAlt" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
+        </div>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>3</i>État de la piste</span><span class="src" id="depSurfSrc" hidden>selon la piste</span></div>
           <div class="toggle-group">
             <button id="depSurfHard" class="toggle-btn is-selected is-primary" type="button">Revêtue</button>
             <button id="depSurfGrass" class="toggle-btn" type="button">Herbe</button>
           </div>
           <div id="depWetWrap" style="display:none">
+            <span class="sub">Herbe</span>
             <div class="toggle-group">
               <button id="depGrassDry" class="toggle-btn is-selected is-primary" type="button">Sèche</button>
-              <button id="depGrassWet" class="toggle-btn" type="button">Mouillée ×1,15</button>
-              <button id="depGrassWetShort" class="toggle-btn" type="button">Très courte ×1,60</button>
+              <button id="depGrassWet" class="toggle-btn" type="button">Mouillée<small>×1,15</small></button>
+              <button id="depGrassWetShort" class="toggle-btn" type="button">Très courte<small>mouillée ×1,60</small></button>
             </div>
           </div>
         </div>
-
-        <div class="grp">
-          <span class="lbl">Vent et température</span>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>4</i>Vent et température</span><span class="src" id="depWxSrc" hidden></span></div>
           <div class="g3">
             <label class="f"><span class="lbl">Direction</span><input id="depWindDir" class="inp c" type="text" list="dirOptions" autocapitalize="characters" autocomplete="off"/></label>
             <label class="f"><span class="lbl">Vent (kt)</span><input id="depWindKt" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">OAT (°C)</span><input id="depOat" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
-          <button type="button" class="btn-link wx-more" id="depWxMore" data-wxmore="dep">+ Rafale / vent variable</button>
           <div class="g3" id="depWxExtra" hidden>
             <div class="f" style="grid-column:span 2"><span class="lbl">Secteur variable</span>
               <div class="vrb"><input id="depVrbFrom" class="inp" type="number" placeholder="—" aria-label="Secteur variable de" inputmode="numeric"/><span class="v">V</span><input id="depVrbTo" class="inp" type="number" placeholder="—" aria-label="Secteur variable à" inputmode="numeric"/></div>
@@ -688,13 +765,19 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="depTw">—</div><div class="wc-unit">kt</div></div>
             <div id="depXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="depXw">—</div><div class="wc-unit">kt</div><div class="wc-unit" id="depXwSub"></div></div>
           </div>
+          <button type="button" class="btn-link wx-more" id="depWxMore" data-wxmore="dep">+ Rafale / vent variable</button>
           <div id="depTwAssumeWrap" class="tw-assume-wrap">
             <button id="depTwAssumeBtn" class="tw-assume-btn" type="button" onclick="toggleTwAssume('dep')">
-              <span class="assume-left"><span class="assume-text"><span class="assume-title">Appliquer 5 kt de vent arrière</span><span class="assume-sub">Plus restrictif que le vent calculé</span></span></span>
+              <span class="assume-left"><span class="assume-text"><span class="assume-title">Supposer 5 kt de vent arrière</span><span class="assume-sub">Plus restrictif que le vent calculé</span></span></span>
               <span class="tw-switch"></span>
             </button>
           </div>
           <div id="depExplain" class="explain"></div>
+        </div>
+        <div class="live" id="depLive" hidden>
+          <div class="live-top"><span class="live-big"><b id="depLiveVal">—</b> m requis</span><span class="live-pill" id="depLivePill">—</span></div>
+          <div class="live-bar"><i id="depLiveBar"></i></div>
+          <div class="live-cap"><span>marge club 30 % incluse</span><span id="depLiveAvail">—</span></div>
         </div>
 
         <div id="depValidMsg" class="valid-msg is-hidden"></div>
@@ -711,19 +794,24 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <button class="step-edit" type="button" data-open="arr" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
       </div>
       <div class="step-body">
-        <div class="grp">
-          <button id="btnSameAsDep" class="btn-ghost" type="button">
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>1</i>Terrain</span></div>
+          <button id="btnSameAsDep" class="same-chip" type="button">
             <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/></svg>
             <span id="sameAsDepLbl">Même terrain qu'au départ</span>
           </button>
-          <div id="sameAsDepOr" class="or">ou un autre terrain</div>
+          <span id="sameAsDepOr" hidden></span>
           <div class="row">
-            <label class="f"><span class="lbl">Terrain d'arrivée (OACI)</span>
-              <input id="arrIcao" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false"/>
+            <label class="f icao-f"><span class="lbl sr">Terrain d'arrivée (OACI)</span>
+              <input id="arrIcao" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="OACI" aria-label="Terrain d'arrivée (OACI)"/>
             </label>
-            <button id="btnArrMetar" class="btn pri" type="button">METAR</button>
-            <button id="btnArrTaf" class="btn" type="button">TAF</button>
+            <button id="btnArrWx" class="btn pri wx-load" type="button"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg>Charger la météo</button>
           </div>
+          <div class="toggle-group wx-kind" role="group" aria-label="Météo à utiliser">
+            <button id="arrWxNow" class="toggle-btn is-selected" type="button">Actuelle<small>METAR</small></button>
+            <button id="arrWxFcst" class="toggle-btn" type="button">Prévue à l'arrivée<small>TAF</small></button>
+          </div>
+          <div hidden><button id="btnArrMetar" type="button">METAR</button><button id="btnArrTaf" type="button">TAF</button></div>
           <span id="arrAirportName" class="airport-name"></span>
           <div id="arrMetarMsg" class="metar-box"></div>
           <button id="arrMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('arr')">Utiliser le METAR valide le plus proche →</button>
@@ -739,46 +827,38 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <div id="arrTafRaw" class="metar-box">—</div>
             <div id="arrTafPeriods" class="taf-periods"></div>
           </div>
-          <div class="sun-box">
-            <div class="sun-item"><span class="sun-lbl">Coucher</span><span class="sun-val" id="arrSunset">—:—</span></div>
-            <div class="sun-item is-night"><span class="sun-lbl">Nuit aéro</span><span class="sun-val" id="arrAeroNight">—:—</span></div>
-          </div>
-          <div class="sun-note" id="arrSunNote">Chargez le METAR ou le TAF pour obtenir le coucher du soleil du terrain.</div>
         </div>
-
-        <div class="grp">
-          <span class="lbl">Piste</span>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>2</i>Piste</span><button type="button" class="btn-link sm" id="arrRwyEdit" data-rwyedit="arr" hidden>Saisie manuelle</button></div>
           <div id="arrRunwayPicker" class="runway-picker"></div>
-          <div class="rwy-sum" id="arrRwySum" hidden><span id="arrRwySumTxt"></span><button type="button" class="btn-link" data-rwyedit="arr">Saisie manuelle</button></div>
+          <div class="rwy-facts" id="arrRwySum" hidden><span id="arrRwySumTxt"></span></div>
           <div class="g3" id="arrRwyFields">
             <label class="f"><span class="lbl">QFU</span><input id="arrQfu" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">LDA (m)</span><input id="arrLda" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">Élév. (ft)</span><input id="arrAlt" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
+        </div>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>3</i>État de la piste</span></div>
+          <span class="sub">Freinage</span>
           <div class="toggle-group">
-            <button id="arrModerate" class="toggle-btn is-selected is-primary" type="button">Freinage normal</button>
+            <button id="arrModerate" class="toggle-btn is-selected is-primary" type="button">Normal</button>
             <button id="arrNoBrake" class="toggle-btn" type="button">Sans freins (herbe)</button>
           </div>
+          <span class="sub">Surface</span>
           <div id="arrWetSection" class="toggle-group">
             <button id="arrGrassDry" class="toggle-btn is-selected is-primary" type="button">Sèche</button>
-            <button id="arrGrassWet" class="toggle-btn" type="button">Mouillée ×1,15</button>
-            <button id="arrGrassWetShort" class="toggle-btn" type="button" style="display:none">Très courte ×1,60</button>
+            <button id="arrGrassWet" class="toggle-btn" type="button">Mouillée<small>×1,15</small></button>
+            <button id="arrGrassWetShort" class="toggle-btn" type="button">Très courte<small id="arrShortSub">sans freins</small></button>
           </div>
-          <label class="f"><span class="lbl">Masse à l'atterrissage</span>
-            <span class="unit-in"><input id="arrLdw" class="inp" type="number" inputmode="numeric"/><span class="u">kg</span></span>
-            <span id="arrLdwWarn" class="field-warn">Hors de la plage du manuel</span>
-            <span class="note" id="arrLdwNote">Reprise de la masse au décollage, à ajuster si besoin.</span>
-          </label>
         </div>
-
-        <div class="grp">
-          <span class="lbl">Vent et température</span>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>4</i>Vent et température</span><span class="src" id="arrWxSrc" hidden></span></div>
           <div class="g3">
             <label class="f"><span class="lbl">Direction</span><input id="arrWindDir" class="inp c" type="text" list="dirOptions" autocapitalize="characters" autocomplete="off"/></label>
             <label class="f"><span class="lbl">Vent (kt)</span><input id="arrWindKt" class="inp c" type="number" inputmode="numeric"/></label>
             <label class="f"><span class="lbl">OAT (°C)</span><input id="arrOat" class="inp c" type="number" inputmode="numeric"/></label>
           </div>
-          <button type="button" class="btn-link wx-more" id="arrWxMore" data-wxmore="arr">+ Rafale / vent variable</button>
           <div class="g3" id="arrWxExtra" hidden>
             <div class="f" style="grid-column:span 2"><span class="lbl">Secteur variable</span>
               <div class="vrb"><input id="arrVrbFrom" class="inp" type="number" placeholder="—" aria-label="Secteur variable de" inputmode="numeric"/><span class="v">V</span><input id="arrVrbTo" class="inp" type="number" placeholder="—" aria-label="Secteur variable à" inputmode="numeric"/></div>
@@ -790,15 +870,33 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             <div class="wind-cell"><div class="wc-lbl">Arrière</div><div class="wc-val" id="arrTw">—</div><div class="wc-unit">kt</div></div>
             <div id="arrXwCard" class="wind-cell"><div class="wc-lbl">Travers</div><div class="wc-val" id="arrXw">—</div><div class="wc-unit">kt</div><div class="wc-unit" id="arrXwSub"></div></div>
           </div>
+          <button type="button" class="btn-link wx-more" id="arrWxMore" data-wxmore="arr">+ Rafale / vent variable</button>
           <div id="arrTafTwSuggest" style="display:none"></div>
           <div id="arrTwAssumeWrap" class="tw-assume-wrap">
             <button id="arrTwAssumeBtn" class="tw-assume-btn" type="button" onclick="toggleTwAssume('arr')">
-              <span class="assume-left"><span class="assume-text"><span class="assume-title">Appliquer 5 kt de vent arrière</span><span class="assume-sub">Plus restrictif que le vent calculé</span></span></span>
+              <span class="assume-left"><span class="assume-text"><span class="assume-title">Supposer 5 kt de vent arrière</span><span class="assume-sub">Plus restrictif que le vent calculé</span></span></span>
               <span class="tw-switch"></span>
             </button>
           </div>
           <div id="arrExplain" class="explain"></div>
         </div>
+        <div class="blk">
+          <label class="mass-row"><span class="bt">Masse à l'atterrissage</span>
+            <span class="unit-in"><input id="arrLdw" class="inp" type="number" inputmode="numeric"/><span class="u">kg</span></span>
+          </label>
+          <span id="arrLdwWarn" class="field-warn">Hors de la plage du manuel</span>
+          <span class="note" id="arrLdwNote">Reprise de la masse au décollage, à ajuster si besoin.</span>
+        </div>
+        <div class="live" id="arrLive" hidden>
+          <div class="live-top"><span class="live-big"><b id="arrLiveVal">—</b> m requis</span><span class="live-pill" id="arrLivePill">—</span></div>
+          <div class="live-bar"><i id="arrLiveBar"></i></div>
+          <div class="live-cap"><span>marge club 30 % incluse</span><span id="arrLiveAvail">—</span></div>
+        </div>
+        <div class="sun-band" id="arrSunBand" hidden>
+          <span class="sun-times"><span class="sun-lbl">Coucher</span> <b id="arrSunset">—:—</b> · <span class="sun-lbl">Nuit aéro</span> <b id="arrAeroNight">—:—</b></span>
+          <span class="sun-verdict" id="arrSunVerdict"></span>
+        </div>
+        <div class="sun-note" id="arrSunNote" hidden></div>
 
         <div id="arrValidMsg" class="valid-msg is-hidden"></div>
         <button id="btnCalcArr" class="btn pri big" type="button">Valider l'arrivée</button>
@@ -5734,7 +5832,7 @@ if ('serviceWorker' in navigator) {
   const rwyManual = { dep: false, arr: false };
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-rwyedit]');
-    if (b) { rwyManual[b.dataset.rwyedit] = true; refreshLight(); return; }
+    if (b) { const sd = b.dataset.rwyedit; rwyManual[sd] = !rwyManual[sd]; refreshLight(); return; }
     const r = e.target.closest('.rwy-btn');
     if (r) { const side = r.id.startsWith('rwy-dep') ? 'dep' : 'arr'; rwyManual[side] = false; setTimeout(refreshLight, 0); }
     const w = e.target.closest('[data-wxmore]');
@@ -5763,17 +5861,37 @@ if ('serviceWorker' in navigator) {
       const pk = $id(side + 'RunwayPicker');
       const active = pk && pk.style.display !== 'none' && pk.querySelector('.rwy-btn.active');
       const q = val(side + 'Qfu'), d = val(side === 'dep' ? 'depToda' : 'arrLda'), alt = val(side + 'Alt');
+      const hasPicker = !!pk && pk.style.display !== 'none' && !!pk.querySelector('.rwy-btn');
       const compact = !!active && !!q && !!d && !rwyManual[side];
       $id(side + 'RwySum').hidden = !compact;
       $id(side + 'RwyFields').hidden = compact;
-      if (compact) $id(side + 'RwySumTxt').textContent =
-        'QFU ' + q + ' · ' + (side === 'dep' ? 'TODA ' : 'LDA ') + d + ' m' + (alt ? ' · ' + alt + ' ft' : '');
+      const ed = $id(side + 'RwyEdit');
+      ed.hidden = !hasPicker || !active;
+      ed.textContent = rwyManual[side] ? 'Fermer la saisie' : 'Saisie manuelle';
+      if (compact) {
+        const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        $id(side + 'RwySumTxt').innerHTML = (side === 'dep' ? 'TODA' : 'LDA') + ' <b>' + esc(d) + ' m</b> · QFU <b>' + esc(q) + '°</b>' +
+          (alt ? ' · Élév. <b>' + esc(alt) + ' ft</b>' : '');
+      }
+      if (side === 'dep') {
+        const r = active && pk._runways ? pk._runways[[...pk.querySelectorAll('.rwy-btn')].indexOf(active)] : null;
+        $id('depSurfSrc').hidden = !(r && r.surfaceType && (r.surfaceType === 'grass') === (depSurface === 'grass'));
+      }
+      renderLive(side);
       // rafale / secteur variable
       const filled = (+val(side + 'WindGust') > 0) || !!val(side + 'VrbFrom') || !!val(side + 'VrbTo');
       const open = filled || wxOpen[side];
       $id(side + 'WxExtra').hidden = !open;
       $id(side + 'WxMore').hidden = open;
     });
+
+    // État de piste à l'arrivée : « très courte » visible mais grisée hors « sans freins »
+    const nb = typeof landingMode !== 'undefined' && landingMode === 'nobrake_grass';
+    const sh = $id('arrGrassWetShort');
+    sh.style.display = ''; sh.disabled = !nb;
+    $id('arrShortSub').textContent = nb ? 'mouillée ×1,60' : 'sans freins';
+    ['dep', 'arr'].forEach(sd => { const an = $id(sd + 'AirportName'); if (an) an.hidden = /^[—-]?$/.test((an.textContent || '').trim()); });
+    renderSun();
 
     // carburant à bord
     const fu = $id('fuelUsable'); if (fu && fu.textContent.indexOf('.') >= 0) fu.textContent = frNum(+(+fu.textContent).toFixed(1));
@@ -5807,6 +5925,170 @@ if ('serviceWorker' in navigator) {
     }
   }
   window.__refreshLight = refreshLight;
+
+
+  /* ═══ Départ / Arrivée : cartes de piste, source météo, résultat en direct ═══ */
+  const CHK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 12 10 17 19 7"/></svg>';
+  const escH = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Cartes de piste (même logique de piste préférentielle que le moteur)
+  window.renderRunwayPicker = function (side, runways) {
+    const wrap = $id(side + 'RunwayPicker');
+    if (!wrap) return;
+    if (!runways || !runways.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; wrap._runways = runways; refreshLight(); return; }
+    const prevBtns = [...wrap.querySelectorAll('.rwy-btn')];
+    const prevActive = wrap._runways === runways ? prevBtns.findIndex(b => b.classList.contains('active')) : -1;
+    const windDir = parseInt(val(side + 'WindDir') || '0', 10) || 0;
+    const windKt = +(val(side + 'WindKt') || 0);
+    const head = r => { const d = ((windDir - r.qfu + 180 + 360) % 360) - 180; return Math.cos(d * Math.PI / 180) * windKt; };
+    let best = -Infinity;
+    if (windKt > 0) runways.forEach(r => { best = Math.max(best, head(r)); });
+    wrap.innerHTML = '<div class="rwy-list">' + runways.map((r, i) => {
+      const grass = r.surfaceType === 'grass';
+      const pref = windKt > 0 && Math.abs(head(r) - best) < 1;
+      const len = side === 'dep' ? r.toraM : r.ldaM;
+      return '<button type="button" class="rwy-btn' + (grass ? ' grass-surface' : '') + (pref ? ' rwy-preferred' : '') + (i === prevActive ? ' active' : '') +
+        '" id="rwy-' + side + '-' + i + '" onclick="applyRunway(\'' + side + '\',' + i + ')">' +
+        '<span class="rwy-top"><span class="rwy-desig">' + escH(r.designator) + '</span>' +
+        (pref ? '<span class="rwy-tag">Face au vent</span>' : '') + '</span>' +
+        '<span class="rwy-len">' + escH(len) + ' m</span>' +
+        '<span class="rwy-surf"><b></b>' + (grass ? 'Herbe' : 'Revêtue') + ' · ' + String(r.qfu).padStart(3, '0') + '°</span>' +
+        '<span class="rwy-chk">' + CHK + '</span></button>';
+    }).join('') + '</div>';
+    wrap.style.display = 'block';
+    wrap._runways = runways;
+    refreshLight();
+  };
+
+  // Arrivée : météo actuelle (METAR) ou prévue à l'heure d'arrivée (TAF)
+  let arrWxKind = 'now';
+  const paintWxKind = () => {
+    $id('arrWxNow').classList.toggle('is-selected', arrWxKind === 'now');
+    $id('arrWxFcst').classList.toggle('is-selected', arrWxKind === 'fcst');
+  };
+  $id('arrWxNow').addEventListener('click', () => { arrWxKind = 'now'; paintWxKind(); });
+  $id('arrWxFcst').addEventListener('click', () => { arrWxKind = 'fcst'; paintWxKind(); });
+  $id('btnArrWx').addEventListener('click', () => $id(arrWxKind === 'fcst' ? 'btnArrTaf' : 'btnArrMetar').click());
+
+  // Source du vent et de la température
+  const wxSrc = { dep: null, arr: null };
+  const zTime = d => d instanceof Date && !isNaN(d) ? String(d.getUTCHours()).padStart(2, '0') + 'h' + String(d.getUTCMinutes()).padStart(2, '0') + 'Z' : '';
+  function paintSrc(side) {
+    const el = $id(side + 'WxSrc'), v = wxSrc[side];
+    el.hidden = !v;
+    if (v) { el.textContent = v.txt; el.className = 'src' + (v.cls ? ' ' + v.cls : ''); }
+  }
+  function srcFromMetar(side) {
+    const msg = ($id(side + 'MetarMsg').textContent || '').trim();
+    if (!msg || WX_FAIL.test(msg) || /^Chargement/.test(msg)) { wxSrc[side] = null; }
+    else {
+      const t = zTime(side === 'dep' ? lastDepMetarTime : lastArrMetarTime);
+      const near = /^⚠ Station/.test(msg);
+      wxSrc[side] = { txt: (near ? 'METAR station proche' : 'METAR') + (t ? ' ' + t : ''), cls: near ? 'warn' : '' };
+    }
+    paintSrc(side);
+  }
+  function srcFromTaf() {
+    const sel = $id('arrEta'), o = sel && sel.options[sel.selectedIndex];
+    const msg = ($id('arrMetarMsg').textContent || '').trim();
+    if (WX_FAIL.test(msg) && !(o && o.value)) wxSrc.arr = null;
+    else wxSrc.arr = { txt: 'TAF' + (o && o.value ? ' · ' + o.textContent.trim().replace(/\s+/g, ' ').slice(0, 22) : ''), cls: '' };
+    paintSrc('arr');
+  }
+  const wrapAsync = (name, after) => {
+    const orig = window[name];
+    if (typeof orig !== 'function') return;
+    window[name] = async function () {
+      try { return await orig.apply(this, arguments); }
+      finally { try { after.apply(this, arguments); } catch (e) { console.warn(e); } }
+    };
+  };
+  wrapAsync('loadMetarFor', side => { srcFromMetar(side); preview(side); });
+  wrapAsync('useNearestValidMetar', side => { srcFromMetar(side); preview(side); });
+  wrapAsync('loadTafFor', () => { srcFromTaf(); preview('arr'); });
+  wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
+  wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
+  $id('arrEta').addEventListener('change', () => setTimeout(srcFromTaf, 0));
+  ['dep', 'arr'].forEach(side => {
+    ['WindDir', 'WindKt', 'WindGust', 'Oat', 'VrbFrom', 'VrbTo'].forEach(k => $id(side + k).addEventListener('input', e => {
+      if (!e.isTrusted) return;
+      wxSrc[side] = { txt: 'saisi à la main', cls: 'man' };
+      paintSrc(side);
+    }));
+  });
+  const _rsf = window.resetSideFields;
+  window.resetSideFields = function (side) { _rsf(side); wxSrc[side] = null; paintSrc(side); };
+  $id('btnSameAsDep').addEventListener('click', () => { if (val('depIcao')) { wxSrc.arr = wxSrc.dep ? Object.assign({}, wxSrc.dep) : null; paintSrc('arr'); preview('arr'); } });
+
+  // « Très courte mouillée » : toujours visible, grisée hors freinage « sans freins »
+  const _uawb = window.updateArrWetButtons;
+  if (typeof _uawb === 'function') window.updateArrWetButtons = function () { _uawb.apply(this, arguments); refreshLight(); };
+
+  // Résultat en direct dans l'étape (le calcul est celui du moteur, sans changement)
+  const ready = side => {
+    const len = side === 'dep' ? 'depToda' : 'arrLda', m = side === 'dep' ? 'depTow' : 'arrLdw';
+    return !!val('aircraftSel') && !!val(side + 'Qfu') && +val(len) > 0 && val(side + 'Alt') !== '' && val(side + 'Oat') !== '' && +val(m) > 0;
+  };
+  const pvT = {};
+  function preview(side) {
+    if (!inScope(side)) return;
+    if (validated[side]) { scheduleRecalc(side); return; }
+    clearTimeout(pvT[side]);
+    pvT[side] = setTimeout(() => {
+      if (validated[side] || !ready(side)) { updateUI(); return; }
+      _restoring = true;
+      runCalc(side);
+      setTimeout(() => { _restoring = false; }, 400);
+      updateUI();
+    }, 380);
+  }
+  ['dep', 'arr'].forEach(side => {
+    const el = stepEl(side);
+    ['input', 'change', 'click'].forEach(ev => el.addEventListener(ev, e => {
+      if (e && e.target && e.target.closest && e.target.closest('#btnCalcDep,#btnCalcArr,.step-hd,#btnArrWx,#btnDepMetar,#arrWxNow,#arrWxFcst')) return;
+      preview(side);
+    }));
+  });
+  // La masse du décollage alimente l'atterrissage
+  $id('depTow').addEventListener('input', () => preview('arr'));
+
+  function renderLive(side) {
+    const box = $id(side + 'Live');
+    const done = isComputed(side);
+    box.hidden = !done;
+    if (!done) return;
+    const reqTxt = $id(side === 'dep' ? 'toKpiVal' : 'ldgKpiVal').textContent;
+    const avTxt = $id(side === 'dep' ? 'todaMini' : 'ldaMini').textContent;
+    const req = parseInt(reqTxt, 10), av = parseInt(avTxt, 10);
+    const st = chipState(side);
+    $id(side + 'LiveVal').textContent = isNaN(req) ? '—' : req;
+    $id(side + 'LivePill').textContent = st === 'bad' ? 'Insuffisant' : st === 'ok' ? 'OK' : '—';
+    $id(side + 'LiveAvail').textContent = av > 0 ? 'sur ' + av + ' m ' + (side === 'dep' ? 'TODA' : 'LDA') : '';
+    $id(side + 'LiveBar').style.width = (av > 0 && req > 0 ? Math.min(100, req / av * 100) : 0).toFixed(1) + '%';
+    box.classList.toggle('bad', st === 'bad');
+  }
+
+  // Coucher du soleil à l'arrivée, avec l'heure d'arrivée estimée si l'étape carburant la donne
+  const toMin = t => { const m = /^(\d{1,2}):(\d{2})/.exec(t || ''); return m ? +m[1] * 60 + +m[2] : null; };
+  function renderSun() {
+    const cs = ($id('arrSunset').textContent || '').trim(), nt = ($id('arrAeroNight').textContent || '').trim();
+    const has = toMin(cs) != null;
+    $id('arrSunBand').hidden = !has;
+    const v = $id('arrSunVerdict');
+    v.textContent = ''; v.className = 'sun-verdict';
+    if (!has || !scope.fuel) return;
+    const dep = toMin(val('fuelDepTime'));
+    const out = (+val('fuelCruiseH') || 0) * 60 + (+val('fuelCruiseM') || 0);
+    const rt = $id('fuelRoundtrip') && $id('fuelRoundtrip').checked;
+    if (dep == null || !(out > 0) || rt) return;
+    const eta = (dep + (+val('fuelStartup') || 0) + out) % 1440;
+    const hh = String(Math.floor(eta / 60)).padStart(2, '0') + ':' + String(eta % 60).padStart(2, '0');
+    const n = toMin(nt), c = toMin(cs);
+    if (n != null && eta >= n) { v.textContent = 'Arrivée ' + hh + ' : de nuit'; v.classList.add('bad'); }
+    else if (eta >= c) { v.textContent = 'Arrivée ' + hh + ' : après le coucher'; }
+    else { v.textContent = '✓ Arrivée ' + hh + ', avant la nuit'; v.classList.add('ok'); }
+  }
+  new MutationObserver(() => setTimeout(refreshLight, 0)).observe($id('arrSunset'), { childList: true, characterData: true, subtree: true });
 
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
