@@ -569,6 +569,22 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .sun-verdict.ok{color:var(--ok-text)}
 .sun-verdict.bad{color:var(--err-text)}
 
+/* ═══════════ Carburant ═══════════ */
+.onboard-line{font:500 14px/1.45 var(--body);color:var(--muted);padding:9px 12px;border-radius:var(--r-sm);background:var(--accent-soft);border:1px solid var(--accent-line)}
+.onboard-line b{color:var(--ink);font-weight:700}
+.ac-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font:500 13.5px var(--body);color:var(--muted)}
+.live-clocks{font:500 13px/1.45 var(--body);color:var(--ok-text);padding-top:8px;border-top:1px solid var(--ok-line)}
+.live-clocks b{font:700 15px var(--body)}
+.live-clocks span{font-size:12px;opacity:.8}
+.live-clocks b.stop{color:var(--err-text)}
+.live.bad .live-clocks{border-color:var(--err-line);color:var(--err-text)}
+.live-det summary{cursor:pointer;font:600 13px var(--body);color:var(--accent);list-style:none;padding-top:2px}
+.live-det summary::-webkit-details-marker{display:none}
+.live-det summary::after{content:" ▾"}
+.live-det[open] summary::after{content:" ▴"}
+.live-det .fuel-brk{margin-top:6px}
+.live-det .fuel-brk-row,.live-det .fuel-brk-total{color:var(--ink)}
+
 /* ═══════════ Impression (fiche PDF A4 — inchangée) ═══════════ */
 .step,.fiche{scroll-margin-top:80px}
 #printView{display:none}
@@ -912,54 +928,44 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <button class="step-edit" type="button" data-open="fuel" aria-label="Modifier" title="Modifier"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
       </div>
       <div class="step-body">
-        <div class="grp">
-          <span class="lbl">Carburant à bord</span>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>1</i>Carburant à bord</span></div>
           <div class="toggle-group" id="fuelOnboardTg">
-            <button id="fuelFullBtn" class="toggle-btn" type="button">Plein · <span id="fuelFullL">—</span> L</button>
-            <button id="fuelUsedBtn" class="toggle-btn" type="button">Plein entamé</button>
+            <button id="fuelFullBtn" class="toggle-btn" type="button">Plein<small><span id="fuelFullL">—</span> L</small></button>
+            <button id="fuelUsedBtn" class="toggle-btn" type="button">Plein entamé<small>selon le temps de vol</small></button>
           </div>
-          <div class="grp" id="fuelUsedWrap" hidden>
-            <div class="f"><span class="lbl">Temps de vol depuis le dernier plein</span>
-              <div class="fuel-time">
-                <input id="fuelUsedH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures de vol depuis le dernier plein"/><span class="fuel-suffix">h</span>
-                <input id="fuelUsedM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes de vol depuis le dernier plein"/><span class="fuel-suffix">min</span>
-              </div>
+          <div class="blk" id="fuelUsedWrap" hidden>
+            <span class="sub">Temps de vol depuis le dernier plein</span>
+            <div class="fuel-time">
+              <input id="fuelUsedH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures de vol depuis le dernier plein"/><span class="fuel-suffix">h</span>
+              <input id="fuelUsedM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes de vol depuis le dernier plein"/><span class="fuel-suffix">min</span>
             </div>
-            <div class="rwy-sum"><span id="fuelUsedRes">Indique le temps de vol depuis le dernier plein.</span></div>
+            <span class="note" id="fuelUsedRes">Indique le temps de vol depuis le dernier plein.</span>
             <button type="button" class="btn-link wx-more" id="fuelLitersLink">Je connais la quantité en litres</button>
           </div>
-          <div class="grp" id="fuelCapWrap" hidden>
-            <label class="f"><span class="lbl">Quantité à bord (L)</span>
+          <div class="blk" id="fuelCapWrap" hidden>
+            <label class="mass-row"><span class="sub">Quantité à bord</span>
               <span class="unit-in"><input id="fuelCap" class="inp" type="number" min="1" step="1" inputmode="decimal" oninput="computeFuel()"/><span class="u">L</span></span>
             </label>
             <button type="button" class="btn-link wx-more" id="fuelBackToTime">Calculer avec le temps de vol</button>
           </div>
-          <div class="rwy-sum" id="fuelAcSum"><span id="fuelAcSumTxt">—</span><button type="button" class="btn-link" id="fuelAcEdit">Modifier</button></div>
+          <div class="onboard-line" id="fuelOnboardLine" hidden></div>
+          <div class="ac-line"><span id="fuelAcSumTxt">—</span><button type="button" class="btn-link sm" id="fuelAcEdit">Modifier</button></div>
           <div class="g2" id="fuelAcFields" hidden>
             <label class="f"><span class="lbl">Consommation (L/h)</span><input id="fuelConso" class="inp c" type="number" min="1" step="0.1" inputmode="decimal" oninput="computeFuel()"/></label>
             <label class="f"><span class="lbl">Inutilisable (L)</span><input id="fuelUnusable" class="inp c" type="number" min="0" step="1" inputmode="decimal" oninput="computeFuel()"/></label>
           </div>
-          <div class="fuel-kpis">
-            <div class="fuel-kpi"><div class="fuel-kpi-lbl">Utilisable</div><div class="fuel-kpi-val"><span id="fuelUsable">0</span><span class="fuel-kpi-unit">L</span></div></div>
-            <div class="fuel-kpi"><div class="fuel-kpi-lbl">Autonomie</div><div class="fuel-kpi-val" id="fuelEndurance">—</div></div>
-            <div class="fuel-kpi"><div class="fuel-kpi-lbl">Réserve</div><div class="fuel-kpi-val"><span id="fuelReserveL">0</span><span class="fuel-kpi-unit">L</span></div></div>
+          <div class="fuel-kpis" hidden>
+            <span id="fuelUsable">0</span><span id="fuelEndurance">—</span><span id="fuelReserveL">0</span>
           </div>
         </div>
 
-        <div class="grp">
-          <span class="lbl">Temps de vol</span>
-          <div class="row">
-            <label class="f"><span class="lbl">Mise en route — heure locale</span><input id="fuelDepTime" class="inp" type="time" oninput="computeFuel()"/></label>
-            <button class="btn" type="button" onclick="fuelSetNow()">Maintenant</button>
-          </div>
-          <div class="g3">
-            <label class="f"><span class="lbl">Mise en r. (min)</span><input id="fuelStartup" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/></label>
-            <div class="f" style="grid-column:span 2"><span class="lbl">Trip fuel — croisière aller</span>
-              <div class="fuel-time">
-                <input id="fuelCruiseH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures aller" oninput="computeFuel()"/><span class="fuel-suffix">h</span>
-                <input id="fuelCruiseM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes aller" oninput="computeFuel()"/><span class="fuel-suffix">min</span>
-              </div>
-            </div>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>2</i>Le vol</span></div>
+          <span class="sub">Temps de vol aller</span>
+          <div class="fuel-time">
+            <input id="fuelCruiseH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures aller" oninput="computeFuel()"/><span class="fuel-suffix">h</span>
+            <input id="fuelCruiseM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes aller" oninput="computeFuel()"/><span class="fuel-suffix">min</span>
           </div>
           <div id="fuelRetourRow" class="fuel-retour">
             <div class="fuel-switch-row">
@@ -967,46 +973,53 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
               <span class="fuel-switch"><input id="fuelRoundtrip" type="checkbox" onchange="fuelToggleRoundtrip()"/><span class="fuel-switch-track"></span></span>
             </div>
             <div id="fuelBackWrap" class="fuel-collapse">
-              <div class="f"><span class="lbl">Trip fuel — croisière retour</span>
-                <div class="fuel-time">
-                  <input id="fuelBackH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures retour" oninput="computeFuel()"/><span class="fuel-suffix">h</span>
-                  <input id="fuelBackM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes retour" oninput="computeFuel()"/><span class="fuel-suffix">min</span>
-                </div>
+              <span class="sub">Temps de vol retour</span>
+              <div class="fuel-time">
+                <input id="fuelBackH" class="inp" type="number" min="0" inputmode="numeric" aria-label="Heures retour" oninput="computeFuel()"/><span class="fuel-suffix">h</span>
+                <input id="fuelBackM" class="inp" type="number" min="0" max="59" inputmode="numeric" aria-label="Minutes retour" oninput="computeFuel()"/><span class="fuel-suffix">min</span>
               </div>
             </div>
           </div>
-          <div class="g3">
-            <label class="f"><span class="lbl">Dégag. (min)</span><input id="fuelAlt" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/></label>
-            <label class="f"><span class="lbl">Extra (min)</span><input id="fuelExtra" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/></label>
-            <label class="f"><span class="lbl">Réserve (min)</span><input id="fuelReserve" class="inp c" type="number" value="30" min="0" inputmode="numeric" oninput="computeFuel()"/></label>
+          <div class="ac-line"><span id="fuelResTxt">Réserve finale 30 min</span><button type="button" class="btn-link sm" id="fuelResEdit">Modifier</button></div>
+          <button type="button" class="btn-link wx-more" id="fuelMoreLink">+ Mise en route, dégagement, extra fuel</button>
+          <div class="g3" id="fuelMore" hidden>
+            <label class="f"><span class="lbl">Mise en route</span><span class="unit-in"><input id="fuelStartup" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
+            <label class="f"><span class="lbl">Dégagement</span><span class="unit-in"><input id="fuelAlt" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
+            <label class="f"><span class="lbl">Extra fuel</span><span class="unit-in"><input id="fuelExtra" class="inp c" type="number" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
+            <label class="f" id="fuelResWrap"><span class="lbl">Réserve</span><span class="unit-in"><input id="fuelReserve" class="inp c" type="number" value="30" min="0" inputmode="numeric" oninput="computeFuel()"/><span class="u">min</span></span></label>
           </div>
         </div>
 
-        <div class="grp">
-          <span class="lbl">Bilan</span>
-          <div id="fuelBreakdown" class="fuel-brk"></div>
-          <div class="fuel-brk-total">
-            <div class="fuel-brk-ph">Carburant mini requis</div>
-            <div class="fuel-brk-tm" id="fuelTotalTime">—</div>
-            <div class="fuel-brk-lt"><span id="fuelTotalL">—</span></div>
+        <div class="blk">
+          <div class="blk-h"><span class="bt"><i>3</i>Heure de mise en route</span><span class="src man">facultatif</span></div>
+          <div class="row">
+            <label class="f"><span class="lbl sr">Mise en route — heure locale</span><input id="fuelDepTime" class="inp" type="time" aria-label="Heure de mise en route (locale)" oninput="computeFuel()"/></label>
+            <button class="btn" type="button" onclick="fuelSetNow()">Maintenant</button>
           </div>
-          <div id="fuelVerdict" class="fuel-verdict is-neutral">
-            <div class="fuel-verdict-title">Renseignez les temps de vol</div>
-            <div class="fuel-verdict-sub">Le bilan se calcule automatiquement.</div>
-          </div>
-          <div class="fuel-clocks">
-            <div class="fuel-clock">
-              <div class="fuel-clock-lbl">Atterrissage max<br>réserve conservée</div>
-              <div class="fuel-clock-val" id="fuelMaxLdg">—:—</div>
-              <div class="fuel-clock-sub" id="fuelMaxLdgSub">réserve 30 min</div>
+          <span class="note" id="fuelClockHint">Pour connaître l'heure limite d'atterrissage.</span>
+        </div>
+
+        <div class="live" id="fuelLive" hidden>
+          <div class="live-top"><span class="live-big"><b id="fuelLiveVal">—</b> L requis</span><span class="live-pill" id="fuelLivePill">—</span></div>
+          <div class="live-bar"><i id="fuelLiveBar"></i></div>
+          <div class="live-cap"><span id="fuelLiveLeft">—</span><span id="fuelLiveAvail">—</span></div>
+          <div class="live-clocks" id="fuelLiveClocks" hidden></div>
+          <details class="live-det">
+            <summary>Détail du bilan</summary>
+            <div id="fuelBreakdown" class="fuel-brk"></div>
+            <div class="fuel-brk-total">
+              <div class="fuel-brk-ph">Carburant mini requis</div>
+              <div class="fuel-brk-tm" id="fuelTotalTime">—</div>
+              <div class="fuel-brk-lt"><span id="fuelTotalL">—</span></div>
             </div>
-            <div class="fuel-clock is-limit">
-              <div class="fuel-clock-lbl">Arrêt moteur<br>panne sèche</div>
-              <div class="fuel-clock-val" id="fuelEngineStop">—:—</div>
-              <div class="fuel-clock-sub" id="fuelEngineStopSub">autonomie totale</div>
-            </div>
-          </div>
-          <div class="note" id="fuelClockNote">Renseignez l'heure de mise en route pour obtenir les horaires.</div>
+          </details>
+        </div>
+        <div id="fuelVerdict" class="fuel-verdict is-neutral">
+          <div class="fuel-verdict-title">Renseignez les temps de vol</div>
+          <div class="fuel-verdict-sub">Le bilan se calcule automatiquement.</div>
+        </div>
+        <div hidden aria-hidden="true">
+          <span id="fuelClockNote"></span><span id="fuelMaxLdg">—:—</span><span id="fuelMaxLdgSub"></span><span id="fuelEngineStop">—:—</span><span id="fuelEngineStopSub"></span>
         </div>
 
         <div id="fuelValidMsg" class="valid-msg is-hidden"></div>
@@ -5904,8 +5917,8 @@ if ('serviceWorker' in navigator) {
     if (fuelMode === 'used') {
       const um = usedMin(), c = (+val('fuelConso') || 0) * window.__spatsFuelFactor();
       $id('fuelUsedRes').textContent = um > 0 && fc
-        ? '≈ ' + String(val('fuelCap')).replace('.', ',') + ' L à bord  (' + fc + ' L − ' + fmtHM(um) + ' à ' + String(Math.round(c * 10) / 10).replace('.', ',') + ' L/h)'
-        : 'Indique le temps de vol depuis le dernier plein.';
+        ? fc + ' L − ' + fmtHM(um) + ' de vol à ' + frNum(Math.round(c * 10) / 10) + ' L/h'
+        : 'Indique le temps de vol depuis le dernier plein (carnet de route).';
     }
     const conso = val('fuelConso'), un = val('fuelUnusable');
     const fac = window.__spatsFuelFactor();
@@ -5914,10 +5927,11 @@ if ('serviceWorker' in navigator) {
       : 'Consommation à renseigner';
     $id('fuelAcFields').hidden = !(fuelAcOpen || !conso);
     $id('fuelAcEdit').textContent = fuelAcOpen ? 'Fermer' : 'Modifier';
+    renderFuel();
     if (!fuelMode) {
       const box = $id('fuelVerdict');
       box.className = 'fuel-verdict is-neutral';
-      box.innerHTML = '<div class="fuel-verdict-title">Indique le carburant à bord</div><div class="fuel-verdict-sub">Choisis « Plein » ou « Plein entamé » pour obtenir le bilan.</div>';
+      box.innerHTML = '<div class="fuel-verdict-title">Indique le carburant à bord</div><div class="fuel-verdict-sub">Choisis « Plein » ou « Plein entamé », puis le temps de vol aller.</div>';
     } else if (fuelMode === 'used' && !(usedMin() > 0)) {
       const box = $id('fuelVerdict');
       box.className = 'fuel-verdict is-neutral';
@@ -6089,6 +6103,74 @@ if ('serviceWorker' in navigator) {
     else { v.textContent = '✓ Arrivée ' + hh + ', avant la nuit'; v.classList.add('ok'); }
   }
   new MutationObserver(() => setTimeout(refreshLight, 0)).observe($id('arrSunset'), { childList: true, characterData: true, subtree: true });
+
+
+  /* ═══ Carburant : à bord, le vol, heure de mise en route, résultat en direct ═══ */
+  let fuelMoreOpen = false;
+  const fuelMoreUsed = () => !!val('fuelStartup') || !!val('fuelAlt') || !!val('fuelExtra') || (val('fuelReserve') !== '30');
+  $id('fuelMoreLink').addEventListener('click', () => { fuelMoreOpen = true; refreshLight(); });
+  $id('fuelResEdit').addEventListener('click', () => {
+    fuelMoreOpen = true; refreshLight();
+    if (fuelMoreOpen) setTimeout(() => { try { $id('fuelReserve').focus(); $id('fuelReserve').select(); } catch (e) {} }, 50);
+  });
+  // Virgules décimales dans le détail du bilan
+  const _cf = window.computeFuel;
+  if (typeof _cf === 'function') window.computeFuel = function () {
+    const r = _cf.apply(this, arguments);
+    const brk = $id('fuelBreakdown');
+    brk.querySelectorAll('.fuel-brk-lt').forEach(el => { el.textContent = el.textContent.replace(/(\d)\.(\d)/g, '$1,$2'); });
+    const tl = $id('fuelTotalL'); tl.textContent = tl.textContent.replace(/(\d)\.(\d)/g, '$1,$2');
+    if (typeof window.__refreshLight === 'function') setTimeout(window.__refreshLight, 0);
+    return r;
+  };
+  const f1 = n => frNum((Math.round(n * 10) / 10).toFixed(1));
+  function renderFuel() {
+    // Réserve, options repliées
+    const res = +val('fuelReserve') || 0, conso = (+val('fuelConso') || 0) * window.__spatsFuelFactor();
+    $id('fuelResTxt').textContent = 'Réserve finale ' + res + ' min' + (conso > 0 ? ' · ' + f1(conso * res / 60) + ' L' : '');
+    const open = fuelMoreOpen || fuelMoreUsed();
+    $id('fuelMore').hidden = !open;
+    $id('fuelMoreLink').hidden = open;
+    $id('fuelResEdit').hidden = open;
+
+    // Ligne « à bord »
+    const cap = +val('fuelCap') || 0, un = +val('fuelUnusable') || 0;
+    const showOn = !!fuelMode && cap > 0 && (fuelMode !== 'used' || usedMin() > 0);
+    $id('fuelOnboardLine').hidden = !showOn;
+    if (showOn) {
+      const us = Math.max(0, cap - un);
+      $id('fuelOnboardLine').innerHTML = '<b>' + f1(cap) + ' L</b> à bord · <b>' + f1(us) + ' L</b> utilisables' +
+        (conso > 0 ? ' · autonomie <b>' + fmtHM(us / conso * 60) + '</b>' : '');
+    }
+
+    // Heure de mise en route
+    $id('fuelClockHint').hidden = !!val('fuelDepTime');
+
+    // Résultat en direct
+    const ok = fuelOk();
+    const box = $id('fuelLive');
+    box.hidden = !ok;
+    $id('fuelVerdict').hidden = ok;
+    if (!ok) {
+      if (fuelMode && (fuelMode !== 'used' || usedMin() > 0) && !fuelTrip()) {
+        const v = $id('fuelVerdict');
+        v.className = 'fuel-verdict is-neutral';
+        v.innerHTML = '<div class="fuel-verdict-title">Indique le temps de vol aller</div><div class="fuel-verdict-sub">Le bilan se calcule automatiquement.</div>';
+      }
+      return;
+    }
+    const f = fuelCompute();
+    $id('fuelLiveVal').textContent = f1(f.totL);
+    $id('fuelLivePill').textContent = f.ok ? 'OK' : 'Insuffisant';
+    $id('fuelLiveBar').style.width = (f.usable > 0 ? Math.min(100, f.totL / f.usable * 100) : 100).toFixed(1) + '%';
+    const rm = f.conso > 0 ? Math.abs(f.remaining) / f.conso * 60 : 0;
+    $id('fuelLiveLeft').textContent = (f.ok ? 'reste ' : 'manque ') + f1(Math.abs(f.remaining)) + ' L (' + fmtHM(rm) + ')';
+    $id('fuelLiveAvail').textContent = 'sur ' + f1(f.usable) + ' L utilisables';
+    box.classList.toggle('bad', !f.ok);
+    const hasClock = !!f.dep && f.conso > 0;
+    $id('fuelLiveClocks').hidden = !hasClock;
+    if (hasClock) $id('fuelLiveClocks').innerHTML = 'À poser avant <b>' + escH(f.maxLdg) + '</b> <span>(réserve conservée)</span> · panne sèche <b class="stop">' + escH(f.engineStop) + '</b>';
+  }
 
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
