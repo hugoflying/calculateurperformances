@@ -287,7 +287,8 @@ td.num{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
       </tbody>
     </table>
     <p><strong>BECMG</strong> : une dégradation s'applique dès le <em>début</em> de la transition, une amélioration seulement à sa <em>fin</em>.</p>
-    <div class="callout tip"><strong>Arrivée dans moins de 2 h.</strong> Si l'heure d'arrivée tombe dans la validité du METAR, l'application compare METAR et TAF et retient le plus restrictif.</div>
+    <div class="callout tip"><strong>Arrivée dans la validité du METAR.</strong> Si l'heure d'arrivée choisie tombe dans les 2 h qui suivent le METAR, l'application compare le METAR et la période TAF active, sur la piste choisie, et retient le plus restrictif pour la distance d'atterrissage (moins de vent de face ou plus de vent arrière, rafales et vent variable compris). Le METAR est chargé automatiquement avec le TAF.</div>
+    <p><strong>Lequel est utilisé ?</strong> L'étiquette du bloc « Vent et température » l'indique (« METAR 12h20Z · plus restrictif », « TAF · plus restrictif » ou « TAF · 15h – 16h »), avec une phrase d'explication juste en dessous. La fiche PDF le reprend sur la ligne <strong>Vent retenu</strong>. Si vous touchez une période du TAF alors que le METAR était plus restrictif, l'étiquette affiche « TAF · choisi à la main ».</p>
   </div>
 </section>
 
