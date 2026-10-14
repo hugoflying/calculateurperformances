@@ -395,6 +395,13 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .wxc-taf .taf-period.is-current .tp-type-col,.wxc-taf .taf-period.is-applied .tp-type-col{background:none}
 .wxc-taf .taf-period.is-excluded .tp-apply{white-space:normal;text-align:right;max-width:150px}
 
+/* Catégories de vol */
+.fcat{display:inline-block;font:700 10.5px/1 var(--body);letter-spacing:.05em;padding:4px 6px;border-radius:4px;color:#fff;font-style:normal;white-space:nowrap}
+.fc-vfr{background:#1d8a4e}.fc-mvfr{background:#1f6fd1}.fc-ifr{background:#c62828}.fc-lifr{background:#c2189b}
+.fc-wait,.fc-none{background:var(--field);color:var(--muted);border:1px solid var(--line);padding:3px 6px}
+.ad-row{grid-template-columns:52px minmax(0,1fr) auto auto}
+.ad-row .fslot{font-style:normal}
+
 /* ═══════════ Carburant ═══════════ */
 .res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .res-tg{flex:0 0 190px}
@@ -6493,8 +6500,36 @@ if ('serviceWorker' in navigator) {
       .map(r => ({ icao: r[0], name: r[1], nm: distNm(c.lat, c.lon, r[2], r[3]) }))
       .filter(x => x.nm <= 60).sort((a, b) => a.nm - b.nm).slice(0, 10);
     nb.innerHTML = '<span class="sub">Autour de ' + escH(c.icao) + '</span>' + (list.length ? list.map(x =>
-      '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(x.name) + '</span><em>' + Math.round(x.nm) + ' NM</em></button>').join('')
+      '<button type="button" class="ad-row" data-ad="' + escH(x.icao) + '"><b>' + escH(x.icao) + '</b><span>' + escH(x.name) + '</span><i class="fslot" data-fc="' + escH(x.icao) + '">' + fcCell(x.icao) + '</i><em>' + Math.round(x.nm) + ' NM</em></button>').join('')
       : '<span class="note">Aucun terrain à moins de 60 NM.</span>');
+    fillCats(nb, list.map(x => x.icao));
+  }
+  // Catégorie de vol des terrains proches : METAR récupérés à l'ouverture, gardés 15 min
+  const fcCache = {};
+  function fcCell(icao) {
+    const e = fcCache[icao];
+    if (!e || Date.now() - e.t > 15 * 60000) return '<span class="fcat fc-wait">…</span>';
+    return e.cat ? fcBadge(e.cat) : '<span class="fcat fc-none" title="Pas de METAR récent">—</span>';
+  }
+  async function fillCats(nb, icaos) {
+    const todo = icaos.filter(i => !fcCache[i] || Date.now() - fcCache[i].t > 15 * 60000);
+    const paint = i => nb.querySelectorAll('[data-fc="' + i + '"]').forEach(el => { el.innerHTML = fcCell(i); });
+    let k = 0;
+    const worker = async () => {
+      while (k < todo.length) {
+        const i = todo[k++];
+        let cat = null;
+        try {
+          const m = await fetchMetar(i);
+          const p = parseMetar(m && m.raw || '');
+          const od = obsDate(p.time);
+          if (p.icao === i && od && Date.now() - od < 2 * 3600000) cat = flightCat(p);
+        } catch (e) {}
+        fcCache[i] = { t: Date.now(), cat };
+        paint(i);
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
   }
   ['dep', 'arr'].forEach(side => {
     stepEl(side).addEventListener('click', e => {
@@ -6640,7 +6675,7 @@ if ('serviceWorker' in navigator) {
   const WX_WORDS = { DZ: 'bruine', RA: 'pluie', SN: 'neige', SG: 'neige en grains', PL: 'granules de glace', GR: 'grêle', GS: 'grésil',
     BR: 'brume', FG: 'brouillard', FU: 'fumée', HZ: 'brume sèche', SA: 'sable', DU: 'poussière', SQ: 'grains', FC: 'trombe', VA: 'cendres' };
   const WX_DESC = { TS: 'orage', SH: 'averses de', FZ: 'se congelant', MI: 'mince', BC: 'bancs de', BL: 'chasse', DR: 'chasse basse' };
-  const CLD = { FEW: 'Peu', SCT: 'Épars', BKN: 'Fragmentés', OVC: 'Couvert', VV: 'Ciel invisible' };
+  const CLD = { FEW: 'Peu', SCT: 'Épars', BKN: 'Fragmenté', OVC: 'Couvert', VV: 'Ciel invisible' };
   function wxText(tok) {
     const m = /^(\+|-|VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)?((?:DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)*)$/.exec(tok);
     if (!m || (!m[2] && !m[3])) return null;
@@ -6710,7 +6745,7 @@ if ('serviceWorker' in navigator) {
     if (p.cavok) cells.push(['Visibilité', 'CAVOK <small>≥ 10 km, pas de nuage bas</small>']);
     else if (p.vis != null) cells.push(['Visibilité', p.vis >= 9999 ? '≥ 10 km' : p.vis >= 5000 ? Math.round(p.vis / 1000) + ' km' : p.vis + ' m']);
     if (!p.cavok) {
-      if (p.clouds.length) cells.push(['Nuages', p.clouds.slice(0, 2).map(c => CLD[c.c] + (c.t ? ' ' + c.t : '') + ' <small>' + fmtFt(c.h) + '</small>').join(' · ')]);
+      if (p.clouds.length) cells.push(['Nuages', p.clouds.slice(0, 4).map(c => CLD[c.c] + ' <small>' + fmtFt(c.h) + '</small>' + (c.t ? ' ' + c.t : '')).join('<br>')]);
       else if (p.nsc) cells.push(['Nuages', 'Aucun nuage significatif']);
     }
     if (p.temp != null) cells.push(['Temp. / rosée', p.temp + ' °C' + (p.dew != null ? ' <small>/ ' + p.dew + ' °C</small>' : '')]);
@@ -6728,7 +6763,7 @@ if ('serviceWorker' in navigator) {
     if (p.cavok) cells.push(['Visibility', 'CAVOK']);
     else if (p.vis != null) cells.push(['Visibility', p.vis >= 9999 ? '> 10 km' : String(p.vis).padStart(4, '0')]);
     if (!p.cavok) {
-      if (p.clouds.length) cells.push(['Clouds', p.clouds.slice(0, 3).map(c => c.c + ' ' + (c.h != null ? fmtFt(c.h) : '///') + (c.t ? ' ' + c.t : '')).join(' · ')]);
+      if (p.clouds.length) cells.push(['Clouds', p.clouds.slice(0, 4).map(c => c.c + (c.h != null ? String(c.h / 100).padStart(3, '0') : '///') + c.t).join('<br>')]);
       else if (p.nsc) cells.push(['Clouds', 'NSC']);
     }
     if (p.temp != null) cells.push(['Temp / Dew', p.temp + ' °C' + (p.dew != null ? ' <small>/ ' + p.dew + ' °C</small>' : '')]);
@@ -6738,6 +6773,20 @@ if ('serviceWorker' in navigator) {
     return cells.map(c => '<div class="' + (c[2] ? 'wide' : '') + '"><span class="k">' + c[0] + '</span><span class="v">' + c[1] + '</span></div>').join('') +
       (p.trend && /^(TEMPO|BECMG)/.test(p.trend) ? '<div class="wide trend"><span class="k">Trend</span><span class="v"><small>' + escH(p.trend.replace(/\s*RMK.*$/, '')) + '</small></span></div>' : '');
   }
+  // Catégorie de vol (convention FAA) : plafond = plus basse couche BKN / OVC / VV ; visibilité en mètres
+  function flightCat(p) {
+    if (!p) return null;
+    const ceil = p.cavok ? Infinity : (p.clouds || []).filter(c => /BKN|OVC|VV/.test(c.c) && c.h != null).reduce((m, c) => Math.min(m, c.h), Infinity);
+    const vis = p.cavok ? 10000 : p.vis;
+    if (vis == null && !isFinite(ceil) && !p.cavok && !p.nsc && !(p.clouds || []).length) return null;
+    const c = isFinite(ceil) ? ceil : 99999;
+    const sm = vis == null ? 99 : (vis >= 9999 ? 99 : vis / 1609.34);   // visibilité en milles terrestres
+    if (c < 500 || sm < 1) return 'LIFR';
+    if (c < 1000 || sm < 3) return 'IFR';
+    if (c <= 3000 || sm <= 5) return 'MVFR';
+    return 'VFR';
+  }
+  const fcBadge = cat => cat ? '<span class="fcat fc-' + cat.toLowerCase() + '" title="Catégorie de vol (plafond et visibilité)">' + cat + '</span>' : '';
   function banner(cls, html) { return '<div class="wx-ban ' + cls + '"><span class="ic">' + (cls === 'bad' ? '⛔' : '⚠') + '</span><span class="tx">' + html + '<span class="act-slot"></span></span></div>'; }
   const wxSig = {};
   function renderWx(side) {
@@ -6808,7 +6857,7 @@ if ('serviceWorker' in navigator) {
         const od = obsDate(p.time);
         const age = od ? Math.max(0, Math.round((Date.now() - od) / 60000)) : null;
         const cls = age == null ? '' : age > 120 ? ' bad' : age > 90 ? ' warn' : '';
-        $id(side + 'WxHd').innerHTML = '<span class="kind">METAR</span><b>' + escH(p.icao || icao) + '</b>' +
+        $id(side + 'WxHd').innerHTML = '<span class="kind">METAR</span><b>' + escH(p.icao || icao) + '</b>' + (/PÉRIMÉ/.test(first) ? '' : fcBadge(flightCat(p))) +
           (p.time ? '<span class="when">' + String(p.time.h).padStart(2, '0') + 'h' + String(p.time.mi).padStart(2, '0') + 'Z</span>' : '') +
           (age != null ? '<span class="age' + cls + '">il y a ' + fmtAge(age) + '</span>' : '');
         const stale = /PÉRIMÉ/.test(first);
