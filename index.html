@@ -328,6 +328,69 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .fleet-it.on .fleet-box{background:var(--accent);border-color:var(--accent)}
 .fleet-it.on .fleet-box::after{content:"";width:5px;height:9px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
 
+/* ═══════════ Météo décodée ═══════════ */
+#depMetarMsg,#arrMetarMsg,#arrTafRaw,.taf-raw-label,.taf-header-label{display:none!important}
+.wx-bans{display:flex;flex-direction:column;gap:6px}
+.wx-bans:empty{display:none}
+.wx-ban{display:flex;gap:9px;padding:9px 12px;border-radius:9px;font:500 13.5px/1.45 var(--body)}
+.wx-ban .ic{flex-shrink:0;line-height:1.35}
+.wx-ban b{font-weight:700}
+.wx-ban.warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn)}
+.wx-ban.bad{background:var(--err-bg);border:1px solid var(--err-line);color:var(--err-text)}
+.wx-ban .act-slot:empty{display:none}
+.wx-ban .wx-alt-btn{display:block;width:auto;min-height:0;margin-top:5px;padding:0;border:0;background:none;color:var(--accent);font:700 13.5px var(--body);text-align:left}
+.wx-ban .wx-alt-btn[style*="none"]{display:none!important}
+.wx-loading{font:500 13px var(--body);color:var(--muted)}
+.wxc{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.wxc[hidden]{display:none}
+.wxc-hd{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--field);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.wxc-hd .kind{font:700 11px/1 var(--body);letter-spacing:.08em;color:#fff;background:var(--accent);border-radius:4px;padding:4px 6px}
+.wxc-hd .kind.taf{background:#5b4bb7}
+.wxc-hd b{font:700 15px var(--body);letter-spacing:.03em}
+.wxc-hd .when{font:500 13px var(--body);color:var(--muted)}
+.wxc-hd .age{margin-left:auto;font:600 12px var(--body);padding:3px 8px;border-radius:10px;background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-line);white-space:nowrap}
+.wxc-hd .age.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.wxc-hd .age.bad{background:var(--err-bg);color:var(--err-text);border-color:var(--err-line)}
+.wxc-dec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line)}
+.wxc-dec:empty{display:none}
+.wxc-dec > div{background:var(--card);padding:6px 12px;display:flex;flex-direction:column;min-width:0}
+.wxc-dec > div.wide{grid-column:span 2;flex-direction:row;align-items:baseline;gap:10px}
+.wxc-dec .k{font:600 10.5px var(--display);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.wxc-dec .v{font:600 15px/1.3 var(--body)}
+.wxc-dec .v small{font:500 12.5px var(--body);color:var(--muted)}
+.wxc-dec .trend .v small{font:500 12px var(--mono)}
+.wxc-taf{padding:10px 12px;border-bottom:1px solid var(--line)}
+.wxc-taf[hidden]{display:none}
+.wxc-raw:empty{display:none}
+.wxc-det{border-top:1px solid var(--line)}
+.wxc-dec:empty + .wxc-taf[hidden] + .wxc-raw .wxc-det:first-child{border-top:0}
+.wxc-det summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;padding:8px 12px;font:600 13px var(--body);color:var(--accent)}
+.wxc-det summary::-webkit-details-marker{display:none}
+.wxc-det summary::after{content:"▾"}
+.wxc-det[open] summary::after{content:"▴"}
+.wxc-rawtxt{padding:8px 12px 10px;font:500 11.5px/1.55 var(--mono);color:var(--muted);background:var(--field);border-top:1px solid var(--line);white-space:pre-wrap;word-break:break-word}
+.wxc-hd + .wxc-dec:empty + .wxc-taf[hidden] + .wxc-raw > .wxc-rawtxt{border-top:0}
+/* TAF dans la carte */
+.wxc-taf .taf-wrap{gap:8px}
+.wxc-taf .taf-header{display:block;padding:10px 12px;border:1.5px solid var(--accent-line);background:var(--accent-soft);border-radius:10px}
+.wxc-taf .taf-eta-row{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.wxc-taf .taf-eta-label{font:700 11.5px var(--display);letter-spacing:.09em;text-transform:uppercase;color:var(--accent-text)}
+.wxc-taf .taf-eta-select{max-width:none;width:100%;height:44px;font:700 15px var(--body);background-color:var(--card);border-color:var(--accent-line)}
+.taf-hint{font:600 12px var(--body);color:var(--muted);margin-top:4px}
+.taf-periods:not(.has-eta) .taf-period{display:none}
+.taf-periods.has-eta:not(.show-all) .taf-period.is-inactive{display:none}
+.taf-all{align-self:flex-start}
+.wxc-taf:empty{display:none}
+.wxc-taf .taf-period{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;min-height:0}
+.wxc-taf .tp-type-col{grid-column:1;grid-row:1;width:auto;flex-direction:row;justify-content:flex-start;align-items:baseline;gap:6px;padding:7px 10px 0;border:0;background:none}
+.wxc-taf .tp-type{font:700 11px var(--body);letter-spacing:.06em;padding:2px 6px;border-radius:4px;background:var(--field);border:1px solid var(--line)}
+.wxc-taf .tp-time{font:500 12px var(--body)}
+.wxc-taf .tp-time + .tp-time::before{content:"→ "}
+.wxc-taf .tp-apply{grid-column:2;grid-row:1;padding:7px 10px 0;max-width:none;font:700 11.5px var(--body);white-space:nowrap}
+.wxc-taf .tp-main{grid-column:1/3;padding:3px 10px 8px}
+.wxc-taf .taf-period.is-current .tp-type-col,.wxc-taf .taf-period.is-applied .tp-type-col{background:none}
+.wxc-taf .taf-period.is-excluded .tp-apply{white-space:normal;text-align:right;max-width:150px}
+
 /* ═══════════ Carburant ═══════════ */
 .res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .res-tg{flex:0 0 190px}
@@ -777,6 +840,14 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
           <button type="button" class="btn-link sm ad-base" id="depSetBase" hidden></button>
           <span id="depAirportName" class="airport-name"></span>
           <div id="depMetarMsg" class="metar-box"></div>
+          <div id="depWxBan" class="wx-bans"></div>
+          <div id="depWxCard" class="wxc" hidden>
+            <div class="wxc-hd" id="depWxHd"></div>
+            <div class="wxc-dec" id="depWxDec"></div>
+            <div class="wxc-taf" id="depWxTafSlot"></div>
+            <div class="wxc-raw" id="depWxRaw"></div>
+          </div>
+          <div hidden id="depWxPark"></div>
           <button id="depMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('dep')">Utiliser le METAR valide le plus proche →</button>
           <div hidden aria-hidden="true"><span id="depSunset">—:—</span><span id="depAeroNight">—:—</span><span id="depSunNote"></span></div>
         </div>
@@ -875,6 +946,14 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
           <button type="button" class="btn-link sm ad-base" id="arrSetBase" hidden></button>
           <span id="arrAirportName" class="airport-name"></span>
           <div id="arrMetarMsg" class="metar-box"></div>
+          <div id="arrWxBan" class="wx-bans"></div>
+          <div id="arrWxCard" class="wxc" hidden>
+            <div class="wxc-hd" id="arrWxHd"></div>
+            <div class="wxc-dec" id="arrWxDec"></div>
+            <div class="wxc-taf" id="arrWxTafSlot"></div>
+            <div class="wxc-raw" id="arrWxRaw"></div>
+          </div>
+          <div hidden id="arrWxPark"></div>
           <button id="arrMetarAlt" class="wx-alt-btn" type="button" onclick="useNearestValidMetar('arr')">Utiliser le METAR valide le plus proche →</button>
           <button id="arrTafAlt" class="wx-alt-btn" type="button" onclick="useNearestValidTaf()">Utiliser le TAF valide le plus proche →</button>
           <div id="arrTafWrap" class="taf-wrap">
@@ -1186,6 +1265,8 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <span class="note" id="setBaseName">Prérempli au départ, en tête des terrains proposés.</span></div>
       <div class="f"><span class="lbl">Réserve finale par défaut</span>
         <div class="toggle-group"><button id="setRes30" class="toggle-btn" type="button" data-res="30">30 min</button><button id="setRes45" class="toggle-btn" type="button" data-res="45">45 min</button></div></div>
+      <div class="f"><span class="lbl">Affichage de la météo</span>
+        <div class="toggle-group"><button id="setWxFr" class="toggle-btn" type="button">Français<small>Épars, averses…</small></button><button id="setWxIcao" class="toggle-btn" type="button">Codes OACI<small>SCT, SHRA…</small></button></div></div>
       <span class="note">Ces réglages restent sur cet appareil.</span>
     </div>
     <div class="hist-foot"><button class="btn pri set-save" type="button" id="setSave">Enregistrer</button></div>
@@ -6155,9 +6236,9 @@ if ('serviceWorker' in navigator) {
       finally { try { after.apply(this, arguments); } catch (e) { console.warn(e); } }
     };
   };
-  wrapAsync('loadMetarFor', side => { srcFromMetar(side); if (wxSrc[side]) rememberAd(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
+  wrapAsync('loadMetarFor', side => { wxSig[side] = null; renderWx(side); srcFromMetar(side); if (wxSrc[side]) rememberAd(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
   wrapAsync('useNearestValidMetar', side => { srcFromMetar(side); preview(side); });
-  wrapAsync('loadTafFor', () => { srcFromTaf(); if (!WX_FAIL.test($id('arrMetarMsg').textContent || '')) rememberAd('arr'); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
+  wrapAsync('loadTafFor', () => { wxSig.arr = null; renderWx('arr'); srcFromTaf(); if (!WX_FAIL.test($id('arrMetarMsg').textContent || '')) rememberAd('arr'); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
   wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
   $id('arrEta').addEventListener('change', () => { setTimeout(srcFromTaf, 0); setTimeout(() => { srcFromTaf(); preview('arr'); }, 120); });
@@ -6420,7 +6501,7 @@ if ('serviceWorker' in navigator) {
 
   /* ═══ Paramètres (roue crantée) : pilote, avion par défaut, terrain de base, réserve ═══ */
   const SET_KEY = 'acbt-settings';
-  let settings = { aircraft: '', reserve: 45, fleet: null };
+  let settings = { aircraft: '', reserve: 45, fleet: null, wx: 'fr' };
   try { const o = JSON.parse(localStorage.getItem(SET_KEY) || 'null'); if (o && typeof o === 'object') settings = Object.assign(settings, o); } catch (e) {}
 
   // Avions affichés dans la liste (tous par défaut). L'avion en cours reste toujours visible.
@@ -6457,6 +6538,10 @@ if ('serviceWorker' in navigator) {
     paintFleet();
   });
   const saveSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch (e) {} };
+  window.__wxIcao = () => settings.wx === 'icao';
+  let setWx = 'fr';
+  const paintSetWx = () => { $id('setWxFr').classList.toggle('is-selected', setWx !== 'icao'); $id('setWxIcao').classList.toggle('is-selected', setWx === 'icao'); };
+  ['setWxFr', 'setWxIcao'].forEach(id => $id(id).addEventListener('click', () => { setWx = id === 'setWxIcao' ? 'icao' : 'fr'; paintSetWx(); }));
   window.__defaultReserve = () => String(settings.reserve === 30 ? 30 : 45);
   let setRes = 45;
   const paintSetRes = () => { $id('setRes30').classList.toggle('is-selected', setRes === 30); $id('setRes45').classList.toggle('is-selected', setRes === 45); };
@@ -6476,6 +6561,7 @@ if ('serviceWorker' in navigator) {
     $id('setBase').value = ad.base ? ad.base.icao : '';
     paintBaseName();
     setRes = settings.reserve === 30 ? 30 : 45; paintSetRes();
+    setWx = settings.wx === 'icao' ? 'icao' : 'fr'; paintSetWx();
     $id('settingsModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
@@ -6509,7 +6595,9 @@ if ('serviceWorker' in navigator) {
       if (r) { ad.base.lat = r[2]; ad.base.lon = r[3]; }
     }
     if (base !== oldBase && (!val('depIcao') || val('depIcao').toUpperCase() === oldBase)) $id('depIcao').value = base;
+    settings.wx = setWx;
     saveSettings(); saveAd(); renderAd(); closeSettings(); updateUI();
+    ['dep', 'arr'].forEach(sd => { wxSig[sd] = null; renderWx(sd); });
   });
   // Au démarrage : avion par défaut et réserve du club
   if (settings.aircraft && !val('aircraftSel') && [...$id('aircraftSel').options].some(o => o.value === settings.aircraft)) {
@@ -6517,6 +6605,218 @@ if ('serviceWorker' in navigator) {
     $id('aircraftSel').dispatchEvent(new Event('change', { bubbles: true }));
   }
   $id('fuelReserve').value = window.__defaultReserve();
+
+
+  /* ═══ Météo décodée : carte METAR / TAF, alertes à part, textes bruts repliables ═══ */
+  const WX_WORDS = { DZ: 'bruine', RA: 'pluie', SN: 'neige', SG: 'neige en grains', PL: 'granules de glace', GR: 'grêle', GS: 'grésil',
+    BR: 'brume', FG: 'brouillard', FU: 'fumée', HZ: 'brume sèche', SA: 'sable', DU: 'poussière', SQ: 'grains', FC: 'trombe', VA: 'cendres' };
+  const WX_DESC = { TS: 'orage', SH: 'averses de', FZ: 'se congelant', MI: 'mince', BC: 'bancs de', BL: 'chasse', DR: 'chasse basse' };
+  const CLD = { FEW: 'Peu', SCT: 'Épars', BKN: 'Fragmentés', OVC: 'Couvert', VV: 'Ciel invisible' };
+  function wxText(tok) {
+    const m = /^(\+|-|VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)?((?:DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PY|PO|SQ|FC|SS|DS)*)$/.exec(tok);
+    if (!m || (!m[2] && !m[3])) return null;
+    const ph = (m[3].match(/../g) || []).map(c => WX_WORDS[c] || c).join(' et ');
+    let t = m[2] === 'TS' ? 'orage' + (ph ? ' avec ' + ph : '') : m[2] === 'SH' ? 'averses' + (ph ? ' de ' + ph : '') : ((m[2] ? WX_DESC[m[2]] + ' ' : '') + ph);
+    if (m[1] === '-') t += ' faible'; else if (m[1] === '+') t += ' forte'; else if (m[1] === 'VC') t += ' au voisinage';
+    return t.trim();
+  }
+  function parseMetar(raw) {
+    const out = { raw: raw || '' };
+    const toks = (raw || '').trim().split(/\s+/);
+    const clouds = [], wx = [];
+    for (let i = 0; i < toks.length; i++) {
+      const t = toks[i].toUpperCase();
+      if (/^(TEMPO|BECMG|NOSIG|RMK)$/.test(t)) { out.trend = toks.slice(i).join(' '); break; }
+      if (/^(METAR|SPECI|AUTO|COR)$/.test(t)) continue;
+      let m;
+      if (!out.icao && /^[A-Z][A-Z0-9]{3}$/.test(t)) { out.icao = t; continue; }
+      if (!out.time && (m = /^(\d{2})(\d{2})(\d{2})Z$/.exec(t))) { out.time = { d: +m[1], h: +m[2], mi: +m[3] }; continue; }
+      if (!out.wind && (m = /^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/.exec(t))) {
+        const k = m[4] === 'MPS' ? 1.944 : 1;
+        out.wind = { dir: m[1], spd: Math.round(+m[2] * k), gust: m[3] ? Math.round(+m[3] * k) : 0 }; continue;
+      }
+      if (out.wind && !out.vrb && (m = /^(\d{3})V(\d{3})$/.exec(t))) { out.vrb = m[1] + '–' + m[2]; continue; }
+      if (t === 'CAVOK') { out.cavok = true; continue; }
+      if (out.vis == null && /^\d{4}$/.test(t)) { out.vis = +t; continue; }
+      if (/^(NSC|NCD|SKC|CLR)$/.test(t)) { out.nsc = true; continue; }
+      if ((m = /^(FEW|SCT|BKN|OVC|VV)(\d{3}|\/\/\/)(CB|TCU)?$/.exec(t))) { clouds.push({ c: m[1], h: m[2] === '///' ? null : +m[2] * 100, t: m[3] || '' }); continue; }
+      if (!out.temp && (m = /^(M?\d{2})\/(M?\d{2})?$/.exec(t))) { const n = x => x ? (x[0] === 'M' ? -+x.slice(1) : +x) : null; out.temp = n(m[1]); out.dew = n(m[2]); continue; }
+      if (!out.qnh && (m = /^Q(\d{4})$/.exec(t))) { out.qnh = +m[1]; continue; }
+      if (!out.qnh && (m = /^A(\d{4})$/.exec(t))) { out.qnh = Math.round(+m[1] / 100 * 33.8639); continue; }
+      const w = wxText(t); if (w) { wx.push(w); (out.wxRaw = out.wxRaw || []).push(t); }
+    }
+    out.clouds = clouds; out.wx = wx;
+    return out;
+  }
+  function obsDate(tm) {
+    if (!tm) return null;
+    const n = new Date();
+    let d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), tm.d, tm.h, tm.mi));
+    if (d - n > 6 * 3600000) d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() - 1, tm.d, tm.h, tm.mi));
+    return d;
+  }
+  const fmtAge = min => min < 60 ? min + ' min' : Math.floor(min / 60) + 'h' + String(min % 60).padStart(2, '0');
+  const fmtFt = h => h == null ? '' : h.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' ft';
+  const findRaw = txt => {
+    const lines = (txt || '').split('\n').map(x => x.trim()).filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i].replace(/^.*? — (?=[A-Z]{4} \d{6}Z)/, '');
+      if (/^(METAR |SPECI )?[A-Z][A-Z0-9]{3} \d{6}Z/.test(l)) return l;
+    }
+    return '';
+  };
+  const wxOpenRaw = {};
+  function rawDetails(key, label, raw) {
+    if (!raw) return '';
+    return '<details class="wxc-det" data-k="' + key + '"' + (wxOpenRaw[key] ? ' open' : '') + '><summary>' + label + '</summary><div class="wxc-rawtxt">' + escH(raw) + '</div></details>';
+  }
+  const wxIcao = () => !!(window.__wxIcao && window.__wxIcao());
+  function decHtml(p) {
+    if (wxIcao()) return decHtmlIcao(p);
+    const cells = [];
+    if (p.wind) {
+      const w = p.wind.dir === 'VRB' ? 'Variable' : p.wind.dir + '°';
+      cells.push(['Vent', (p.wind.spd === 0 ? 'Calme' : w + ' / ' + p.wind.spd + ' kt') + (p.wind.gust ? ' <small>rafales ' + p.wind.gust + '</small>' : '') + (p.vrb ? ' <small>var. ' + p.vrb + '</small>' : '')]);
+    }
+    if (p.cavok) cells.push(['Visibilité', 'CAVOK <small>≥ 10 km, pas de nuage bas</small>']);
+    else if (p.vis != null) cells.push(['Visibilité', p.vis >= 9999 ? '≥ 10 km' : p.vis >= 5000 ? Math.round(p.vis / 1000) + ' km' : p.vis + ' m']);
+    if (!p.cavok) {
+      if (p.clouds.length) cells.push(['Nuages', p.clouds.slice(0, 2).map(c => CLD[c.c] + (c.t ? ' ' + c.t : '') + ' <small>' + fmtFt(c.h) + '</small>').join(' · ')]);
+      else if (p.nsc) cells.push(['Nuages', 'Aucun nuage significatif']);
+    }
+    if (p.temp != null) cells.push(['Temp. / rosée', p.temp + ' °C' + (p.dew != null ? ' <small>/ ' + p.dew + ' °C</small>' : '')]);
+    if (p.wx.length) cells.push(['Temps présent', p.wx.join(', ')]);
+    if (p.qnh) cells.push(['QNH', p.qnh + ' hPa']);
+    if (cells.length % 2) { const last = cells.pop(); cells.push([last[0], last[1], true]); }
+    return cells.map(c => '<div class="' + (c[2] ? 'wide' : '') + '"><span class="k">' + c[0] + '</span><span class="v">' + c[1] + '</span></div>').join('') +
+      (p.trend && /^(TEMPO|BECMG)/.test(p.trend) ? '<div class="wide trend"><span class="k">Tendance</span><span class="v"><small>' + escH(p.trend.replace(/\s*RMK.*$/, '')) + '</small></span></div>' : '');
+  }
+  // Affichage en codes OACI (anglais) : FEW / SCT / BKN / OVC, -RA, SHRA, TSRA…
+  function decHtmlIcao(p) {
+    const cells = [];
+    if (p.wind) cells.push(['Wind', (p.wind.spd === 0 ? 'Calm' : (p.wind.dir === 'VRB' ? 'VRB' : p.wind.dir + '°') + ' / ' + p.wind.spd + ' kt') +
+      (p.wind.gust ? ' <small>G' + p.wind.gust + '</small>' : '') + (p.vrb ? ' <small>' + p.vrb.replace('–', 'V') + '</small>' : '')]);
+    if (p.cavok) cells.push(['Visibility', 'CAVOK']);
+    else if (p.vis != null) cells.push(['Visibility', p.vis >= 9999 ? '9999 <small>≥ 10 km</small>' : p.vis + ' m']);
+    if (!p.cavok) {
+      if (p.clouds.length) cells.push(['Clouds', p.clouds.slice(0, 3).map(c => c.c + (c.h != null ? String(c.h / 100).padStart(3, '0') : '///') + c.t + ' <small>' + fmtFt(c.h) + '</small>').join(' · ')]);
+      else if (p.nsc) cells.push(['Clouds', 'NSC']);
+    }
+    if (p.temp != null) cells.push(['Temp / Dew', p.temp + ' °C' + (p.dew != null ? ' <small>/ ' + p.dew + ' °C</small>' : '')]);
+    if (p.wxRaw && p.wxRaw.length) cells.push(['Weather', p.wxRaw.join(' ')]);
+    if (p.qnh) cells.push(['QNH', p.qnh + ' hPa']);
+    if (cells.length % 2) { const last = cells.pop(); cells.push([last[0], last[1], true]); }
+    return cells.map(c => '<div class="' + (c[2] ? 'wide' : '') + '"><span class="k">' + c[0] + '</span><span class="v">' + c[1] + '</span></div>').join('') +
+      (p.trend && /^(TEMPO|BECMG)/.test(p.trend) ? '<div class="wide trend"><span class="k">Trend</span><span class="v"><small>' + escH(p.trend.replace(/\s*RMK.*$/, '')) + '</small></span></div>' : '');
+  }
+  function banner(cls, html) { return '<div class="wx-ban ' + cls + '"><span class="ic">' + (cls === 'bad' ? '⛔' : '⚠') + '</span><span class="tx">' + html + '<span class="act-slot"></span></span></div>'; }
+  const wxSig = {};
+  function renderWx(side) {
+    const msgEl = $id(side + 'MetarMsg');
+    const msg = (msgEl.textContent || '').trim();
+    const icao = val(side + 'Icao').toUpperCase();
+    const taf = side === 'arr' && $id('arrTafWrap').classList.contains('visible');
+    const tafRaw = taf && typeof lastArrTafRaw !== 'undefined' ? lastArrTafRaw : '';
+    const sig = [msg, icao, taf, tafRaw, val('arrEta'), Math.floor(Date.now() / 60000), wxIcao()].join('|');
+    if (wxSig[side] === sig) return;
+    wxSig[side] = sig;
+    const ban = $id(side + 'WxBan'), card = $id(side + 'WxCard'), park = $id(side + 'WxPark');
+    // Remettre de côté les boutons du moteur avant de réécrire les bandeaux
+    [side + 'MetarAlt', 'arrTafAlt'].forEach(id => { const b = $id(id); if (b && b.parentNode !== park && (id !== 'arrTafAlt' || side === 'arr')) park.appendChild(b); });
+    let bans = '', altBtn = null;
+    const show = (on) => { card.hidden = !on; };
+    if (!msg) { ban.innerHTML = ''; show(false); return; }
+    if (/^(Chargement|Recherche)/.test(msg)) { ban.innerHTML = '<div class="wx-loading">' + escH(msg) + '</div>'; show(false); return; }
+
+    if (taf) {
+      // ── TAF ──
+      msg.split('\n').forEach(l => {
+        if (/TAF EXPIRÉ/.test(l)) bans += banner('bad', '<b>TAF expiré :</b> non utilisé. Saisis le vent à la main.');
+        else if (/pas encore en vigueur/.test(l)) bans += banner('warn', escH(l.replace(/^⚠\s*/, '')));
+        else if (/TAF le plus proche/.test(l)) {
+          const m = /:\s*([A-Z0-9]{4})\s*(\(~?\d+\s*NM\))?/.exec(l);
+          bans += banner('warn', '<b>Pas de TAF à ' + escH(icao) + '.</b> Celui de <b>' + escH(m ? m[1] : '?') + '</b>' + (m && adName(m[1]) ? ' (' + escH(adName(m[1])) + (m[2] ? ', ' + escH(m[2].replace(/[()~]/g, '')) : '') + ')' : (m && m[2] ? ' ' + escH(m[2]) : '')) + ' est utilisé.');
+        }
+      });
+      if (/expir/i.test(msg)) altBtn = $id('arrTafAlt');
+      const t = /\b(?:TAF\s+)?(?:AMD\s+|COR\s+)?([A-Z][A-Z0-9]{3})\s+(\d{2})(\d{2})(\d{2})Z\s+(\d{2})(\d{2})\/(\d{2})(\d{2})/.exec(tafRaw || '');
+      const st = t ? t[1] : icao;
+      let till = '';
+      if (t) { const today = new Date().getUTCDate(); till = 'valide → ' + (+t[7] === today ? '' : +t[7] === today + 1 || (+t[7] === 1 && today >= 28) ? 'demain ' : 'le ' + +t[7] + ' ') + t[8] + 'z'; }
+      $id(side + 'WxHd').innerHTML = '<span class="kind taf">TAF</span><b>' + escH(st) + '</b>' + (t ? '<span class="when">' + t[3] + 'h' + t[4] + 'Z</span>' : '') +
+        (till ? '<span class="age' + (/expir/i.test(msg) ? ' bad' : '') + '">' + till + '</span>' : '');
+      $id(side + 'WxDec').innerHTML = '';
+      const metRaw = typeof lastArrMetarRaw !== 'undefined' && lastArrMetarRaw && lastArrMetarRaw !== '—' ? lastArrMetarRaw : '';
+      $id(side + 'WxRaw').innerHTML = rawDetails('taf', 'Voir le TAF brut', tafRaw) + rawDetails('tafm', 'Voir le METAR du terrain', metRaw);
+      $id('arrWxTafSlot').hidden = false;
+      $id('arrTafPeriods').classList.toggle('has-eta', !!val('arrEta'));
+      show(true);
+    } else {
+      // ── METAR ──
+      if (side === 'arr') $id('arrWxTafSlot').hidden = true;
+      const raw = findRaw(msg);
+      const first = msg.split('\n')[0];
+      if (/^⛔ METAR PÉRIMÉ/.test(first)) {
+        const a = /il y a ([0-9hmin]+)/.exec(first);
+        bans += banner('bad', '<b>METAR ' + escH(icao) + ' périmé</b>' + (a ? ' (émis il y a ' + escH(a[1].replace(/min$/, ' min')) + ', validité 2 h)' : '') + ' : <b>non utilisé</b>. Saisis le vent et la température à la main.');
+        altBtn = $id(side + 'MetarAlt');
+      } else if (/^⚠ (Station la plus proche|METAR le plus proche)/.test(first)) {
+        const p0 = parseMetar(raw), st = p0.icao || '?';
+        let nm = '';
+        const md = /~\s*(\d+)\s*([A-Za-z]+)/.exec(first);
+        if (md) nm = md[1] + ' ' + (/^nm$/i.test(md[2]) ? 'NM' : md[2]);
+        else if (AD_IDX[icao] && AD_IDX[st]) nm = Math.round(distNm(AD_IDX[icao][2], AD_IDX[icao][3], AD_IDX[st][2], AD_IDX[st][3])) + ' NM';
+        bans += banner('warn', '<b>Pas de METAR utilisable à ' + escH(icao) + '.</b> Celui de <b>' + escH(st) + '</b>' +
+          ((adName(st) || nm) ? ' (' + [adName(st), nm].filter(Boolean).map(escH).join(', ') + ')' : '') + ' est utilisé.');
+      } else if (/^⛔/.test(first)) {
+        bans += banner('bad', escH(first.replace(/^⛔\s*/, '')));
+      } else if (/indisponible|Position du terrain inconnue|Saisir un ICAO/.test(first)) {
+        bans += banner('bad', '<b>' + escH(first) + '</b>' + (/indisponible/.test(first) ? ' Saisis le vent et la température à la main.' : ''));
+        if (/indisponible/.test(first)) altBtn = $id(side + 'MetarAlt');
+      }
+      if (raw) {
+        const p = parseMetar(raw);
+        const od = obsDate(p.time);
+        const age = od ? Math.max(0, Math.round((Date.now() - od) / 60000)) : null;
+        const cls = age == null ? '' : age > 120 ? ' bad' : age > 90 ? ' warn' : '';
+        $id(side + 'WxHd').innerHTML = '<span class="kind">METAR</span><b>' + escH(p.icao || icao) + '</b>' +
+          (p.time ? '<span class="when">' + String(p.time.h).padStart(2, '0') + 'h' + String(p.time.mi).padStart(2, '0') + 'Z</span>' : '') +
+          (age != null ? '<span class="age' + cls + '">il y a ' + fmtAge(age) + '</span>' : '');
+        const stale = /PÉRIMÉ/.test(first);
+        $id(side + 'WxDec').innerHTML = stale ? '' : decHtml(p);
+        $id(side + 'WxRaw').innerHTML = stale ? '<div class="wxc-rawtxt">' + escH(raw) + '</div>' : rawDetails(side + 'm', 'Voir le METAR brut', raw);
+        show(true);
+      } else show(false);
+    }
+    ban.innerHTML = bans;
+    if (altBtn) { const slot = ban.querySelector('.act-slot'); if (slot) slot.appendChild(altBtn); }
+  }
+  // Mémoriser l'ouverture des textes bruts
+  ['dep', 'arr'].forEach(side => $id(side + 'WxCard').addEventListener('toggle', e => {
+    const d = e.target; if (d && d.dataset && d.dataset.k) wxOpenRaw[d.dataset.k] = d.open;
+  }, true));
+  // Le bloc TAF du moteur (heure d'arrivée, périodes) prend place dans la carte
+  $id('arrWxTafSlot').appendChild($id('arrTafWrap'));
+  { const lb = document.querySelector('#arrTafWrap .taf-eta-label'); if (lb) lb.textContent = 'Heure d\'arrivée prévue'; }
+  const tafAll = document.createElement('button');
+  tafAll.type = 'button'; tafAll.className = 'btn-link sm taf-all'; tafAll.id = 'arrTafAll';
+  $id('arrTafWrap').appendChild(tafAll);
+  let tafShowAll = false;
+  const paintTafAll = () => {
+    const pe = $id('arrTafPeriods');
+    pe.classList.toggle('show-all', tafShowAll);
+    const n = pe.querySelectorAll('.taf-period').length;
+    tafAll.hidden = !n || !val('arrEta');
+    tafAll.textContent = tafShowAll ? 'Seulement les périodes actives' : 'Toutes les périodes du TAF (' + n + ')';
+    const hint = pe.parentNode.querySelector('.taf-hint') || (() => { const h = document.createElement('div'); h.className = 'taf-hint'; pe.parentNode.insertBefore(h, pe); return h; })();
+    hint.textContent = val('arrEta') ? 'Périodes actives à cette heure' : 'Choisis l\'heure d\'arrivée prévue pour voir les périodes du TAF qui s\'appliquent.';
+  };
+  tafAll.addEventListener('click', () => { tafShowAll = !tafShowAll; paintTafAll(); });
+  new MutationObserver(() => { paintTafAll(); }).observe($id('arrTafPeriods'), { childList: true });
+  ['dep', 'arr'].forEach(side => new MutationObserver(() => setTimeout(() => renderWx(side), 0))
+    .observe($id(side + 'MetarMsg'), { childList: true, characterData: true, subtree: true }));
+  $id('arrEta').addEventListener('change', () => setTimeout(() => { renderWx('arr'); paintTafAll(); }, 150));
+  setInterval(() => { renderWx('dep'); renderWx('arr'); }, 60000);   // âge du METAR
 
   /* Accès pour le module des fiches enregistrées */
   window.__flow = { getScope: () => Object.assign({}, scope), fuelOk, isComputed, openStep: s => openStepFn(s) };
