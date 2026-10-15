@@ -418,6 +418,10 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 /* ═══════════ Carburant ═══════════ */
 .res-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .res-tg{flex:0 0 190px}
+.res-why{color:var(--warn);font-weight:600}
+.night-row{margin-top:2px}
+.night-row .fuel-switch-lbl small{display:block;font:500 12px var(--body);color:var(--warn)}
+.night-row .fuel-switch-lbl small:empty{display:none}
 .fuel-time{display:flex;align-items:center;gap:6px}
 .fuel-time .inp{text-align:center}
 .fuel-suffix{font:600 12px var(--body);color:var(--muted)}
@@ -1155,6 +1159,11 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
             </div>
           </div>
           <span class="note" id="fuelResTxt"></span>
+          <span class="note res-why" id="fuelResWhy" hidden></span>
+          <div class="fuel-switch-row night-row">
+            <label class="fuel-switch-lbl" for="fuelNight">Vol VFR de nuit<small id="fuelNightSub"></small></label>
+            <span class="fuel-switch"><input id="fuelNight" type="checkbox"/><span class="fuel-switch-track"></span></span>
+          </div>
           <button type="button" id="fuelResEdit" hidden></button>
           <button type="button" class="btn-link wx-more" id="fuelMoreLink">+ Mise en route, dégagement, extra fuel</button>
           <div class="g3" id="fuelMore" hidden>
@@ -6435,7 +6444,42 @@ if ('serviceWorker' in navigator) {
     return r;
   };
   const f1 = n => frNum((Math.round(n * 10) / 10).toFixed(1));
+  // Réserve imposée : 45 min pour les avions de l'ACBT, et en VFR de nuit (réglementaire) ; sinon 30 ou 45 au choix
+  let resForced = null, nightManual = false;
+  $id('fuelNight').addEventListener('change', () => { nightManual = $id('fuelNight').checked; computeFuel(); refreshLight(); });
+  function nightDetected() {
+    // Heure de mise en route, arrivée estimée, comparées à la nuit aéronautique (départ et arrivée)
+    const dep = toMin(val('fuelDepTime'));
+    if (dep == null) return false;
+    const out = (+val('fuelCruiseH') || 0) * 60 + (+val('fuelCruiseM') || 0);
+    const back = $id('fuelRoundtrip') && $id('fuelRoundtrip').checked ? (+val('fuelBackH') || 0) * 60 + (+val('fuelBackM') || 0) : 0;
+    const end = dep + (+val('fuelStartup') || 0) + out + back;
+    const nights = ['depAeroNight', 'arrAeroNight'].map(id => toMin(($id(id) || {}).textContent)).filter(n => n != null);
+    if (!nights.length) return false;
+    const n = Math.min(...nights);
+    return dep >= n || end >= n;
+  }
+  function applyReserveRule() {
+    const ac = val('aircraftSel');
+    const acbt = !!ac && clubOf(ac).k === 'acbt';
+    const autoNight = nightDetected();
+    const night = autoNight || nightManual;
+    $id('fuelNight').checked = night;
+    $id('fuelNight').disabled = autoNight;
+    $id('fuelNightSub').textContent = autoNight ? 'détecté : vol après la nuit aéronautique' : '';
+    const why = acbt ? 'acbt' : night ? 'night' : null;
+    if (why) {
+      if (val('fuelReserve') !== '45') { $id('fuelReserve').value = '45'; computeFuel(); }
+    } else if (resForced) {
+      $id('fuelReserve').value = window.__defaultReserve ? window.__defaultReserve() : '45'; computeFuel();
+    }
+    resForced = why;
+    $id('fuelRes30').disabled = !!why;
+    $id('fuelResWhy').hidden = !why;
+    $id('fuelResWhy').textContent = why === 'acbt' ? '45 min imposées par l\'ACBT pour ses avions.' : why === 'night' ? 'VFR de nuit : 45 min réglementaires.' : '';
+  }
   function renderFuel() {
+    try { applyReserveRule(); } catch (e) { /* règles chargées plus loin au démarrage */ }
     // Réserve, options repliées
     const res = +val('fuelReserve') || 0, conso = (+val('fuelConso') || 0) * window.__spatsFuelFactor();
     $id('fuelRes30').classList.toggle('is-selected', res === 30);
@@ -6670,7 +6714,7 @@ if ('serviceWorker' in navigator) {
   const AC_ALL = [...acSel.options].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent }));
   const AC_PH = (acSel.options[0] && !acSel.options[0].value) ? acSel.options[0].textContent : 'Choisir un avion';
   // Avions désactivés pour tout le club (indisponibles) : retirer un code de cette liste pour les réactiver
-  const AC_OFF = ['F-HATX'];
+  const AC_OFF = [];
   // Club propriétaire de chaque avion (regroupement de la liste, fiche PDF)
   const CLUBS = [
     { k: 'acbt', n: 'Aéroclub de Beauvais-Tillé', s: 'LFOB' },
@@ -6694,7 +6738,7 @@ if ('serviceWorker' in navigator) {
   window.__applyFleet = applyFleet;
   // Avertissement : avions dont les performances sont approximatives (lues sur abaque)
   const paintApprox = () => {
-    const ap = AC_ALL.filter(a => !AC_OFF.includes(a.v) && typeof aircraftData !== 'undefined' && aircraftData[a.v] && aircraftData[a.v].approx).map(a => a.v);
+    const ap = AC_ALL.filter(a => !AC_OFF.includes(a.v) && a.v !== 'F-HATX' && typeof aircraftData !== 'undefined' && aircraftData[a.v] && aircraftData[a.v].approx).map(a => a.v);
     const el = $id('discApprox');
     if (el) el.textContent = ap.length ? ' Performances approximatives pour ' + ap.join(', ') + ' : vérifie au manuel.' : '';
   };
@@ -7586,7 +7630,8 @@ if ('serviceWorker' in navigator) {
       usedSince: (window.__fuelMode && window.__fuelMode() === 'used') ? fmtHM(window.__fuelUsedMin()) : '',
       spatsPenalty: (window.__spatsFuelFactor && window.__spatsFuelFactor() > 1),
       totalL: frN(f.totL.toFixed(1)), remainingL: frN(Math.abs(f.remaining).toFixed(1)), totalTime: fmtHM(f.totMin),
-      phases: f.phases.map(p => ({ ph: p.ph, time: fmtHM(p.min), L: frN(p.L.toFixed(1)) })),
+      night: !!($id('fuelNight') && $id('fuelNight').checked),
+      phases: f.phases.map(p => ({ ph: p.ph === 'Réserve finale' && $id('fuelNight') && $id('fuelNight').checked ? 'Réserve finale (VFR de nuit)' : p.ph, time: fmtHM(p.min), L: frN(p.L.toFixed(1)) })),
       depTime: f.dep || '', maxLdg: f.dep ? f.maxLdg : '', engineStop: f.dep ? f.engineStop : ''
     };
   }
