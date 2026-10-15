@@ -319,6 +319,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 /* Paramètres */
 .set-sheet{padding:0;display:flex;flex-direction:column;max-height:92dvh}
 .set-body{padding:16px 20px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+.warn-txt{color:var(--warn)!important;font-weight:600}
 .set-save{width:100%;height:48px;font:600 16px var(--body);letter-spacing:0;text-transform:none}
 
 .fleet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
@@ -831,7 +832,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
           </div>
           <span class="note" id="spatsNote" hidden>Sans carénages : +3 % sur la consommation (note Robin DR300 / DR400).</span>
         </div>
-        <div class="note ac-note">Marge de sécurité du club : <strong>30 %</strong>, appliquée à toutes les distances.</div>
+        <div class="note ac-note" id="marginNote">Marge de sécurité du club : <strong>30 %</strong>, appliquée à toutes les distances.</div>
         <div id="acValidMsg" class="valid-msg is-hidden"></div>
         <button id="btnAcOk" class="btn pri big wide-hide" type="button">Valider l'avion</button>
       </div>
@@ -925,7 +926,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <div class="live" id="depLive" hidden>
           <div class="live-top"><span class="live-big"><b id="depLiveVal">—</b> m requis</span><span class="live-pill" id="depLivePill">—</span></div>
           <div class="live-bar"><i id="depLiveBar"></i></div>
-          <div class="live-cap"><span>marge club 30 % incluse</span><span id="depLiveAvail">—</span></div>
+          <div class="live-cap"><span class="live-margin">marge 30 % incluse</span><span id="depLiveAvail">—</span></div>
         </div>
 
         <div id="depValidMsg" class="valid-msg is-hidden"></div>
@@ -1050,7 +1051,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
         <div class="live" id="arrLive" hidden>
           <div class="live-top"><span class="live-big"><b id="arrLiveVal">—</b> m requis</span><span class="live-pill" id="arrLivePill">—</span></div>
           <div class="live-bar"><i id="arrLiveBar"></i></div>
-          <div class="live-cap"><span>marge club 30 % incluse</span><span id="arrLiveAvail">—</span></div>
+          <div class="live-cap"><span class="live-margin">marge 30 % incluse</span><span id="arrLiveAvail">—</span></div>
         </div>
         <div class="sun-band" id="arrSunBand" hidden>
           <span class="sun-times"><span class="sun-lbl">Coucher</span> <b id="arrSunset">—:—</b> · <span class="sun-lbl">Nuit aéro</span> <b id="arrAeroNight">—:—</b></span>
@@ -1282,6 +1283,9 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
       <div class="f"><span class="lbl">Terrain de base</span>
         <input id="setBase" class="inp icao" type="text" maxlength="4" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="OACI, ex. LFOB" aria-label="Terrain de base"/>
         <span class="note" id="setBaseName">Prérempli au départ, en tête des terrains proposés.</span></div>
+      <div class="f"><span class="lbl">Marge de sécurité sur les distances</span>
+        <span class="unit-in" style="max-width:140px"><input id="setMargin" class="inp" type="number" min="0" max="100" step="5" inputmode="numeric"/><span class="u">%</span></span>
+        <span class="note" id="setMarginNote">Marge du club : 30 %. Appliquée aux distances de décollage et d'atterrissage.</span></div>
       <div class="f"><span class="lbl">Réserve finale par défaut</span>
         <div class="toggle-group"><button id="setRes30" class="toggle-btn" type="button" data-res="30">30 min</button><button id="setRes45" class="toggle-btn" type="button" data-res="45">45 min</button></div></div>
       <div class="f"><span class="lbl">Affichage de la météo</span>
@@ -5754,7 +5758,7 @@ if ('serviceWorker' in navigator) {
     if (window.__applyFleet) window.__applyFleet(true);   // une fiche peut porter sur un avion masqué
     _origRestore(idx);
     if (window.__applyFleet) window.__applyFleet();
-    $id('safety').value = '30';   // marge imposée par le club
+    $id('safety').value = window.__margin ? window.__margin() : '30';   // marge réglée dans les paramètres
     if (val('fuelCap')) { const fc = fullCap(); fuelMode = (fc && +val('fuelCap') === +fc) ? 'full' : 'liters'; }
     fuelTouched = !!scope.fuel;
     if (scope.fuel) computeFuel();
@@ -6083,6 +6087,7 @@ if ('serviceWorker' in navigator) {
     $id('arrShortSub').textContent = nb ? 'mouillée ×1,60' : 'sans freins';
     ['dep', 'arr'].forEach(sd => { const an = $id(sd + 'AirportName'); if (an) an.hidden = /^[—-]?$/.test((an.textContent || '').trim()); });
     renderSun();
+    if (typeof paintMargin === 'function') paintMargin();
 
     // carburant à bord
     const fu = $id('fuelUsable'); if (fu && fu.textContent.indexOf('.') >= 0) fu.textContent = frNum(+(+fu.textContent).toFixed(1));
@@ -6595,7 +6600,7 @@ if ('serviceWorker' in navigator) {
 
   /* ═══ Paramètres (roue crantée) : pilote, avion par défaut, terrain de base, réserve ═══ */
   const SET_KEY = 'acbt-settings';
-  let settings = { aircraft: '', reserve: 45, fleet: null, wx: 'fr' };
+  let settings = { aircraft: '', reserve: 45, fleet: null, wx: 'fr', margin: 30 };
   try { const o = JSON.parse(localStorage.getItem(SET_KEY) || 'null'); if (o && typeof o === 'object') settings = Object.assign(settings, o); } catch (e) {}
 
   // Avions affichés dans la liste (tous par défaut). L'avion en cours reste toujours visible.
@@ -6603,7 +6608,7 @@ if ('serviceWorker' in navigator) {
   const AC_ALL = [...acSel.options].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent }));
   const AC_PH = (acSel.options[0] && !acSel.options[0].value) ? acSel.options[0].textContent : 'Choisir un avion';
   // Avions désactivés pour tout le club (indisponibles) : retirer un code de cette liste pour les réactiver
-  const AC_OFF = ['F-GYLC', 'F-HATX'];
+  const AC_OFF = [];
   const shown = v => !AC_OFF.includes(v) && (!Array.isArray(settings.fleet) || settings.fleet.includes(v));
   function applyFleet(all) {
     const cur = acSel.value;
@@ -6636,6 +6641,25 @@ if ('serviceWorker' in navigator) {
   });
   const saveSettings = () => { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch (e) {} };
   window.__wxIcao = () => settings.wx === 'icao';
+  // Marge de sécurité (30 % au club)
+  const CLUB_MARGIN = 30;
+  const marginVal = () => { const m = +settings.margin; return isFinite(m) && m >= 0 && m <= 100 ? m : CLUB_MARGIN; };
+  window.__margin = () => String(marginVal());
+  function paintMargin() {
+    const m = +val('safety') || 0;
+    $id('marginNote').innerHTML = m === CLUB_MARGIN
+      ? 'Marge de sécurité du club : <strong>' + m + ' %</strong>, appliquée à toutes les distances.'
+      : 'Marge de sécurité : <strong>' + m + ' %</strong> (réglée dans les paramètres ; club : ' + CLUB_MARGIN + ' %), appliquée à toutes les distances.';
+    document.querySelectorAll('.live-margin').forEach(el => { el.textContent = 'marge ' + m + ' % incluse'; });
+  }
+  const paintSetMargin = () => {
+    const m = +val('setMargin');
+    $id('setMarginNote').textContent = val('setMargin') === '' || !isFinite(m) ? 'Indique une marge en %.'
+      : m < CLUB_MARGIN ? '⚠ Inférieure à la marge du club (' + CLUB_MARGIN + ' %).'
+      : 'Marge du club : ' + CLUB_MARGIN + ' %. Appliquée aux distances de décollage et d\'atterrissage.';
+    $id('setMarginNote').classList.toggle('warn-txt', m < CLUB_MARGIN);
+  };
+  $id('setMargin').addEventListener('input', paintSetMargin);
   let setWx = 'fr';
   const paintSetWx = () => { $id('setWxFr').classList.toggle('is-selected', setWx !== 'icao'); $id('setWxIcao').classList.toggle('is-selected', setWx === 'icao'); };
   ['setWxFr', 'setWxIcao'].forEach(id => $id(id).addEventListener('click', () => { setWx = id === 'setWxIcao' ? 'icao' : 'fr'; paintSetWx(); }));
@@ -6660,6 +6684,7 @@ if ('serviceWorker' in navigator) {
     paintBaseName();
     setRes = settings.reserve === 30 ? 30 : 45; paintSetRes();
     setWx = settings.wx === 'icao' ? 'icao' : 'fr'; paintSetWx();
+    $id('setMargin').value = marginVal(); paintSetMargin();
     $id('settingsModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
@@ -6671,6 +6696,8 @@ if ('serviceWorker' in navigator) {
   $id('setSave').addEventListener('click', () => {
     const base = val('setBase').toUpperCase();
     if (base && !isIcao(base)) { $id('setBaseName').textContent = '⚠ Code OACI à 4 caractères.'; return; }
+    const mg = val('setMargin') === '' ? NaN : +val('setMargin');
+    if (!isFinite(mg) || mg < 0 || mg > 100) { $id('setMarginNote').textContent = '⚠ Marge entre 0 et 100 %.'; $id('setMarginNote').classList.add('warn-txt'); return; }
     // Pilote
     const pil = val('setPilot');
     if (pil !== val('pilotName')) { $id('pilotName').value = pil; $id('pilotName').dispatchEvent(new Event('input', { bubbles: true })); }
@@ -6694,6 +6721,12 @@ if ('serviceWorker' in navigator) {
     }
     if (base !== oldBase && (!val('depIcao') || val('depIcao').toUpperCase() === oldBase)) $id('depIcao').value = base;
     settings.wx = setWx;
+    const mgChanged = String(mg) !== val('safety');
+    settings.margin = mg;
+    if (mgChanged) {
+      $id('safety').value = String(mg);
+      ['dep', 'arr'].forEach(sd => { if (isComputed(sd) || validated[sd]) { if (validated[sd]) scheduleRecalc(sd); else { resetComputedState(sd); preview(sd); } } });
+    }
     saveSettings(); saveAd(); renderAd(); closeSettings(); updateUI();
     ['dep', 'arr'].forEach(sd => { wxSig[sd] = null; renderWx(sd); });
   });
@@ -6703,6 +6736,7 @@ if ('serviceWorker' in navigator) {
     $id('aircraftSel').dispatchEvent(new Event('change', { bubbles: true }));
   }
   $id('fuelReserve').value = window.__defaultReserve();
+  $id('safety').value = window.__margin();
 
 
   /* ═══ Météo décodée : carte METAR / TAF, alertes à part, textes bruts repliables ═══ */
