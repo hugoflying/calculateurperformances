@@ -323,6 +323,10 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .set-save{width:100%;height:48px;font:600 16px var(--body);letter-spacing:0;text-transform:none}
 
 .fleet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.fleet-club{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:6px;font:700 12.5px var(--body);color:var(--ink)}
+.fleet-club:first-child{margin-top:0}
+.fleet-club small{font-weight:500;color:var(--muted)}
+.fleet-club .btn-link{white-space:nowrap}
 .fleet-it{display:grid;grid-template-columns:20px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;
   padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--muted)}
 .fleet-it b{font:700 14px var(--body);letter-spacing:.03em;color:var(--muted)}
@@ -613,7 +617,22 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .readme-section p,.readme-section li{font:400 14px/1.6 var(--body);color:var(--muted);margin:0 0 5px}
 .readme-section strong{color:var(--ink);font-weight:600}
 .readme-section ul,.readme-section ol{padding-left:18px;margin:0 0 6px}
-.app-footer{text-align:center;padding:14px 16px 20px;font:500 12px var(--body);color:var(--muted)}
+.app-footer{text-align:center;padding:14px 16px 20px;font:500 12px/1.5 var(--body);color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.app-footer p{margin:0}
+.app-footer .btn-link{font-size:12px;padding:0}
+/* Avertissement */
+.disc-sheet{display:flex;flex-direction:column;gap:16px}
+.disc-band{border-left:4px solid var(--warn-line);padding:2px 0 2px 12px}
+.disc-band .lbl{display:block;margin-bottom:6px}
+.disc-band h2{font-size:22px}
+.disc-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.disc-list li{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;font:500 14.5px/1.5 var(--body);color:var(--ink)}
+.disc-list i{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-text)}
+.disc-list li:last-child i{background:var(--warn-bg);color:var(--warn)}
+.disc-list i svg{width:19px;height:19px}
+.disc-list b{font-weight:700}
+.disc-approx{display:block;margin-top:3px;color:var(--warn);font-weight:600;font-size:13.5px}
+.disc-approx:empty{display:none}
 
 /* ═══════════ Départ / Arrivée : 4 blocs identiques ═══════════ */
 .step-body > .blk + .blk{padding-top:14px;border-top:1px solid var(--line)}
@@ -757,13 +776,16 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 </head>
 <body>
 
-<!-- AVERTISSEMENT -->
-<div id="modalDisclaimer" class="overlay disc-overlay is-active" role="dialog" aria-modal="true" aria-labelledby="discTitle">
-  <div class="sheet">
-    <div class="lbl">Aéroclub de Beauvais-Tillé · LFOB</div>
-    <h2 id="discTitle">Avertissement</h2>
-    <div class="warnbox"><strong>Document opérationnel.</strong> Cet outil est une aide à la préparation du vol, basée sur les manuels officiels (AFM). Il ne remplace en aucun cas le manuel de vol.<br><br>Le commandant de bord est <strong>seul responsable</strong> de ses décisions opérationnelles.</div>
-    <button id="btnCloseDisclaimer" class="btn pri big" type="button">Accéder au calculateur</button>
+<!-- AVERTISSEMENT (à la première ouverture, puis tous les 30 jours ou si le texte change) -->
+<div id="modalDisclaimer" class="overlay disc-overlay" role="dialog" aria-modal="true" aria-labelledby="discTitle">
+  <div class="sheet disc-sheet">
+    <div class="disc-band"><span class="lbl">Aéroclub de Beauvais-Tillé · LFOB</span><h2 id="discTitle">Avant de commencer</h2></div>
+    <ul class="disc-list">
+      <li><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M19 17v4H6.5"/></svg></i><span><b>Aide à la préparation du vol</b>, basée sur les manuels de vol des avions. Elle ne les remplace pas.</span></li>
+      <li><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg></i><span><b>Marge de sécurité de 30 % incluse par défaut.</b> Modifiable dans les paramètres.<span class="disc-approx" id="discApprox"></span></span></li>
+      <li><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M12 8v5"/><path d="M12 16.5v.01"/></svg></i><span><b>Météo et pistes à confirmer</b> aux sources officielles. Le commandant de bord reste <b>seul responsable</b> de ses décisions.</span></li>
+    </ul>
+    <button id="btnCloseDisclaimer" class="btn pri big" type="button">J'ai compris</button>
   </div>
 </div>
 
@@ -1238,7 +1260,10 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   </section>
 </main>
 
-<footer class="app-footer">© 2026 · Hugo DERUELLE</footer>
+<footer class="app-footer">
+  <p>Aide à la préparation : ne remplace pas le manuel de vol. Le commandant de bord reste seul responsable. <button type="button" class="btn-link sm" id="btnDiscAgain">Relire l'avertissement</button></p>
+  <p>© 2026 · Hugo DERUELLE</p>
+</footer>
 
 <!-- BARRE DU BAS (téléphone) -->
 <nav class="action-bar" id="actionBar" aria-label="Verdicts">
@@ -1333,16 +1358,31 @@ function syncFuelPreset() {
 }
 
 /* Avertissement à l'ouverture */
+const DISC_KEY = 'acbt-disc', DISC_VER = '2026-10';
+function discDue() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DISC_KEY) || 'null');
+    return !d || d.v !== DISC_VER || Date.now() - (+d.t || 0) > 30 * 86400000;
+  } catch (e) { return true; }
+}
+function showDisclaimer() {
+  const modal = document.getElementById('modalDisclaimer');
+  modal.style.display = '';
+  modal.classList.add('is-active');
+  setTimeout(() => { try { document.getElementById('btnCloseDisclaimer').focus(); } catch (e) {} }, 50);
+}
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('modalDisclaimer');
   const btn = document.getElementById('btnCloseDisclaimer');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      modal.classList.remove('is-active');
-      modal.style.display = 'none';
-    });
-    setTimeout(() => { try { btn.focus(); } catch (e) {} }, 50);
-  }
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    modal.classList.remove('is-active');
+    modal.style.display = 'none';
+    try { localStorage.setItem(DISC_KEY, JSON.stringify({ v: DISC_VER, t: Date.now() })); } catch (e) {}
+  });
+  const again = document.getElementById('btnDiscAgain');
+  if (again) again.addEventListener('click', showDisclaimer);
+  if (discDue()) showDisclaimer();
 });
 
 function toggleReadme() {
@@ -6264,6 +6304,28 @@ if ('serviceWorker' in navigator) {
   wrapAsync('loadMetarFor', side => { wxSig[side] = null; renderWx(side); srcFromMetar(side); if (wxSrc[side]) rememberAd(side); if (side === 'arr') setTimeout(() => restoreRwy('arr'), 400); preview(side); });
   wrapAsync('useNearestValidMetar', side => { srcFromMetar(side); preview(side); });
   wrapAsync('loadTafFor', () => { wxSig.arr = null; renderWx('arr'); srcFromTaf(); if (!WX_FAIL.test($id('arrMetarMsg').textContent || '')) rememberAd('arr'); setTimeout(() => restoreRwy('arr'), 400); preview('arr'); });
+  // Pas de code OACI valide : on ne lance pas la recherche, on le dit clairement
+  ['loadMetarFor', 'loadTafFor'].forEach(name => {
+    const inner = window[name];
+    window[name] = function (side) {
+      const sd = side === 'dep' ? 'dep' : 'arr';
+      const icao = val(sd + 'Icao').toUpperCase();
+      if (!/^[A-Z][A-Z0-9]{3}$/.test(icao)) {
+        const inp = $id(sd + 'Icao');
+        inp.classList.add('is-invalid');
+        $id(sd + 'WxBan').innerHTML = '<div class="wx-ban warn"><span class="ic">⚠</span><span class="tx">' + (icao
+          ? '<b>Code OACI incomplet.</b> Il faut 4 caractères, par exemple LFOB.'
+          : '<b>Veuillez d\'abord insérer un code OACI.</b>') + '</span></div>';
+        try { inp.focus(); } catch (e) {}
+        return Promise.resolve();
+      }
+      return inner.apply(this, arguments);
+    };
+  });
+  ['dep', 'arr'].forEach(sd => $id(sd + 'Icao').addEventListener('input', () => {
+    $id(sd + 'Icao').classList.remove('is-invalid');
+    const b = $id(sd + 'WxBan'); if (/insérer un code OACI|Code OACI incomplet/.test(b.textContent)) b.innerHTML = '';
+  }));
   wrapAsync('useNearestValidTaf', () => { srcFromTaf(); preview('arr'); });
   wrapAsync('applyTafPeriodImpl', () => { srcFromTaf(); preview('arr'); });
   $id('arrEta').addEventListener('change', () => { setTimeout(srcFromTaf, 0); setTimeout(() => { srcFromTaf(); preview('arr'); }, 120); });
@@ -6608,30 +6670,67 @@ if ('serviceWorker' in navigator) {
   const AC_ALL = [...acSel.options].filter(o => o.value).map(o => ({ v: o.value, t: o.textContent }));
   const AC_PH = (acSel.options[0] && !acSel.options[0].value) ? acSel.options[0].textContent : 'Choisir un avion';
   // Avions désactivés pour tout le club (indisponibles) : retirer un code de cette liste pour les réactiver
-  const AC_OFF = [];
+  const AC_OFF = ['F-HATX'];
+  // Club propriétaire de chaque avion (regroupement de la liste, fiche PDF)
+  const CLUBS = [
+    { k: 'acbt', n: 'Aéroclub de Beauvais-Tillé', s: 'LFOB' },
+    { k: 'valois', n: 'Aéroclub du Valois', s: 'LFPP' },
+    { k: 'apam', n: 'Aéroclub de Picardie Amiens Métropole', s: 'LFAY' }
+  ];
+  const AC_CLUB = { 'F-GOVB': 'valois', 'F-GYLC': 'valois', 'F-GTPE': 'apam', 'F-HATX': 'apam' };
+  const clubOf = v => CLUBS.find(c => c.k === (AC_CLUB[v] || 'acbt'));
+  window.__acClub = v => { const c = clubOf(v); return c ? c.n + ' (' + c.s + ')' : ''; };
+  const groupOpts = list => CLUBS.map(c => {
+    const g = list.filter(a => clubOf(a.v) === c);
+    return g.length ? '<optgroup label="' + escH(c.n) + ' · ' + escH(c.s) + '">' + g.map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('') + '</optgroup>' : '';
+  }).join('');
   const shown = v => !AC_OFF.includes(v) && (!Array.isArray(settings.fleet) || settings.fleet.includes(v));
   function applyFleet(all) {
     const cur = acSel.value;
     const list = AC_ALL.filter(a => all || shown(a.v) || a.v === cur);
-    acSel.innerHTML = '<option value="">' + escH(AC_PH) + '</option>' + list.map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    acSel.innerHTML = '<option value="">' + escH(AC_PH) + '</option>' + groupOpts(list);
     acSel.value = cur;
   }
   window.__applyFleet = applyFleet;
+  // Avertissement : avions dont les performances sont approximatives (lues sur abaque)
+  const paintApprox = () => {
+    const ap = AC_ALL.filter(a => !AC_OFF.includes(a.v) && typeof aircraftData !== 'undefined' && aircraftData[a.v] && aircraftData[a.v].approx).map(a => a.v);
+    const el = $id('discApprox');
+    if (el) el.textContent = ap.length ? ' Performances approximatives pour ' + ap.join(', ') + ' : vérifie au manuel.' : '';
+  };
+  paintApprox();
+  document.addEventListener('DOMContentLoaded', () => setTimeout(paintApprox, 0));
+  window.addEventListener('load', paintApprox);
   applyFleet();
   let fleetDraft = null;
   function paintFleet() {
-    $id('setFleet').innerHTML = AC_ALL.filter(a => !AC_OFF.includes(a.v)).map(a => {
-      const on = fleetDraft.includes(a.v), parts = a.t.split(' — ');
-      return '<button type="button" class="fleet-it' + (on ? ' on' : '') + '" data-fleet="' + escH(a.v) + '" aria-pressed="' + on + '">' +
-        '<span class="fleet-box"></span><b>' + escH(parts[0]) + '</b><span>' + escH(parts[1] || '') + '</span></button>';
+    $id('setFleet').innerHTML = CLUBS.map(c => {
+      const g = AC_ALL.filter(a => !AC_OFF.includes(a.v) && clubOf(a.v) === c);
+      if (!g.length) return '';
+      const allOn = g.every(a => fleetDraft.includes(a.v));
+      return '<div class="fleet-club"><span>' + escH(c.n) + ' <small>· ' + escH(c.s) + '</small></span>' +
+        '<button type="button" class="btn-link sm" data-fleetclub="' + c.k + '">' + (allOn ? 'Tout décocher' : 'Tout cocher') + '</button></div>' +
+        g.map(a => {
+          const on = fleetDraft.includes(a.v), parts = a.t.split(' — ');
+          return '<button type="button" class="fleet-it' + (on ? ' on' : '') + '" data-fleet="' + escH(a.v) + '" aria-pressed="' + on + '">' +
+            '<span class="fleet-box"></span><b>' + escH(parts[0]) + '</b><span>' + escH(parts[1] || '') + '</span></button>';
+        }).join('');
     }).join('');
     const nOn = AC_ALL.filter(a => !AC_OFF.includes(a.v)).length;
     $id('setFleetNote').textContent = fleetDraft.length === nOn ? 'Tous les avions sont affichés.' : fleetDraft.length + ' avion' + (fleetDraft.length > 1 ? 's' : '') + ' sur ' + nOn + ' affiché' + (fleetDraft.length > 1 ? 's' : '') + ' dans la liste.';
     const dst = $id('setAircraft'), keep = dst.value;
-    dst.innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.filter(a => fleetDraft.includes(a.v)).map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    dst.innerHTML = '<option value="">— Aucun —</option>' + groupOpts(AC_ALL.filter(a => fleetDraft.includes(a.v)));
     dst.value = fleetDraft.includes(keep) ? keep : '';
   }
   $id('setFleet').addEventListener('click', e => {
+    const cb = e.target.closest('[data-fleetclub]');
+    if (cb) {
+      const g = AC_ALL.filter(a => !AC_OFF.includes(a.v) && clubOf(a.v).k === cb.dataset.fleetclub).map(a => a.v);
+      const allOn = g.every(v => fleetDraft.includes(v));
+      let nd = allOn ? fleetDraft.filter(v => !g.includes(v)) : AC_ALL.map(a => a.v).filter(v => fleetDraft.includes(v) || g.includes(v));
+      fleetDraft = nd.length ? nd : [g[0]];   // au moins un avion
+      paintFleet(); return;
+    }
     const b = e.target.closest('[data-fleet]');
     if (!b) return;
     const v = b.dataset.fleet;
@@ -6677,7 +6776,7 @@ if ('serviceWorker' in navigator) {
     $id('setPilot').value = val('pilotName');
     fleetDraft = AC_ALL.map(a => a.v).filter(shown);
     if (!fleetDraft.length) fleetDraft = AC_ALL.map(a => a.v).filter(v => !AC_OFF.includes(v)).slice(0, 1);
-    $id('setAircraft').innerHTML = '<option value="">— Aucun —</option>' + AC_ALL.filter(a => !AC_OFF.includes(a.v)).map(a => '<option value="' + escH(a.v) + '">' + escH(a.t) + '</option>').join('');
+    $id('setAircraft').innerHTML = '<option value="">— Aucun —</option>' + groupOpts(AC_ALL.filter(a => !AC_OFF.includes(a.v)));
     $id('setAircraft').value = settings.aircraft || '';
     paintFleet();
     $id('setBase').value = ad.base ? ad.base.icao : '';
@@ -6878,7 +6977,8 @@ if ('serviceWorker' in navigator) {
     if (taf) {
       // ── TAF ──
       msg.split('\n').forEach(l => {
-        if (/TAF EXPIRÉ/.test(l)) bans += banner('bad', '<b>TAF expiré :</b> non utilisé. Saisis le vent à la main.');
+        if (/^TAF indisponible/.test(l)) bans += banner('bad', (/Failed to fetch|NetworkError|Load failed/i.test(l) ? '<b>Service météo injoignable</b> (pas de connexion internet ?).' : '<b>' + escH(l) + '</b>') + ' Saisis le vent à la main.');
+        else if (/TAF EXPIRÉ/.test(l)) bans += banner('bad', '<b>TAF expiré :</b> non utilisé. Saisis le vent à la main.');
         else if (/pas encore en vigueur/.test(l)) bans += banner('warn', escH(l.replace(/^⚠\s*/, '')));
         else if (/TAF le plus proche/.test(l)) {
           const m = /:\s*([A-Z0-9]{4})\s*(\(~?\d+\s*NM\))?/.exec(l);
@@ -6918,7 +7018,13 @@ if ('serviceWorker' in navigator) {
       } else if (/^⛔/.test(first)) {
         bans += banner('bad', escH(first.replace(/^⛔\s*/, '')));
       } else if (/indisponible|Position du terrain inconnue|Saisir un ICAO/.test(first)) {
-        bans += banner('bad', '<b>' + escH(first) + '</b>' + (/indisponible/.test(first) ? ' Saisis le vent et la température à la main.' : ''));
+        const net = /Failed to fetch|NetworkError|Load failed|network/i.test(first);
+        const http = /HTTP\s*(\d+)/.exec(first);
+        const txt = net ? '<b>Service météo injoignable</b> (pas de connexion internet ?).'
+          : http && /^(400|404)$/.test(http[1]) ? '<b>Aucun ' + (/^TAF/.test(first) ? 'TAF' : 'METAR') + ' trouvé pour ' + escH(icao) + '.</b> Vérifie le code OACI.'
+          : http && /^(401|403|429)$/.test(http[1]) ? '<b>Service météo indisponible pour le moment</b> (accès refusé ou trop de demandes).'
+          : '<b>' + escH(first) + '</b>';
+        bans += banner('bad', txt + (/indisponible/.test(first) ? ' Saisis le vent et la température à la main.' : ''));
         if (/indisponible/.test(first)) altBtn = $id(side + 'MetarAlt');
       }
       if (raw) {
@@ -7195,9 +7301,11 @@ if ('serviceWorker' in navigator) {
     pdf.text(M, 44, 'Fiche de préparation du vol', { font: 'HB', size: 17 });
     pdf.text(M, 60, 'Aéroclub de Beauvais-Tillé · Perfs ACBT', { size: 9, color: C.muted });
     pdf.text(pdf.W - M, 44, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 20, color: C.accent, align: 'right' });
-    pdf.text(pdf.W - M, 60, 'Fiche n° ' + d.id, { size: 8.5, color: C.muted, align: 'right' });
-    pdf.rect(M, 72, W, 2, { fill: C.accent });
-    y = 90;
+    const club = d.aircraft && d.aircraft.club;
+    if (club) pdf.text(pdf.W - M, 58, club, { font: 'HB', size: 8.5, color: C.ink, align: 'right' });
+    pdf.text(pdf.W - M, club ? 69 : 60, 'Fiche n° ' + d.id, { size: club ? 7.5 : 8.5, color: C.muted, align: 'right' });
+    pdf.rect(M, 76, W, 2, { fill: C.accent });
+    y = 94;
 
     // ── Bandeau d'informations (sans cadre)
     const info = [
@@ -7504,7 +7612,7 @@ if ('serviceWorker' in navigator) {
       v: 1, app: APP_VERSION, id: newId(now), created: now.toISOString(),
       tz: (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '',
       pilot: val('pilotName'),
-      aircraft: { immat: sel.value, type: label.split('—')[1] ? label.split('—')[1].trim() : label, label },
+      aircraft: { immat: sel.value, type: label.split('—')[1] ? label.split('—')[1].trim() : label, label, club: window.__acClub ? window.__acClub(sel.value) : '' },
       margin: +val('safety') || 0, spats: !!withSpats,
       dep: s.dep && depComputed ? sideData('dep') : null,
       arr: s.arr && arrComputed ? sideData('arr') : null,
