@@ -348,9 +348,11 @@ tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent
     pdf.text(M, 44, 'Fiche de préparation du vol', { font: 'HB', size: 17 });
     pdf.text(M, 60, 'Aéroclub de Beauvais-Tillé · Perfs ACBT', { size: 9, color: C.muted });
     pdf.text(pdf.W - M, 44, (d.aircraft && d.aircraft.immat) || '—', { font: 'HB', size: 20, color: C.accent, align: 'right' });
-    pdf.text(pdf.W - M, 60, 'Fiche n° ' + d.id, { size: 8.5, color: C.muted, align: 'right' });
-    pdf.rect(M, 72, W, 2, { fill: C.accent });
-    y = 90;
+    const club = d.aircraft && d.aircraft.club;
+    if (club) pdf.text(pdf.W - M, 58, club, { font: 'HB', size: 8.5, color: C.ink, align: 'right' });
+    pdf.text(pdf.W - M, club ? 69 : 60, 'Fiche n° ' + d.id, { size: club ? 7.5 : 8.5, color: C.muted, align: 'right' });
+    pdf.rect(M, 76, W, 2, { fill: C.accent });
+    y = 94;
 
     // ── Bandeau d'informations (sans cadre)
     const info = [
