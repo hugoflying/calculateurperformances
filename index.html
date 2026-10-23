@@ -3,13 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#1f6fd1"/>
+<meta name="theme-color" content="#0B1E4F"/>
 <title>Perfs ACBT</title>
 <link rel="manifest" href="/manifest.json"/>
 <link rel="apple-touch-icon" href="/icons/icon-180.png"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="fonts/fonts.css"/>
 <script>
 /* Thème appliqué avant l'affichage pour éviter un flash */
 (function(){try{var t=localStorage.getItem('acbt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
@@ -524,7 +522,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.bad{background:var(--err)}
-@media (min-width:1100px){.toast{bottom:24px}}
+
 .arch-card{cursor:default}
 .arch-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .arch-st{font:600 12px var(--body);padding:3px 8px;border-radius:4px}
@@ -544,7 +542,7 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .bar-dot.bad{border-color:var(--err);background:var(--err-bg);color:var(--err-text)}
 
 /* ═══════════ Grand écran : colonnes ═══════════ */
-@media (min-width:1100px){
+@media (min-width:99999px){ /* ancienne mise en page en colonnes, remplacée par les onglets */
   body{padding-bottom:0}
   html{scroll-padding-bottom:0}
   .app{max-width:1240px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;padding:20px 24px 32px}
@@ -729,6 +727,165 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
 .live-det .fuel-brk{margin-top:6px}
 .live-det .fuel-brk-row,.live-det .fuel-brk-total{color:var(--ink)}
 
+/* ═══════════════════════════════════════════════════════════
+   STYLE COMPANION (reprend css/app.css de Companion Turnaround)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:#F2F4F7; --card:#FFFFFF; --field:#F4F6F9; --field-3:#E9EDF3; --ink:#0B1E4F; --muted:#7D879C; --faint:#B5BDCB;
+  --line:#E4E8EF; --line-strong:#CBD2DE;
+  --accent:#0B1E4F; --accent-ink:#FFFFFF; --accent-soft:rgba(11,30,79,.07); --accent-line:#CBD2DE; --accent-text:#0B1E4F;
+  --navy:#0B1E4F; --on-navy:#FFFFFF; --on-navy-dim:#9AA8CC; --yellow:#FFAD00; --red-on-navy:#FF7A7A; --ok-on-navy:#7BE3A8;
+  --ok:#1F9D57; --ok-bg:#E7F6EE; --ok-line:#A6DDBF; --ok-text:#17804A;
+  --err:#D93636; --err-bg:#FDECEC; --err-line:#F3B4B4; --err-text:#B42323;
+  --warn:#C98300; --warn-bg:#FFF4D9; --warn-line:#F2D58F;
+  --shadow:0 1px 2px rgba(11,30,79,.06),0 4px 14px rgba(11,30,79,.05);
+  --display:"Manrope","Barlow",system-ui,sans-serif;
+  --body:"Manrope","Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:8px; --r-sm:6px; --ctl:44px; --btn-pri:#0B1E4F;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A1124; --card:#121B33; --field:#18233F; --field-3:#202C4A; --ink:#EEF2FA; --muted:#8792AD; --faint:#56627D;
+  --line:#202C4A; --line-strong:#2E3C60;
+  --accent:#8FA6FF; --accent-ink:#0A1124; --accent-soft:rgba(143,166,255,.12); --accent-line:#2E3C60; --accent-text:#AFC0FF;
+  --navy:#16245A; --yellow:#FFB81F; --red-on-navy:#FF8A8A;
+  --ok:#40C97F; --ok-bg:rgba(64,201,127,.12); --ok-line:#22543A; --ok-text:#7FDCAA;
+  --err:#FF6464; --err-bg:rgba(255,100,100,.14); --err-line:#5E2723; --err-text:#FF9A9A;
+  --warn:#FFB81F; --warn-bg:rgba(255,184,31,.14); --warn-line:#5A4618;
+  --shadow:none; --btn-pri:#22357A; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0A1124; --card:#121B33; --field:#18233F; --field-3:#202C4A; --ink:#EEF2FA; --muted:#8792AD; --faint:#56627D;
+  --line:#202C4A; --line-strong:#2E3C60;
+  --accent:#8FA6FF; --accent-ink:#0A1124; --accent-soft:rgba(143,166,255,.12); --accent-line:#2E3C60; --accent-text:#AFC0FF;
+  --navy:#16245A; --yellow:#FFB81F; --red-on-navy:#FF8A8A;
+  --ok:#40C97F; --ok-bg:rgba(64,201,127,.12); --ok-line:#22543A; --ok-text:#7FDCAA;
+  --err:#FF6464; --err-bg:rgba(255,100,100,.14); --err-line:#5E2723; --err-text:#FF9A9A;
+  --warn:#FFB81F; --warn-bg:rgba(255,184,31,.14); --warn-line:#5A4618;
+  --shadow:none; --btn-pri:#22357A; color-scheme:dark;}
+
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));letter-spacing:-.003em}
+
+/* Typo : petites capitales espacées, sans police condensée */
+.lbl,.bt,.sub,.sec-t{font-family:var(--body)}
+.lbl{font:600 12px/1.15 var(--body);letter-spacing:.08em}
+.bt{font:600 12.5px/1 var(--body);letter-spacing:.12em}
+.bt i{font:700 10.5px/1 var(--body)}
+.h2{font:800 20px/1 var(--body);letter-spacing:-.01em;text-transform:none}
+.sub{font-weight:600}
+
+/* En-tête : rangée blanche + bandeau marine */
+.topbar{padding:0;background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:0}
+.topbar-in{max-width:none;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;border-bottom:1px solid var(--line)}
+.brand{font:800 18px/1 var(--body);letter-spacing:-.01em;text-transform:none}
+.brand span{color:inherit}
+.brand small{border:0;padding:0;margin-left:6px;font:600 13px var(--body);letter-spacing:0;color:var(--muted)}
+.icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
+.icon-btn:hover{background:var(--field);color:var(--ink)}
+.band{background:var(--navy);color:var(--on-navy);padding:10px 14px 11px;display:flex;flex-direction:column;gap:9px}
+.band-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.band-id{min-width:0}
+.band-fno{font:800 23px/1 var(--body);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band-fno small{font:600 13px var(--body);color:var(--on-navy-dim);margin-left:7px}
+.band-sub{font:500 12px var(--body);color:var(--on-navy-dim);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band-cd{text-align:right;flex:none}
+.band-cd .k,.bchip .k{display:block;font:700 10px var(--body);letter-spacing:.05em;color:var(--on-navy-dim);white-space:nowrap}
+.band-cd .v{display:block;font:300 28px/1 var(--body);font-variant-numeric:tabular-nums}
+.band-chips{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px}
+.bchip{text-align:left;padding:0 2px;color:var(--on-navy)}
+.bchip .v{display:block;font:600 15px var(--body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bchip .v.ok{color:var(--ok-on-navy)}.bchip .v.late{color:var(--red-on-navy)}
+.band-prog{height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+.band-prog i{display:block;height:100%;width:0;background:var(--yellow);transition:width .4s}
+
+/* Barre d'onglets */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--card);
+  border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));height:calc(62px + env(safe-area-inset-bottom,0px))}
+.tabbar button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);border-radius:10px;position:relative;
+  font:600 11px var(--body)}
+.tabbar button .ico{width:22px;height:22px}
+.tabbar button.is-on{color:var(--accent);font-weight:800}
+.tabbar button.is-on::before{content:"";position:absolute;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--yellow);top:-7px}
+.tabbar button.is-done::after,.tabbar button.is-bad::after{content:"";position:absolute;top:4px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.tabbar button.is-bad::after{background:var(--err)}
+.toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+
+/* Onglets : une seule étape visible, la fiche dans son propre onglet */
+.app{max-width:720px;padding:14px 12px 24px}
+.flow{gap:0}
+.step{display:none;background:transparent;border:0!important;box-shadow:none!important;border-radius:0}
+.step.is-open{display:block}
+.step-hd{display:none}
+.step-body{padding:0;gap:12px}
+.step.is-open .step-body{display:flex}
+body:not([data-view="ac"]) .scope{display:none}
+body:not([data-view="fiche"]) .fiche{display:none}
+body[data-view="fiche"] .fiche{margin-top:0}
+.scope{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow)}
+
+/* Blocs = cartes */
+.step-body > .blk,.step-body > .grp,.step[data-step="ac"] .step-body{background:var(--card);border:1px solid var(--line)!important;border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.step[data-step="ac"] .step-body{display:none}
+.step[data-step="ac"].is-open .step-body{display:flex}
+.step-body > .blk + .blk{border-top:1px solid var(--line);padding-top:14px}
+.grp + .grp{border-top:0;padding-top:14px}
+
+/* Champs, boutons, choix */
+.inp{background:var(--card);border-color:var(--line-strong);height:46px;font:600 16px var(--body);border-radius:6px}
+.inp.icao{font:800 18px var(--body);letter-spacing:.06em}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{font-family:var(--body);border-radius:6px;letter-spacing:.02em}
+.btn.pri,.wx-load,.btn.big{background:var(--btn-pri);border-color:var(--btn-pri);color:#fff}
+.btn.big{height:52px;font:700 16px var(--body)}
+.btn-link{color:var(--accent);font-weight:700}
+.toggle-group{background:var(--field);border:1px solid var(--line);border-radius:12px}
+.toggle-btn{border-radius:9px;font-weight:600}
+.toggle-btn.is-selected{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.18),0 0 0 1px var(--line),inset 0 -2px 0 var(--yellow)}
+:root[data-theme="dark"] .toggle-btn.is-selected{background:var(--field-3)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .toggle-btn.is-selected{background:var(--field-3)}}
+.chip-tg{border-radius:999px;padding-left:12px;padding-right:12px}
+.scope .chips{gap:6px}
+.chip-tg[aria-pressed="true"]{background:var(--btn-pri);border-color:var(--btn-pri);color:#fff}
+.ad-chip{border-radius:999px;border-color:var(--line)}
+.ad-chip.base{color:var(--ink);background:var(--card);border:1.5px solid var(--navy)}
+.ad-chip.same{color:var(--ink);background:var(--accent-soft);border-color:var(--line-strong)}
+:root[data-theme="dark"] .ad-chip.base{border-color:var(--accent)}
+.src{border-radius:6px}
+.rwy-btn{border-radius:var(--r)}
+.rwy-btn.active{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+:root[data-theme="dark"] .rwy-btn.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.rwy-chk{background:var(--btn-pri);color:#fff}
+.wind-cell{border-radius:6px}
+.wc-lbl{font-family:var(--body);font-size:10px;letter-spacing:.07em}
+.wc-val{font:700 22px/1.1 var(--body)}
+.wxc{border-radius:var(--r)}
+.wxc-hd .kind{background:var(--navy)}
+.wxc-dec .k{font-family:var(--body);font-size:10px}
+
+/* Résultat en direct : bloc marine */
+.live{background:var(--navy);border:0;color:var(--on-navy);border-radius:var(--r)}
+.live .live-big{color:var(--on-navy-dim)}
+.live .live-big b{font:300 32px/1 var(--body);color:#fff}
+.live-pill{background:#2DD4A8;color:#06302A}
+.live-bar{background:rgba(255,255,255,.15);border:0}
+.live-bar i{background:var(--yellow)}
+.live-cap{color:var(--on-navy-dim)}
+.live.bad{background:var(--navy);border:0}
+.live.bad .live-big,.live.bad .live-cap{color:var(--on-navy-dim)}
+.live.bad .live-pill{background:var(--red-on-navy);color:#3a0606}
+.live.bad .live-bar i{background:var(--red-on-navy)}
+.live-clocks{color:var(--on-navy-dim);border-color:rgba(255,255,255,.15)}
+.live-clocks b{color:#fff}.live-clocks b.stop{color:var(--red-on-navy)}
+.live-det summary{color:#fff}
+.live-det .fuel-brk-row,.live-det .fuel-brk-total{color:#fff}
+.live-det .fuel-brk-tm,.live-det .fuel-brk-ph{color:var(--on-navy-dim)}
+
+/* Fiche du vol */
+.fiche .res{border-radius:var(--r);box-shadow:var(--shadow)}
+.kpi-val{font-family:var(--body);font-weight:300}
+.act-btn.pri{background:var(--btn-pri);border-color:var(--btn-pri);color:#fff}
+.fiche-actions{display:grid}
+.sheet h2{font:800 20px/1 var(--body);letter-spacing:-.01em;text-transform:none}
+.app-footer{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+
 /* ═══════════ Impression (fiche PDF A4 — inchangée) ═══════════ */
 .step,.fiche{scroll-margin-top:80px}
 #printView{display:none}
@@ -805,6 +962,20 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
     </button>
     <button id="btnDark" class="icon-btn" type="button" onclick="toggleDark()" aria-label="Changer de thème" title="Mode clair / sombre"></button>
+  </div>
+  <!-- Bandeau du vol (style Companion) -->
+  <div class="band" id="band">
+    <div class="band-hero">
+      <div class="band-id"><div class="band-fno"><span id="bandAc">Choisis un avion</span><small id="bandType"></small></div><div class="band-sub" id="bandSub"></div></div>
+      <div class="band-cd"><span class="k" id="bandCdK">COUCHER</span><span class="v" id="bandCd">—:—</span></div>
+    </div>
+    <div class="band-chips">
+      <button type="button" class="bchip" data-tab="dep" id="bchipDep"><span class="k">T/O</span><span class="v" id="bandTo">—</span></button>
+      <button type="button" class="bchip" data-tab="arr" id="bchipArr"><span class="k">LDG</span><span class="v" id="bandLdg">—</span></button>
+      <button type="button" class="bchip" data-tab="fuel" id="bchipFuel"><span class="k">FUEL</span><span class="v" id="bandFuel">—</span></button>
+      <div class="bchip"><span class="k">NUIT AÉRO</span><span class="v" id="bandNight">—:—</span></div>
+    </div>
+    <div class="band-prog"><i id="bandProg"></i></div>
   </div>
 </header>
 
@@ -1274,8 +1445,17 @@ select.inp{padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xm
   <p>© 2026 · Hugo DERUELLE</p>
 </footer>
 
-<!-- BARRE DU BAS (téléphone) -->
-<nav class="action-bar" id="actionBar" aria-label="Verdicts">
+<!-- BARRE D'ONGLETS (style Companion) -->
+<nav class="tabbar" id="tabbar" aria-label="Étapes">
+  <button type="button" data-tab="ac"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 21l1.5-6-7-3V9.5l7 1.5V5a1.5 1.5 0 0 1 3 0v6l7-1.5V12l-7 3 1.5 6-3-1.5z"/></svg><span>Avion</span></button>
+  <button type="button" data-tab="dep"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 15l14-8"/><path d="M14 7h5v5"/></svg><span>Départ</span></button>
+  <button type="button" data-tab="arr"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 7l14 8"/><path d="M14 15h5v-5"/></svg><span>Arrivée</span></button>
+  <button type="button" data-tab="fuel"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v15"/><path d="M3 20h13"/><path d="M15 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M7 8h5"/></svg><span>Carburant</span></button>
+  <button type="button" data-tab="fiche"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg><span>Fiche</span></button>
+</nav>
+
+<!-- BARRE DU BAS (ancienne, remplacée par les onglets) -->
+<nav class="action-bar" id="actionBar" aria-label="Verdicts" hidden>
   <div class="action-bar-in">
     <div class="pills" id="barPills"></div>
     <div class="bar-actions" id="barActions" hidden>
@@ -5470,7 +5650,7 @@ if ('serviceWorker' in navigator) {
   const CAP = { ac: 'Ac', dep: 'Dep', arr: 'Arr', fuel: 'Fuel' };
   const SCOPE_KEY = 'acbt-scope';
   const stepEl = s => $id('step' + CAP[s]);
-  const isWide = () => window.matchMedia('(min-width:1100px)').matches;
+  const isWide = () => false;   // onglets sur tous les écrans (style Companion)
 
   /* ── État du déroulé ── */
   let scope = { dep: true, arr: true, fuel: true };
@@ -5583,12 +5763,13 @@ if ('serviceWorker' in navigator) {
     $id('sameAsDepOr').hidden = !scope.dep;
     $id('sameAsDepLbl').textContent = 'Même terrain qu\'au départ' + (depIcao ? ' (' + depIcao + ')' : '');
     $id('arrLdwNote').hidden = !scope.dep;
+    renderTabs();
     if (typeof fitChips === 'function') requestAnimationFrame(() => { fitChips('dep'); fitChips('arr'); });
   }
 
   function scrollToEl(el) {
-    if (!el || isWide()) return;
-    requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    // Onglets : chaque changement d'étape repart du haut de la page
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }));
   }
 
   function openStepFn(s, scroll) {
@@ -5607,6 +5788,54 @@ if ('serviceWorker' in navigator) {
     openStep = nxt;
     renderSteps();
     scrollToEl(nxt ? stepEl(nxt) : $id('fiche'));
+  }
+
+  /* ── Onglets et bandeau du vol (style Companion) ── */
+  const TABS = ['ac', 'dep', 'arr', 'fuel', 'fiche'];
+  function renderTabs() {
+    const view = openStep || 'fiche';
+    document.body.dataset.view = view;
+    document.querySelectorAll('#tabbar [data-tab]').forEach(b => {
+      const t = b.dataset.tab;
+      b.hidden = t !== 'fiche' && !inScope(t);
+      b.classList.toggle('is-on', t === view);
+      const bad = t !== 'fiche' && t !== 'ac' && validated[t] && stepEl(t).classList.contains('is-bad');
+      b.classList.toggle('is-done', t !== 'fiche' && !!validated[t] && !bad);
+      b.classList.toggle('is-bad', !!bad);
+    });
+  }
+  function goTab(t) {
+    if (!TABS.includes(t)) return;
+    if (t === 'fiche') { openStep = null; renderSteps(); updateUI(); scrollToEl(); return; }
+    openStepFn(t);
+  }
+  window.__goTab = goTab;
+  $id('tabbar').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) goTab(b.dataset.tab); });
+  $id('band').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(isComputed(b.dataset.tab) || (b.dataset.tab === 'fuel' && fuelOk()) ? 'fiche' : b.dataset.tab); });
+  function renderBand() {
+    const ac = val('aircraftSel');
+    const opt = ac ? [...$id('aircraftSel').options].find(o => o.value === ac) : null;
+    $id('bandAc').textContent = ac || 'Choisis un avion';
+    $id('bandType').textContent = opt && opt.textContent.indexOf('—') > 0 ? opt.textContent.split('—')[1].trim() : '';
+    const route = [scope.dep ? val('depIcao').toUpperCase() : '', scope.arr ? val('arrIcao').toUpperCase() : ''].filter(Boolean).join(' → ');
+    $id('bandSub').textContent = [val('pilotName'), route, 'marge ' + (val('safety') || '30') + ' %'].filter(Boolean).join(' · ');
+    const put = (id, chip, on, txt, st) => {
+      $id(chip).hidden = !on;
+      const v = $id(id); v.textContent = txt; v.className = 'v' + (st === 'ok' ? ' ok' : st === 'bad' ? ' late' : '');
+    };
+    put('bandTo', 'bchipDep', scope.dep, depComputed ? $id('toKpiVal').textContent : '—', depComputed ? chipState('dep') : null);
+    put('bandLdg', 'bchipArr', scope.arr, arrComputed ? $id('ldgKpiVal').textContent : '—', arrComputed ? chipState('arr') : null);
+    let fv = '—', fs = null;
+    if (scope.fuel && fuelOk()) { const f = fuelCompute(); fv = frNum(f.totL.toFixed(1)) + ' L'; fs = f.ok ? 'ok' : 'bad'; }
+    put('bandFuel', 'bchipFuel', scope.fuel, fv, fs);
+    const t = id => { const x = ($id(id) || {}).textContent || ''; return /\d{1,2}:\d{2}/.test(x) ? x : ''; };
+    const arrCs = scope.arr ? t('arrSunset') : '', depCs = t('depSunset');
+    const cs = arrCs || depCs;
+    $id('bandCdK').textContent = 'COUCHER' + (cs ? ' ' + ((arrCs ? val('arrIcao') : val('depIcao')) || '').toUpperCase() : '');
+    $id('bandCd').textContent = cs || '—:—';
+    $id('bandNight').textContent = (arrCs ? t('arrAeroNight') : t('depAeroNight')) || '—:—';
+    const vs = visibleSteps(), done = vs.filter(s => validated[s]).length;
+    $id('bandProg').style.width = (vs.length ? done / vs.length * 100 : 0) + '%';
   }
 
   /* ── Fiche du vol + barre du bas ── */
@@ -5707,6 +5936,7 @@ if ('serviceWorker' in navigator) {
       }
 
       renderSteps();
+      try { renderBand(); } catch (e) { console.warn(e); }
       if (typeof window.__refreshLight === 'function') window.__refreshLight();
     } finally {
       updating = false;
