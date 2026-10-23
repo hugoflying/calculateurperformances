@@ -780,21 +780,15 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));letter-spacing:
 .brand small{border:0;padding:0;margin-left:6px;font:600 13px var(--body);letter-spacing:0;color:var(--muted)}
 .icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
 .icon-btn:hover{background:var(--field);color:var(--ink)}
-.band{background:var(--navy);color:var(--on-navy);padding:10px 14px 11px;display:flex;flex-direction:column;gap:9px}
-.band-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
-.band-id{min-width:0}
-.band-fno{font:800 23px/1 var(--body);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band{background:var(--navy);color:var(--on-navy);padding:12px 14px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.band button{color:inherit;font:inherit;background:none;border:0;padding:0;cursor:pointer;min-width:0;display:flex;flex-direction:column}
+.band-l{text-align:left;align-items:flex-start;flex:1 1 auto}
+.band-r{text-align:right;align-items:flex-end;flex:none}
+.band-r[hidden]{display:none!important}
+.band-fno{display:block;font:800 23px/1 var(--body);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .band-fno small{font:600 13px var(--body);color:var(--on-navy-dim);margin-left:7px}
-.band-sub{font:500 12px var(--body);color:var(--on-navy-dim);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.band-cd{text-align:right;flex:none}
-.band-cd .k,.bchip .k{display:block;font:700 10px var(--body);letter-spacing:.05em;color:var(--on-navy-dim);white-space:nowrap}
-.band-cd .v{display:block;font:300 28px/1 var(--body);font-variant-numeric:tabular-nums}
-.band-chips{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px}
-.bchip{text-align:left;padding:0 2px;color:var(--on-navy)}
-.bchip .v{display:block;font:600 15px var(--body);font-variant-numeric:tabular-nums;white-space:nowrap}
-.bchip .v.ok{color:var(--ok-on-navy)}.bchip .v.late{color:var(--red-on-navy)}
-.band-prog{height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
-.band-prog i{display:block;height:100%;width:0;background:var(--yellow);transition:width .4s}
+.band-r b{font:800 16px/1.3 var(--body);letter-spacing:.01em;white-space:nowrap}
+.band-sub{display:block;font:500 12.5px var(--body);color:var(--on-navy-dim);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
 /* Barre d'onglets */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--card);
@@ -965,17 +959,8 @@ body[data-view="fiche"] .fiche{margin-top:0}
   </div>
   <!-- Bandeau du vol (style Companion) -->
   <div class="band" id="band">
-    <div class="band-hero">
-      <div class="band-id"><div class="band-fno"><span id="bandAc">Choisis un avion</span><small id="bandType"></small></div><div class="band-sub" id="bandSub"></div></div>
-      <div class="band-cd"><span class="k" id="bandCdK">COUCHER</span><span class="v" id="bandCd">—:—</span></div>
-    </div>
-    <div class="band-chips">
-      <button type="button" class="bchip" data-tab="dep" id="bchipDep"><span class="k">T/O</span><span class="v" id="bandTo">—</span></button>
-      <button type="button" class="bchip" data-tab="arr" id="bchipArr"><span class="k">LDG</span><span class="v" id="bandLdg">—</span></button>
-      <button type="button" class="bchip" data-tab="fuel" id="bchipFuel"><span class="k">FUEL</span><span class="v" id="bandFuel">—</span></button>
-      <div class="bchip"><span class="k">NUIT AÉRO</span><span class="v" id="bandNight">—:—</span></div>
-    </div>
-    <div class="band-prog"><i id="bandProg"></i></div>
+    <button type="button" class="band-l" data-tab="ac" id="bandAcl"><span class="band-fno"><b id="bandAc">Choisis un avion</b><small id="bandType"></small></span><span class="band-sub" id="bandSub"></span></button>
+    <button type="button" class="band-r" data-tab="dep" id="bandRt"><b id="bandRoute"></b><span class="band-sub" id="bandWhen"></span></button>
   </div>
 </header>
 
@@ -5811,32 +5796,27 @@ if ('serviceWorker' in navigator) {
   }
   window.__goTab = goTab;
   $id('tabbar').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) goTab(b.dataset.tab); });
-  $id('band').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(isComputed(b.dataset.tab) || (b.dataset.tab === 'fuel' && fuelOk()) ? 'fiche' : b.dataset.tab); });
+  $id('band').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) goTab(b.dataset.tab); });
   function renderBand() {
     const ac = val('aircraftSel');
     const opt = ac ? [...$id('aircraftSel').options].find(o => o.value === ac) : null;
     $id('bandAc').textContent = ac || 'Choisis un avion';
     $id('bandType').textContent = opt && opt.textContent.indexOf('—') > 0 ? opt.textContent.split('—')[1].trim() : '';
-    const route = [scope.dep ? val('depIcao').toUpperCase() : '', scope.arr ? val('arrIcao').toUpperCase() : ''].filter(Boolean).join(' → ');
-    $id('bandSub').textContent = [val('pilotName'), route, 'marge ' + (val('safety') || '30') + ' %'].filter(Boolean).join(' · ');
-    const put = (id, chip, on, txt, st) => {
-      $id(chip).hidden = !on;
-      const v = $id(id); v.textContent = txt; v.className = 'v' + (st === 'ok' ? ' ok' : st === 'bad' ? ' late' : '');
-    };
-    put('bandTo', 'bchipDep', scope.dep, depComputed ? $id('toKpiVal').textContent : '—', depComputed ? chipState('dep') : null);
-    put('bandLdg', 'bchipArr', scope.arr, arrComputed ? $id('ldgKpiVal').textContent : '—', arrComputed ? chipState('arr') : null);
-    let fv = '—', fs = null;
-    if (scope.fuel && fuelOk()) { const f = fuelCompute(); fv = frNum(f.totL.toFixed(1)) + ' L'; fs = f.ok ? 'ok' : 'bad'; }
-    put('bandFuel', 'bchipFuel', scope.fuel, fv, fs);
-    const t = id => { const x = ($id(id) || {}).textContent || ''; return /\d{1,2}:\d{2}/.test(x) ? x : ''; };
-    const arrCs = scope.arr ? t('arrSunset') : '', depCs = t('depSunset');
-    const cs = arrCs || depCs;
-    $id('bandCdK').textContent = 'COUCHER' + (cs ? ' ' + ((arrCs ? val('arrIcao') : val('depIcao')) || '').toUpperCase() : '');
-    $id('bandCd').textContent = cs || '—:—';
-    $id('bandNight').textContent = (arrCs ? t('arrAeroNight') : t('depAeroNight')) || '—:—';
-    const vs = visibleSteps(), done = vs.filter(s => validated[s]).length;
-    $id('bandProg').style.width = (vs.length ? done / vs.length * 100 : 0) + '%';
+    const tow = val('depTow');
+    $id('bandSub').textContent = [val('pilotName'), tow ? tow + ' kg' : '', 'marge ' + (val('safety') || '30') + ' %'].filter(Boolean).join(' · ');
+    const ic = s => scope[s] ? (val(s + 'Icao').toUpperCase().trim() || '—') : '';
+    const route = [ic('dep'), ic('arr')].filter(Boolean).join(' → ');
+    $id('bandRt').hidden = !route;
+    $id('bandRt').dataset.tab = scope.dep ? 'dep' : 'arr';
+    $id('bandRoute').textContent = route;
+    const d = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const h = /^\d{1,2}:\d{2}$/.test(val('fuelDepTime')) ? val('fuelDepTime') : '';
+    $id('bandWhen').textContent = d + (h ? ' · départ ' + h : '');
   }
+
+  ['input', 'change'].forEach(ev => document.addEventListener(ev, e => {
+    if (e.target && /^(depIcao|arrIcao|depTow|pilotName|fuelDepTime|aircraftSel|safety)$/.test(e.target.id)) { try { renderBand(); } catch (x) {} }
+  }));
 
   /* ── Fiche du vol + barre du bas ── */
   let updating = false;
